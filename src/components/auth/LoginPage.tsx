@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Eye, EyeOff, ArrowRight, Loader2, KeyRound,
-  ChevronRight, Sparkles, Power, RotateCw, Moon, Sun
+  Sparkles, Moon, Sun
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -63,7 +63,7 @@ function MojaveClock() {
 // ============================================
 export default function LoginPage() {
   const { login } = useAppStore()
-  const { theme, setTheme, resolvedTheme } = useTheme()
+  const { setTheme, resolvedTheme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -132,21 +132,31 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col">
+    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center">
       {/* ============================================
-          Mojave Wallpaper Background
+          Background — Clean Gradient
           ============================================ */}
       <div className="absolute inset-0 -z-10">
-        {/* Animated wallpaper */}
+        {/* Solid gradient background */}
         <div
           className={cn(
-            "absolute inset-[-5%] animate-mojave-wallpaper",
-            isDark ? "mojave-wallpaper-dark" : "mojave-wallpaper-light"
+            "absolute inset-0",
+            isDark
+              ? "bg-gradient-to-br from-[#0c1220] via-[#0f1a2e] to-[#0a0f1a]"
+              : "bg-gradient-to-br from-[#4a90a4] via-[#3a7c94] to-[#2d6a80]"
           )}
         />
 
+        {/* Subtle radial glow */}
+        <div className={cn(
+          "absolute inset-0",
+          isDark
+            ? "bg-[radial-gradient(ellipse_at_50%_30%,rgba(20,184,166,0.08)_0%,transparent_60%)]"
+            : "bg-[radial-gradient(ellipse_at_50%_30%,rgba(255,255,255,0.15)_0%,transparent_60%)]"
+        )} />
+
         {/* Subtle noise texture overlay */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
+        <div className="absolute inset-0 opacity-[0.02]" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
         }} />
 
@@ -154,21 +164,42 @@ export default function LoginPage() {
         <div className={cn(
           "absolute inset-0",
           isDark
-            ? "bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.5)_100%)]"
-            : "bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.15)_100%)]"
+            ? "bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.4)_100%)]"
+            : "bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.1)_100%)]"
         )} />
       </div>
 
       {/* ============================================
-          Top Section — Clock (Mojave Style)
+          Theme Toggle — Top Right Corner
           ============================================ */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4">
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 1 }}
+        onClick={() => setTheme(isDark ? 'light' : 'dark')}
+        className={cn(
+          "absolute top-6 right-6 z-20",
+          "w-10 h-10 rounded-full flex items-center justify-center",
+          "mojave-frost mojave-frost-light",
+          "retina-shadow",
+          "transition-all duration-200",
+          "hover:scale-110 active:scale-95",
+          "text-gray-600 dark:text-gray-300"
+        )}
+      >
+        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </motion.button>
+
+      {/* ============================================
+          Center Content — Clock + Login
+          ============================================ */}
+      <div className="flex flex-col items-center justify-center px-4 py-8 w-full">
         {/* Clock */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-12"
+          className="mb-10"
         >
           <MojaveClock />
         </motion.div>
@@ -188,14 +219,14 @@ export default function LoginPage() {
               <div className="relative">
                 <div
                   className={cn(
-                    "w-24 h-24 rounded-full flex items-center justify-center",
+                    "w-28 h-28 rounded-full flex items-center justify-center",
                     "mojave-frost mojave-frost-light",
                     "retina-shadow-lg",
                     inputFocused && "animate-mojave-pulse"
                   )}
                 >
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary-foreground">FF</span>
+                  <div className="w-[104px] h-[104px] rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                    <span className="text-3xl font-bold text-primary-foreground">FF</span>
                   </div>
                 </div>
                 {/* Online indicator */}
@@ -203,10 +234,10 @@ export default function LoginPage() {
               </div>
 
               {/* User Name */}
-              <h2 className="mt-4 text-xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+              <h2 className="mt-5 text-2xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
                 FleetFlow OS
               </h2>
-              <p className="text-sm text-white/70 mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+              <p className="text-sm text-white/70 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
                 Enterprise Fleet Management
               </p>
 
@@ -217,7 +248,7 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-8 w-full max-w-[340px]"
+                className="mt-8 w-full max-w-[400px]"
               >
                 {/* Error */}
                 <AnimatePresence>
@@ -242,10 +273,10 @@ export default function LoginPage() {
 
                 {/* Login Card — Frosted Glass */}
                 <div className={cn(
-                  "rounded-2xl p-6 mojave-frost mojave-frost-light",
+                  "rounded-2xl p-8 mojave-frost mojave-frost-light",
                   "retina-shadow-lg"
                 )}>
-                  <form onSubmit={handleLogin} className="space-y-4">
+                  <form onSubmit={handleLogin} className="space-y-5">
                     {/* Email Input */}
                     <div>
                       <input
@@ -256,7 +287,7 @@ export default function LoginPage() {
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
                         className={cn(
-                          "w-full h-11 px-4 rounded-xl text-sm outline-none transition-all duration-200",
+                          "w-full h-12 px-4 rounded-xl text-sm outline-none transition-all duration-200",
                           "mojave-frost-input mojave-frost-input-light",
                           "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                           "text-gray-900 dark:text-gray-100",
@@ -278,7 +309,7 @@ export default function LoginPage() {
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
                         className={cn(
-                          "w-full h-11 px-4 pr-11 rounded-xl text-sm outline-none transition-all duration-200",
+                          "w-full h-12 px-4 pr-11 rounded-xl text-sm outline-none transition-all duration-200",
                           "mojave-frost-input mojave-frost-input-light",
                           "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                           "text-gray-900 dark:text-gray-100",
@@ -304,7 +335,7 @@ export default function LoginPage() {
                       type="submit"
                       disabled={isLoading || demoLoading}
                       className={cn(
-                        "w-full h-11 rounded-xl font-semibold text-sm transition-all duration-200",
+                        "w-full h-12 rounded-xl font-semibold text-sm transition-all duration-200",
                         "bg-primary text-primary-foreground",
                         "hover:bg-primary/90",
                         "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -320,7 +351,7 @@ export default function LoginPage() {
                   </form>
 
                   {/* Divider */}
-                  <div className="relative my-5">
+                  <div className="relative my-6">
                     <div className="absolute inset-0 flex items-center">
                       <div className={cn("w-full border-t", isDark ? "border-white/10" : "border-black/10")} />
                     </div>
@@ -341,7 +372,7 @@ export default function LoginPage() {
                     onClick={handleDemoLogin}
                     disabled={isLoading || demoLoading}
                     className={cn(
-                      "w-full h-11 rounded-xl font-medium text-sm transition-all duration-200",
+                      "w-full h-12 rounded-xl font-medium text-sm transition-all duration-200",
                       "mojave-frost-input mojave-frost-input-light",
                       "text-gray-700 dark:text-gray-300",
                       "hover:bg-white/70 dark:hover:bg-gray-700/60",
@@ -371,7 +402,7 @@ export default function LoginPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
-                  className="mt-4 text-center"
+                  className="mt-5 text-center"
                 >
                   <p className="text-[11px] text-white/50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
                     <KeyRound className="inline h-3 w-3 mr-1 -mt-0.5" />
@@ -383,67 +414,6 @@ export default function LoginPage() {
           )}
         </AnimatePresence>
       </div>
-
-      {/* ============================================
-          Bottom Bar — Mojave Menu Bar
-          ============================================ */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={cn(
-          "h-10 mojave-menubar mojave-menubar-light",
-          "flex items-center justify-between px-5 shrink-0"
-        )}
-      >
-        {/* Left — Theme Toggle */}
-        <div className="flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setTheme(isDark ? 'light' : 'dark')}
-            className={cn(
-              "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
-              isDark ? "text-white/60 hover:text-white/90" : "text-black/50 hover:text-black/80"
-            )}
-          >
-            {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-            {isDark ? 'Light' : 'Dark'}
-          </motion.button>
-        </div>
-
-        {/* Center — Accessibility */}
-        <div className="flex items-center gap-4">
-          <button className={cn(
-            "text-[11px] font-medium transition-colors",
-            isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
-          )}>
-            Accessibility
-          </button>
-        </div>
-
-        {/* Right — Power Actions */}
-        <div className="flex items-center gap-3">
-          <button
-            className={cn(
-              "flex items-center gap-1 text-[11px] font-medium transition-colors",
-              isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
-            )}
-          >
-            <RotateCw className="h-3 w-3" />
-            Restart
-          </button>
-          <button
-            className={cn(
-              "flex items-center gap-1 text-[11px] font-medium transition-colors",
-              isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
-            )}
-          >
-            <Power className="h-3 w-3" />
-            Shut Down
-          </button>
-        </div>
-      </motion.div>
     </div>
   )
 }
