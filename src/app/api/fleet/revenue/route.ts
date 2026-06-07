@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -8,39 +9,54 @@ export async function GET(req: NextRequest) {
     const from = req.nextUrl.searchParams.get('from') || ''
     const to = req.nextUrl.searchParams.get('to') || ''
 
-    const where: any = {}
-    if (search) where.OR = [
-      { description: { contains: search } },
-      { category: { contains: search } },
-    ]
-    if (category) where.category = category
-    if (from || to) {
-      where.date = {}
-      if (from) where.date.gte = new Date(from)
-      if (to) where.date.lte = new Date(to)
-    }
+    // Build WHERE conditions for filtered revenue query
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [revenue, total] = await Promise.all([
-      db.revenue.findMany({
-        where,
-        include: { client: true },
-        orderBy: { date: 'desc' },
-      }),
-      db.revenue.count({ where }),
+    if (search) {
+      conditions.push(`(r.description ILIKE $${idx} OR r.category ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+    if (category) {
+      conditions.push(`r.category = $${idx++}`)
+      params.push(category)
+    }
+    if (from) {
+      conditions.push(`r.date >= $${idx++}`)
+      params.push(from)
+    }
+    if (to) {
+      conditions.push(`r.date <= $${idx++}`)
+      params.push(to)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // 3 parallel HTTP queries — no connection pool limits
+    const [revenue, allRevenue, pendingResult] = await Promise.all([
+      sql.query(
+        `SELECT r.*, row_to_json(cl.*) as client
+         FROM "Revenue" r
+         LEFT JOIN "Client" cl ON r."clientId" = cl.id
+         ${whereClause}
+         ORDER BY r.date DESC`,
+        params
+      ),
+      sql`SELECT amount, date, category FROM "Revenue"`,
+      sql`SELECT COALESCE(SUM(amount), 0) as total FROM "Expense" WHERE status = 'pending'`,
     ])
 
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const thisYear = new Date(now.getFullYear(), 0, 1)
-    const allRevenue = await db.revenue.findMany()
 
-    const monthlyRevenue = allRevenue.filter(r => new Date(r.date) >= thisMonth).reduce((s, r) => s + r.amount, 0)
-    const annualRevenue = allRevenue.filter(r => new Date(r.date) >= thisYear).reduce((s, r) => s + r.amount, 0)
-    const pendingPayments = await db.expense.aggregate({ _sum: { amount: true }, where: { status: 'pending' } })
+    const monthlyRevenue = (allRevenue as any[]).filter(r => new Date(r.date) >= thisMonth).reduce((s, r) => s + r.amount, 0)
+    const annualRevenue = (allRevenue as any[]).filter(r => new Date(r.date) >= thisYear).reduce((s, r) => s + r.amount, 0)
 
     // Revenue by month for chart
     const revenueByMonth: Record<string, number> = {}
-    allRevenue.forEach(r => {
+    ;(allRevenue as any[]).forEach(r => {
       const d = new Date(r.date)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
       revenueByMonth[key] = (revenueByMonth[key] || 0) + r.amount
@@ -52,17 +68,18 @@ export async function GET(req: NextRequest) {
 
     // Revenue by category for pie
     const revenueByCategory: Record<string, number> = {}
-    allRevenue.forEach(r => {
+    ;(allRevenue as any[]).forEach(r => {
       revenueByCategory[r.category] = (revenueByCategory[r.category] || 0) + r.amount
     })
     const categoryChart = Object.entries(revenueByCategory).map(([name, value]) => ({ name, value: Math.round(value) }))
 
+    const total = (revenue as any[]).length
     const stats = {
-      totalRevenue: allRevenue.reduce((s, r) => s + r.amount, 0),
+      totalRevenue: (allRevenue as any[]).reduce((s, r) => s + r.amount, 0),
       monthlyRevenue: Math.round(monthlyRevenue),
       annualRevenue: Math.round(annualRevenue),
-      pendingPayments: pendingPayments._sum.amount || 0,
-      totalRecords: allRevenue.length,
+      pendingPayments: (pendingResult as any[])[0]?.total || 0,
+      totalRecords: (allRevenue as any[]).length,
     }
 
     return NextResponse.json({ data: revenue, stats, total, revenueTrend, categoryChart })

@@ -1,13 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')
-    const where: any = {}
-    if (status) where.status = status
-    const records = await db.fuelRecord.findMany({ where, orderBy: { date: 'desc' }, include: { vehicle: true, driver: true } })
+
+    if (status) {
+      const records = await sql.query(
+        `SELECT fr.*,
+                row_to_json(v.*) as vehicle,
+                row_to_json(d.*) as driver
+         FROM "FuelRecord" fr
+         LEFT JOIN "Vehicle" v ON fr."vehicleId" = v.id
+         LEFT JOIN "Driver" d ON fr."driverId" = d.id
+         WHERE fr.status = $1
+         ORDER BY fr.date DESC`,
+        [status]
+      )
+      return NextResponse.json({ data: records })
+    }
+
+    const records = await sql`
+      SELECT fr.*,
+             row_to_json(v.*) as vehicle,
+             row_to_json(d.*) as driver
+      FROM "FuelRecord" fr
+      LEFT JOIN "Vehicle" v ON fr."vehicleId" = v.id
+      LEFT JOIN "Driver" d ON fr."driverId" = d.id
+      ORDER BY fr.date DESC`
+
     return NextResponse.json({ data: records })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch fuel records' }, { status: 500 })

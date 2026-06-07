@@ -1,16 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status')
-    const where: any = {}
-    if (status) where.status = status
-    const reservations = await db.reservation.findMany({
-      where, orderBy: { createdAt: 'desc' },
-      include: { customer: true, vehicle: true }
-    })
+
+    let reservations
+    if (status) {
+      reservations = await sql.query(
+        `SELECT r.*, 
+                row_to_json(c.*) as customer,
+                row_to_json(v.*) as vehicle
+         FROM "Reservation" r
+         LEFT JOIN "Customer" c ON r."customerId" = c.id
+         LEFT JOIN "Vehicle" v ON r."vehicleId" = v.id
+         WHERE r.status = $1
+         ORDER BY r."createdAt" DESC`,
+        [status]
+      )
+    } else {
+      reservations = await sql`
+        SELECT r.*, 
+               row_to_json(c.*) as customer,
+               row_to_json(v.*) as vehicle
+        FROM "Reservation" r
+        LEFT JOIN "Customer" c ON r."customerId" = c.id
+        LEFT JOIN "Vehicle" v ON r."vehicleId" = v.id
+        ORDER BY r."createdAt" DESC`
+    }
+
     return NextResponse.json({ data: reservations })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch reservations' }, { status: 500 })

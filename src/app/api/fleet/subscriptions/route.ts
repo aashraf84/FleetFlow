@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,28 +7,45 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get('search') || ''
     const status = req.nextUrl.searchParams.get('status') || ''
 
-    const where: any = {}
-    if (search) where.OR = [{ planType: { contains: search } }]
-    if (status) where.status = status
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [subscriptions, total] = await Promise.all([
-      db.subscription.findMany({
-        where,
-        include: { client: true },
-        orderBy: { createdAt: 'desc' },
-      }),
-      db.subscription.count({ where }),
-    ])
+    if (search) {
+      conditions.push(`s."planType" ILIKE $${idx++}`)
+      params.push(`%${search}%`)
+    }
+    if (status) {
+      conditions.push(`s.status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
     const now = new Date()
     const thirtyDays = new Date(now.getTime() + 30 * 86400000)
-    const totalRevenue = await db.subscription.aggregate({ _sum: { price: true } })
+
+    // 2 parallel HTTP queries — filtered subscriptions + all for stats
+    const [subscriptions, allSubscriptions] = await Promise.all([
+      sql.query(
+        `SELECT s.*, row_to_json(cl.*) as client
+         FROM "Subscription" s
+         LEFT JOIN "Client" cl ON s."clientId" = cl.id
+         ${whereClause}
+         ORDER BY s."createdAt" DESC`,
+        params
+      ),
+      sql`SELECT status, "expiryDate", price FROM "Subscription"`,
+    ])
+
+    const total = (subscriptions as any[]).length
 
     const stats = {
-      total: await db.subscription.count(),
-      active: await db.subscription.count({ where: { status: 'active' } }),
-      expiringSoon: await db.subscription.count({ where: { expiryDate: { lte: thirtyDays, gte: now }, status: 'active' } }),
-      revenue: totalRevenue._sum.price || 0,
+      total: (allSubscriptions as any[]).length,
+      active: (allSubscriptions as any[]).filter(s => s.status === 'active').length,
+      expiringSoon: (allSubscriptions as any[]).filter(s =>
+        s.status === 'active' && s.expiryDate && new Date(s.expiryDate) <= thirtyDays && new Date(s.expiryDate) >= now
+      ).length,
+      revenue: (allSubscriptions as any[]).reduce((sum, s) => sum + (s.price || 0), 0),
     }
 
     return NextResponse.json({ data: subscriptions, stats, total })

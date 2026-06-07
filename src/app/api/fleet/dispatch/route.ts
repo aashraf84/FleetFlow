@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const orders = await db.dispatchOrder.findMany({ orderBy: { createdAt: 'desc' }, include: { driver: true, trips: true } })
+    const orders = await sql`
+      SELECT do.*,
+             row_to_json(d.*) as driver,
+             COALESCE(
+               (SELECT json_agg(row_to_json(t.*)) FROM "Trip" t WHERE t."dispatchOrderId" = do.id),
+               '[]'::json
+             ) as trips
+      FROM "DispatchOrder" do
+      LEFT JOIN "Driver" d ON do."driverId" = d.id
+      ORDER BY do."createdAt" DESC`
+
     return NextResponse.json({ data: orders })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch dispatch orders' }, { status: 500 })

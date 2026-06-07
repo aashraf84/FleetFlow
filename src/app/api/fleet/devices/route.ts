@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,24 +7,37 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get('search') || ''
     const status = req.nextUrl.searchParams.get('status') || ''
 
-    const where: any = {}
-    if (search) where.OR = [
-      { deviceName: { contains: search } },
-      { ipAddress: { contains: search } },
-      { browser: { contains: search } },
-    ]
-    if (status) where.status = status
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [devices, total] = await Promise.all([
-      db.device.findMany({ where, orderBy: { createdAt: 'desc' } }),
-      db.device.count({ where }),
+    if (search) {
+      conditions.push(`("deviceName" ILIKE $${idx} OR "ipAddress" ILIKE $${idx} OR browser ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+    if (status) {
+      conditions.push(`status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // 2 parallel HTTP queries — filtered devices + all for stats
+    const [devices, allDevices] = await Promise.all([
+      sql.query(
+        `SELECT * FROM "Device" ${whereClause} ORDER BY "createdAt" DESC`,
+        params
+      ),
+      sql`SELECT status FROM "Device"`,
     ])
 
+    const total = (devices as any[]).length
+
     const stats = {
-      total: await db.device.count(),
-      approved: await db.device.count({ where: { status: 'approved' } }),
-      blocked: await db.device.count({ where: { status: 'blocked' } }),
-      pending: await db.device.count({ where: { status: 'pending' } }),
+      total: (allDevices as any[]).length,
+      approved: (allDevices as any[]).filter(d => d.status === 'approved').length,
+      blocked: (allDevices as any[]).filter(d => d.status === 'blocked').length,
+      pending: (allDevices as any[]).filter(d => d.status === 'pending').length,
     }
 
     return NextResponse.json({ data: devices, stats, total })

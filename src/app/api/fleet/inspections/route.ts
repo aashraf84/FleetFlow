@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const inspections = await db.vehicleInspection.findMany({ orderBy: { inspectionDate: 'desc' }, include: { vehicle: true } })
+    const inspections = await sql`
+      SELECT vi.*, row_to_json(v.*) as vehicle
+      FROM "VehicleInspection" vi
+      LEFT JOIN "Vehicle" v ON vi."vehicleId" = v.id
+      ORDER BY vi."inspectionDate" DESC`
+
     return NextResponse.json({ data: inspections })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch inspections' }, { status: 500 })

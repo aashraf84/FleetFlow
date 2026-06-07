@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { sql } from '@/lib/sql'
 
 function generateToken(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -32,14 +32,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
-    const user = await db.user.findUnique({
-      where: { email },
-      include: { tenant: true }
-    })
+    // Use HTTP-based SQL for user lookup (no TCP connection pool)
+    const users = await sql`
+      SELECT u.id, u.email, u.name, u.password, u.role, u.avatar, u.status, u."tenantId",
+             t.id as "tenant.id", t.name as "tenant.name"
+      FROM "User" u
+      LEFT JOIN "Tenant" t ON u."tenantId" = t.id
+      WHERE u.email = ${email}
+      LIMIT 1
+    `
 
-    if (!user) {
+    if (!users || users.length === 0) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
+
+    const user = users[0]
 
     // Simple password check
     if (user.password !== password) {
@@ -54,37 +61,27 @@ export async function POST(req: NextRequest) {
     let deviceActivated = true
     if (deviceFingerprint) {
       try {
-        const existingDevice = await db.device.findFirst({
-          where: { 
-            OR: [
-              { id: deviceFingerprint },
-              { deviceName: deviceFingerprint }
-            ]
-          }
-        })
-        if (!existingDevice) {
-          // Super_owner: auto-register device as approved (platform owner bypasses serial key)
+        const devices = await sql`
+          SELECT id, status FROM "Device" 
+          WHERE id = ${deviceFingerprint} OR "deviceName" = ${deviceFingerprint}
+          LIMIT 1
+        `
+        if (!devices || devices.length === 0) {
+          // Super_owner: auto-register device as approved
           if (user.role === 'super_owner') {
-            await db.device.create({
-              data: {
-                id: deviceFingerprint,
-                userId: user.id,
-                deviceName: 'Owner Device',
-                ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
-                lastLogin: new Date(),
-                location: 'Owner Device',
-                status: 'approved',
-              }
-            })
+            await sql`
+              INSERT INTO "Device" (id, "userId", "deviceName", "ipAddress", "lastLogin", location, status, "createdAt")
+              VALUES (${deviceFingerprint}, ${user.id}, 'Owner Device', ${req.headers.get('x-forwarded-for') || 'unknown'}, NOW(), 'Owner Device', 'approved', NOW())
+              ON CONFLICT (id) DO NOTHING
+            `
             deviceActivated = true
           } else {
             deviceActivated = false
           }
-        } else if (existingDevice.status === 'blocked') {
+        } else if (devices[0].status === 'blocked') {
           return NextResponse.json({ error: 'This device has been blocked. Contact support.' }, { status: 403 })
         }
       } catch (deviceError) {
-        // Non-critical: if device check fails, still allow login for super_owner
         console.error('Device check error:', (deviceError as Error).message)
         if (user.role !== 'super_owner') {
           deviceActivated = false
@@ -92,39 +89,37 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create session
+    // Create session token
     const sessionToken = generateToken()
+    const ip = req.headers.get('x-forwarded-for') || 'unknown'
 
-    // Run non-critical DB operations with error handling
-    const results = await Promise.allSettled([
-      db.session.create({
-        data: {
-          userId: user.id,
-          token: sessionToken,
-          deviceInfo: deviceFingerprint || 'unknown',
-          ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        }
-      }),
-      db.user.update({
-        where: { id: user.id },
-        data: { lastLogin: new Date(), lastLoginIp: req.headers.get('x-forwarded-for') || 'unknown' }
-      }),
-      db.auditLog.create({
-        data: {
-          userId: user.id,
-          action: 'LOGIN',
-          entity: 'User',
-          entityId: user.id,
-          ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
-          details: 'User logged in successfully',
-        }
-      }),
-    ])
-    results.forEach((r, i) => {
-      if (r.status === 'fulfilled') return
-      console.error(`Non-critical DB op ${i} failed:`, r.reason?.message)
-    })
+    // Run non-critical DB operations (using HTTP-based SQL)
+    try {
+      await sql`
+        INSERT INTO "Session" (id, "userId", token, "deviceInfo", "ipAddress", "expiresAt", "createdAt")
+        VALUES (gen_random_uuid(), ${user.id}, ${sessionToken}, ${deviceFingerprint || 'unknown'}, ${ip}, NOW() + interval '24 hours', NOW())
+      `
+    } catch (e) {
+      console.error('Session create failed:', (e as Error).message)
+    }
+
+    try {
+      await sql`
+        UPDATE "User" SET "lastLogin" = NOW(), "lastLoginIp" = ${ip}, "updatedAt" = NOW()
+        WHERE id = ${user.id}
+      `
+    } catch (e) {
+      console.error('User update failed:', (e as Error).message)
+    }
+
+    try {
+      await sql`
+        INSERT INTO "AuditLog" (id, "userId", action, entity, "entityId", "ipAddress", details, "createdAt")
+        VALUES (gen_random_uuid(), ${user.id}, 'LOGIN', 'User', ${user.id}, ${ip}, 'User logged in successfully', NOW())
+      `
+    } catch (e) {
+      console.error('Audit log failed:', (e as Error).message)
+    }
 
     const permissions = getPermissionsForRole(user.role)
 
@@ -135,7 +130,7 @@ export async function POST(req: NextRequest) {
         name: user.name,
         role: user.role,
         avatar: user.avatar,
-        tenant: user.tenant ? { id: user.tenant.id, name: user.tenant.name } : null,
+        tenant: user['tenant.id'] ? { id: user['tenant.id'], name: user['tenant.name'] } : null,
       },
       sessionToken,
       permissions,

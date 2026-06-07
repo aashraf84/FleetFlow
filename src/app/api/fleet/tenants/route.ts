@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,23 +7,38 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get('search') || ''
     const status = req.nextUrl.searchParams.get('status') || ''
 
-    const where: any = {}
-    if (search) where.OR = [
-      { name: { contains: search } },
-      { domain: { contains: search } },
-    ]
-    if (status) where.status = status
+    // Build WHERE conditions for filtered query
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [tenants, total] = await Promise.all([
-      db.tenant.findMany({ where, orderBy: { createdAt: 'desc' } }),
-      db.tenant.count({ where }),
+    if (search) {
+      conditions.push(`(name ILIKE $${idx} OR domain ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+    if (status) {
+      conditions.push(`status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // 2 parallel HTTP queries — filtered tenants + all tenants for stats
+    const [tenants, allTenants] = await Promise.all([
+      sql.query(
+        `SELECT * FROM "Tenant" ${whereClause} ORDER BY "createdAt" DESC`,
+        params
+      ),
+      sql`SELECT status, "activeUsers", "storageUsed", "modulesEnabled" FROM "Tenant"`,
     ])
 
+    const total = (tenants as any[]).length
+
     const stats = {
-      total: await db.tenant.count(),
-      activeUsers: await db.tenant.aggregate({ _sum: { activeUsers: true } }),
-      totalStorage: await db.tenant.aggregate({ _sum: { storageUsed: true } }),
-      activeModules: tenants.filter(t => t.status === 'active').reduce((sum, t) => sum + t.modulesEnabled.split(',').length, 0),
+      total: (allTenants as any[]).length,
+      activeUsers: (allTenants as any[]).reduce((sum: number, t: any) => sum + (t.activeUsers || 0), 0),
+      totalStorage: (allTenants as any[]).reduce((sum: number, t: any) => sum + (t.storageUsed || 0), 0),
+      activeModules: (allTenants as any[]).filter((t: any) => t.status === 'active').reduce((sum: number, t: any) => sum + t.modulesEnabled.split(',').length, 0),
     }
 
     return NextResponse.json({ data: tenants, stats, total })

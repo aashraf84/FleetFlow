@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
@@ -12,24 +13,40 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get('search') || ''
     const status = req.nextUrl.searchParams.get('status') || ''
 
-    const where: any = {}
-    if (search) where.OR = [{ licenseKey: { contains: search } }]
-    if (status) where.status = status
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [licenses, total] = await Promise.all([
-      db.license.findMany({
-        where,
-        include: { client: true },
-        orderBy: { createdAt: 'desc' },
-      }),
-      db.license.count({ where }),
+    if (search) {
+      conditions.push(`l."licenseKey" ILIKE $${idx++}`)
+      params.push(`%${search}%`)
+    }
+    if (status) {
+      conditions.push(`l.status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // 2 parallel HTTP queries — filtered licenses + all for stats
+    const [licenses, allLicenses] = await Promise.all([
+      sql.query(
+        `SELECT l.*, row_to_json(cl.*) as client
+         FROM "License" l
+         LEFT JOIN "Client" cl ON l."clientId" = cl.id
+         ${whereClause}
+         ORDER BY l."createdAt" DESC`,
+        params
+      ),
+      sql`SELECT status FROM "License"`,
     ])
 
+    const total = (licenses as any[]).length
+
     const stats = {
-      total: await db.license.count(),
-      active: await db.license.count({ where: { status: 'active' } }),
-      expired: await db.license.count({ where: { status: 'expired' } }),
-      trial: await db.license.count({ where: { status: 'trial' } }),
+      total: (allLicenses as any[]).length,
+      active: (allLicenses as any[]).filter(l => l.status === 'active').length,
+      expired: (allLicenses as any[]).filter(l => l.status === 'expired').length,
+      trial: (allLicenses as any[]).filter(l => l.status === 'trial').length,
     }
 
     return NextResponse.json({ data: licenses, stats, total })

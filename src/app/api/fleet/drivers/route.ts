@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,17 +7,27 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const search = searchParams.get('search')
     const status = searchParams.get('status')
-    const where: any = {}
-    if (status) where.status = status
-    if (search) {
-      where.OR = [
-        { firstName: { contains: search } },
-        { lastName: { contains: search } },
-        { email: { contains: search } },
-        { licenseNumber: { contains: search } },
-      ]
+
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
+
+    if (status) {
+      conditions.push(`status = $${idx++}`)
+      params.push(status)
     }
-    const drivers = await db.driver.findMany({ where, orderBy: { createdAt: 'desc' } })
+    if (search) {
+      conditions.push(`("firstName" ILIKE $${idx} OR "lastName" ILIKE $${idx} OR email ILIKE $${idx} OR "licenseNumber" ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+    const drivers = await sql.query(
+      `SELECT * FROM "Driver" ${whereClause} ORDER BY "createdAt" DESC`,
+      params
+    )
+
     return NextResponse.json({ data: drivers })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch drivers' }, { status: 500 })

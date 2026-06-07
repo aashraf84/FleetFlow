@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -8,23 +9,30 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category')
     const search = searchParams.get('search')
 
-    const where: any = {}
-    if (status) where.status = status
-    if (category) where.category = category
+    // Build dynamic WHERE clause with parameterized query
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
+
+    if (status) {
+      conditions.push(`status = $${idx++}`)
+      params.push(status)
+    }
+    if (category) {
+      conditions.push(`category = $${idx++}`)
+      params.push(category)
+    }
     if (search) {
-      where.OR = [
-        { vehicleNumber: { contains: search } },
-        { registrationNumber: { contains: search } },
-        { make: { contains: search } },
-        { model: { contains: search } },
-        { vin: { contains: search } },
-      ]
+      conditions.push(`("vehicleNumber" ILIKE $${idx} OR "registrationNumber" ILIKE $${idx} OR make ILIKE $${idx} OR model ILIKE $${idx} OR vin ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
     }
 
-    const vehicles = await db.vehicle.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
-    })
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+    const vehicles = await sql.query(
+      `SELECT * FROM "Vehicle" ${whereClause} ORDER BY "createdAt" DESC`,
+      params
+    )
 
     return NextResponse.json({ data: vehicles })
   } catch (error) {

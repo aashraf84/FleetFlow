@@ -1,10 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const jobCards = await db.jobCard.findMany({ orderBy: { createdAt: 'desc' }, include: { maintenance: { include: { vehicle: true } } } })
-    return NextResponse.json({ data: jobCards })
+    const jobCards = await sql`
+      SELECT jc.*,
+             row_to_json(m.*) as maintenance,
+             row_to_json(v.*) as vehicle
+      FROM "JobCard" jc
+      LEFT JOIN "MaintenanceRecord" m ON jc."maintenanceId" = m.id
+      LEFT JOIN "Vehicle" v ON m."vehicleId" = v.id
+      ORDER BY jc."createdAt" DESC`
+
+    // Nest vehicle inside maintenance object to match Prisma include shape
+    const formatted = (jobCards as any[]).map(jc => ({
+      ...jc,
+      maintenance: jc.maintenance ? { ...jc.maintenance, vehicle: jc.vehicle } : null,
+    })).map(({ vehicle, ...rest }) => rest)
+
+    return NextResponse.json({ data: formatted })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch workshop data' }, { status: 500 })
   }

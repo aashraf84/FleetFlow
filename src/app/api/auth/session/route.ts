@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { sql } from '@/lib/sql'
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,33 +9,43 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No session token' }, { status: 401 })
     }
 
-    const session = await db.session.findUnique({
-      where: { token },
-      include: { user: { include: { tenant: true } } }
-    })
+    const sessions = await sql`
+      SELECT s.id, s."expiresAt",
+             u.id as "user.id", u.email as "user.email", u.name as "user.name", u.role as "user.role", u.avatar as "user.avatar",
+             t.id as "tenant.id", t.name as "tenant.name"
+      FROM "Session" s
+      JOIN "User" u ON s."userId" = u.id
+      LEFT JOIN "Tenant" t ON u."tenantId" = t.id
+      WHERE s.token = ${token}
+      LIMIT 1
+    `
 
-    if (!session) {
+    if (!sessions || sessions.length === 0) {
       return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
     }
 
-    if (new Date() > session.expiresAt) {
-      await db.session.delete({ where: { id: session.id } })
+    const session = sessions[0]
+
+    if (new Date() > new Date(session.expiresAt)) {
+      try {
+        await sql`DELETE FROM "Session" WHERE id = ${session.id}`
+      } catch {}
       return NextResponse.json({ error: 'Session expired' }, { status: 401 })
     }
 
-    const permissions = getPermissionsForRole(session.user.role)
+    const permissions = getPermissionsForRole(session['user.role'])
 
     return NextResponse.json({
       user: {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role,
-        avatar: session.user.avatar,
-        tenant: session.user.tenant ? { id: session.user.tenant.id, name: session.user.tenant.name } : null,
+        id: session['user.id'],
+        email: session['user.email'],
+        name: session['user.name'],
+        role: session['user.role'],
+        avatar: session['user.avatar'],
+        tenant: session['tenant.id'] ? { id: session['tenant.id'], name: session['tenant.name'] } : null,
       },
       permissions,
-      isDemo: session.user.role === 'demo',
+      isDemo: session['user.role'] === 'demo',
     })
   } catch (error) {
     console.error('Session error:', error)

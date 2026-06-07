@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,37 +7,52 @@ export async function GET(req: NextRequest) {
     const search = req.nextUrl.searchParams.get('search') || ''
     const status = req.nextUrl.searchParams.get('status') || ''
 
-    const where: any = {}
-    if (search) {
-      where.OR = [
-        { companyName: { contains: search } },
-        { contactPerson: { contains: search } },
-        { email: { contains: search } },
-        { country: { contains: search } },
-      ]
-    }
-    if (status) where.status = status
+    // Build WHERE conditions
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
 
-    const [clients, total] = await Promise.all([
-      db.client.findMany({
-        where,
-        include: {
-          subscription: true,
-          license: true,
-          activities: { take: 5, orderBy: { createdAt: 'desc' } },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-      db.client.count({ where }),
+    if (search) {
+      conditions.push(`("companyName" ILIKE $${idx} OR "contactPerson" ILIKE $${idx} OR email ILIKE $${idx} OR country ILIKE $${idx})`)
+      params.push(`%${search}%`)
+      idx++
+    }
+    if (status) {
+      conditions.push(`cl.status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    // 2 parallel HTTP queries — filtered clients with relations + all clients for stats
+    const [clients, allClients] = await Promise.all([
+      sql.query(
+        `SELECT cl.*,
+                row_to_json(sub.*) as subscription,
+                row_to_json(lic.*) as license,
+                COALESCE(
+                  (SELECT json_agg(act ORDER BY act."createdAt" DESC) 
+                   FROM "ClientActivity" act WHERE act."clientId" = cl.id LIMIT 5),
+                  '[]'::json
+                ) as activities
+         FROM "Client" cl
+         LEFT JOIN "Subscription" sub ON sub."clientId" = cl.id
+         LEFT JOIN "License" lic ON lic."clientId" = cl.id
+         ${whereClause}
+         ORDER BY cl."createdAt" DESC`,
+        params
+      ),
+      sql`SELECT id, status, "createdAt" FROM "Client"`,
     ])
 
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const total = (clients as any[]).length
+
     const stats = {
-      total: await db.client.count(),
-      active: await db.client.count({ where: { status: 'active' } }),
-      suspended: await db.client.count({ where: { status: 'suspended' } }),
-      newThisMonth: await db.client.count({ where: { createdAt: { gte: thisMonth } } }),
+      total: (allClients as any[]).length,
+      active: (allClients as any[]).filter(c => c.status === 'active').length,
+      suspended: (allClients as any[]).filter(c => c.status === 'suspended').length,
+      newThisMonth: (allClients as any[]).filter(c => new Date(c.createdAt) >= thisMonth).length,
     }
 
     return NextResponse.json({ data: clients, stats, total })
@@ -111,12 +127,23 @@ export async function DELETE(req: NextRequest) {
     const id = req.nextUrl.searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
 
-    await db.clientActivity.deleteMany({ where: { clientId: id } })
-    await db.purchaseHistory.deleteMany({ where: { clientId: id } })
-    const sub = await db.subscription.findFirst({ where: { clientId: id } })
-    if (sub) await db.subscription.delete({ where: { id: sub.id } })
+    // Batch 1: 3 parallel — delete dependent records and find related subscription
+    const [, , sub] = await Promise.all([
+      db.clientActivity.deleteMany({ where: { clientId: id } }),
+      db.purchaseHistory.deleteMany({ where: { clientId: id } }),
+      db.subscription.findFirst({ where: { clientId: id } }),
+    ])
+
+    // Find related license
     const lic = await db.license.findFirst({ where: { clientId: id } })
-    if (lic) await db.license.delete({ where: { id: lic.id } })
+
+    // Batch 2: 2 parallel — delete subscription and license if found
+    await Promise.all([
+      sub ? db.subscription.delete({ where: { id: sub.id } }) : Promise.resolve(),
+      lic ? db.license.delete({ where: { id: lic.id } }) : Promise.resolve(),
+    ])
+
+    // Finally delete the client
     await db.client.delete({ where: { id } })
 
     return NextResponse.json({ success: true })

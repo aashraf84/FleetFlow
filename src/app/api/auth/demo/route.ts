@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { sql } from '@/lib/sql'
 
 function generateToken(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -16,34 +16,34 @@ export async function POST(req: NextRequest) {
 
   // Demo login — try DB first, fallback to static response
   try {
-    const demoUser = await db.user.findUnique({
-      where: { email: 'demo@fleetflow.os' },
-      include: { tenant: true }
-    })
+    const users = await sql`
+      SELECT u.id, u.email, u.name, u.avatar, u.status,
+             t.id as "tenant.id", t.name as "tenant.name"
+      FROM "User" u
+      LEFT JOIN "Tenant" t ON u."tenantId" = t.id
+      WHERE u.email = 'demo@fleetflow.os'
+      LIMIT 1
+    `
 
-    if (demoUser && demoUser.status === 'active') {
+    if (users && users.length > 0 && users[0].status === 'active') {
+      const demoUser = users[0]
       const sessionToken = generateToken()
       
       // Try to create session (non-critical if it fails)
       try {
-        await db.session.create({
-          data: {
-            userId: demoUser.id,
-            token: sessionToken,
-            deviceInfo: deviceFingerprint,
-            ipAddress: req.headers.get('x-forwarded-for') || 'unknown',
-            expiresAt: new Date(Date.now() + 4 * 60 * 60 * 1000),
-          }
-        })
+        await sql`
+          INSERT INTO "Session" (id, "userId", token, "deviceInfo", "ipAddress", "expiresAt", "createdAt")
+          VALUES (gen_random_uuid(), ${demoUser.id}, ${sessionToken}, ${deviceFingerprint}, ${req.headers.get('x-forwarded-for') || 'unknown'}, NOW() + interval '4 hours', NOW())
+        `
       } catch {}
 
       // Check if device is registered (non-critical)
       let deviceActivated = true
       try {
-        const existingDevice = await db.device.findFirst({
-          where: { OR: [{ id: deviceFingerprint }, { deviceName: deviceFingerprint }] }
-        })
-        deviceActivated = !!existingDevice
+        const devices = await sql`
+          SELECT id FROM "Device" WHERE id = ${deviceFingerprint} OR "deviceName" = ${deviceFingerprint} LIMIT 1
+        `
+        deviceActivated = devices && devices.length > 0
       } catch {}
 
       return NextResponse.json({
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
           name: demoUser.name,
           role: 'demo',
           avatar: demoUser.avatar,
-          tenant: demoUser.tenant ? { id: demoUser.tenant.id, name: demoUser.tenant.name } : null,
+          tenant: demoUser['tenant.id'] ? { id: demoUser['tenant.id'], name: demoUser['tenant.name'] } : null,
         },
         sessionToken,
         permissions: ['view_all'],

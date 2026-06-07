@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -6,10 +7,26 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const category = searchParams.get('category')
     const status = searchParams.get('status')
-    const where: any = {}
-    if (category) where.category = category
-    if (status) where.status = status
-    const expenses = await db.expense.findMany({ where, orderBy: { date: 'desc' } })
+
+    const conditions: string[] = []
+    const params: any[] = []
+    let idx = 1
+
+    if (category) {
+      conditions.push(`category = $${idx++}`)
+      params.push(category)
+    }
+    if (status) {
+      conditions.push(`status = $${idx++}`)
+      params.push(status)
+    }
+    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
+
+    const expenses = await sql.query(
+      `SELECT * FROM "Expense" ${whereClause} ORDER BY date DESC`,
+      params
+    )
+
     return NextResponse.json({ data: expenses })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch expenses' }, { status: 500 })

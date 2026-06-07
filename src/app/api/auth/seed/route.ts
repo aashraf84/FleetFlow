@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 // Helper: date offsets from now
@@ -12,10 +13,11 @@ const hoursFromNow = (h: number) => new Date(now.getTime() + h * 60 * 60 * 1000)
 const TENANT_ID = 'demo-tenant-001'
 const CLIENT_ID = 'demo-client-001'
 
-// GET — Check if seed data exists
+// GET — Check if seed data exists (use HTTP-based SQL to avoid connection pool issues)
 export async function GET() {
   try {
-    const tenantCount = await db.tenant.count()
+    const result = await sql`SELECT COUNT(*)::int as count FROM "Tenant"`
+    const tenantCount = result?.[0]?.count ?? 0
     if (tenantCount > 0) {
       return NextResponse.json({ seeded: true, message: 'Database already has data' })
     }

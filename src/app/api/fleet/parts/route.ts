@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const parts = await db.sparePart.findMany({ orderBy: { name: 'asc' } })
-    const purchaseOrders = await db.purchaseOrder.findMany({ orderBy: { createdAt: 'desc' }, include: { items: true } })
-    const lowStock = parts.filter(p => p.quantityInStock <= p.reorderLevel)
+    // 2 parallel HTTP queries — fetch parts and purchase orders
+    const [parts, purchaseOrders] = await Promise.all([
+      sql`SELECT * FROM "SparePart" ORDER BY name ASC`,
+      sql`SELECT po.*,
+                 COALESCE(
+                   (SELECT json_agg(row_to_json(poi.*)) FROM "PurchaseOrderItem" poi WHERE poi."purchaseOrderId" = po.id),
+                   '[]'::json
+                 ) as items
+          FROM "PurchaseOrder" po
+          ORDER BY po."createdAt" DESC`,
+    ])
+
+    const lowStock = (parts as any[]).filter(p => p.quantityInStock <= p.reorderLevel)
     return NextResponse.json({ data: { parts, purchaseOrders, lowStock } })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch parts data' }, { status: 500 })
