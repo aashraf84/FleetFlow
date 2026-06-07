@@ -340,3 +340,124 @@
 @utility animate-pulse-ring {
   animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* ============================================
+   macOS Mojave Login — Utilities
+   ============================================ */
+
+@keyframes mojave-wallpaper-drift {
+  0%, 100% { transform: scale(1.05) translate(0, 0); }
+  25% { transform: scale(1.08) translate(-1%, 0.5%); }
+  50% { transform: scale(1.06) translate(0.5%, -0.5%); }
+  75% { transform: scale(1.07) translate(-0.5%, 0.5%); }
+}
+
+@keyframes mojave-avatar-appear {
+  0% { opacity: 0; transform: scale(0.6) translateY(20px); filter: blur(8px); }
+  60% { opacity: 1; transform: scale(1.02); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes mojave-field-appear {
+  0% { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mojave-pulse-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(13, 148, 136, 0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(13, 148, 136, 0); }
+}
+
+@keyframes mojave-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@utility animate-mojave-wallpaper {
+  animation: mojave-wallpaper-drift 30s ease-in-out infinite;
+}
+
+@utility animate-mojave-avatar {
+  animation: mojave-avatar-appear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-mojave-field {
+  animation: mojave-field-appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-mojave-pulse {
+  animation: mojave-pulse-soft 2.5s ease-in-out infinite;
+}
+
+@utility animate-mojave-shimmer {
+  animation: mojave-shimmer 3s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+
+/* Mojave frosted glass */
+.mojave-frost {
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+}
+
+.mojave-frost-light {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.dark .mojave-frost-light {
+  background: rgba(30, 30, 30, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mojave-frost-input {
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+}
+
+.mojave-frost-input-light {
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.dark .mojave-frost-input-light {
+  background: rgba(50, 50, 50, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mojave wallpaper gradient — dynamic desert dunes */
+.mojave-wallpaper-light {
+  background:
+    radial-gradient(ellipse 120% 80% at 20% 80%, #d4a574 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 80% 70%, #c4956a 0%, transparent 40%),
+    radial-gradient(ellipse 150% 100% at 50% 100%, #e8c49a 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 70% 50%, #8b6b4a 0%, transparent 50%),
+    radial-gradient(ellipse 120% 80% at 30% 40%, #a67c52 0%, transparent 50%),
+    linear-gradient(180deg, #f5c882 0%, #e8a85c 25%, #c4854a 50%, #9a6535 75%, #6b4423 100%);
+}
+
+.mojave-wallpaper-dark {
+  background:
+    radial-gradient(ellipse 120% 80% at 20% 80%, #2a1f15 0%, transparent 50%),
+    radial-gradient(ellipse 100% 60% at 80% 70%, #1e1812 0%, transparent 40%),
+    radial-gradient(ellipse 150% 100% at 50% 100%, #3a2a1a 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 70% 50%, #15100a 0%, transparent 50%),
+    radial-gradient(ellipse 120% 80% at 30% 40%, #1a140e 0%, transparent 50%),
+    linear-gradient(180deg, #1a1420 0%, #1e1525 25%, #151020 50%, #0d0a15 75%, #080610 100%);
+}
+
+/* Mojave bottom bar */
+.mojave-menubar {
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+}
+
+.mojave-menubar-light {
+  background: rgba(255, 255, 255, 0.45);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .mojave-menubar-light {
+  background: rgba(20, 20, 20, 0.55);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}

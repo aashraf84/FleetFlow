@@ -1,19 +1,13 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useAppStore } from '@/lib/store'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Eye, EyeOff, Mail, Lock, ArrowRight, Zap, Shield, Globe, Car,
-  Sun, Moon, AlertCircle, Loader2, KeyRound,
-  ChevronRight, Sparkles
+import {
+  Eye, EyeOff, ArrowRight, Loader2, KeyRound,
+  ChevronRight, Sparkles, Power, RotateCw, Moon, Sun
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 
@@ -29,16 +23,69 @@ function getDeviceFingerprint(): string {
   return 'FFD-' + Math.abs(hash).toString(36).toUpperCase().slice(0, 12)
 }
 
+// ============================================
+// macOS Mojave Clock Component
+// ============================================
+function MojaveClock() {
+  const [time, setTime] = useState(new Date())
+
+  useEffect(() => {
+    const interval = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const timeString = time.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  })
+
+  const dateString = time.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  })
+
+  return (
+    <div className="text-center select-none">
+      <p className="text-6xl sm:text-7xl font-extralight tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
+        {timeString}
+      </p>
+      <p className="text-lg sm:text-xl font-light text-white/80 mt-1 drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
+        {dateString}
+      </p>
+    </div>
+  )
+}
+
+// ============================================
+// macOS Mojave Login Page
+// ============================================
 export default function LoginPage() {
   const { login } = useAppStore()
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, resolvedTheme } = useTheme()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [demoLoading, setDemoLoading] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [inputFocused, setInputFocused] = useState(false)
+
+  // Wait for mount to avoid hydration mismatch with theme
+  useEffect(() => { setMounted(true) }, [])
+
+  // Show the form after a brief delay (Mojave-style appear animation)
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => setShowForm(true), 400)
+      return () => clearTimeout(timer)
+    }
+  }, [mounted])
+
+  const isDark = resolvedTheme === 'dark'
 
   const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setIsLoading(true)
@@ -74,266 +121,329 @@ export default function LoginPage() {
     finally { setDemoLoading(false) }
   }, [login])
 
-  const features = [
-    { icon: Car, label: 'Fleet Management', desc: 'Track & manage vehicles', color: 'text-chart-1' },
-    { icon: Globe, label: 'GPS Tracking', desc: 'Real-time location', color: 'text-chart-2' },
-    { icon: Shield, label: 'Compliance', desc: 'Insurance & regulations', color: 'text-chart-3' },
-    { icon: Zap, label: 'AI Powered', desc: 'Smart analytics', color: 'text-chart-4' },
-  ]
+  if (!mounted) {
+    return (
+      <div className="min-h-screen mojave-wallpaper-light flex items-center justify-center">
+        <div className="animate-pulse flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-xl">
+          <div className="w-8 h-8 rounded-full bg-white/40" />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen flex bg-background">
-      {/* Left — Branding with Solid Colors */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#1c1c1e]">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-chart-3/10" />
-        
-        {/* Floating orbs */}
-        <motion.div
-          animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
-          transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-          className="absolute top-24 left-16 w-40 h-40 bg-primary/25 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ y: [0, 15, 0], x: [0, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
-          className="absolute bottom-32 right-16 w-56 h-56 bg-chart-2/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{ y: [0, -10, 0] }}
-          transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-chart-3/15 rounded-full blur-3xl"
+    <div className="min-h-screen relative overflow-hidden flex flex-col">
+      {/* ============================================
+          Mojave Wallpaper Background
+          ============================================ */}
+      <div className="absolute inset-0 -z-10">
+        {/* Animated wallpaper */}
+        <div
+          className={cn(
+            "absolute inset-[-5%] animate-mojave-wallpaper",
+            isDark ? "mojave-wallpaper-dark" : "mojave-wallpaper-light"
+          )}
         />
 
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center px-16 xl:px-24">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            {/* Logo */}
-            <div className="flex items-center gap-3 mb-10">
-              <motion.div
-                whileHover={{ scale: 1.05, rotate: 2 }}
-                className="flex items-center justify-center w-12 h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-lg tahoe-glow"
-              >
-                FF
-              </motion.div>
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-white">FleetFlow OS</h2>
-                <p className="text-xs text-white/50">Enterprise Fleet Management</p>
-              </div>
-            </div>
+        {/* Subtle noise texture overlay */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }} />
 
-            {/* Headline */}
-            <h1 className="text-4xl xl:text-[3.25rem] font-bold leading-[1.1] mb-5 text-white">
-              Manage Your Fleet
-              <br />
-              <span className="bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">Like Never Before</span>
-            </h1>
-            <p className="text-base text-white/60 mb-12 max-w-md leading-relaxed">
-              Complete ERP platform for vehicle rental companies, fleet operators, transport & logistics providers.
-            </p>
-
-            {/* Feature Cards — Solid Dark Cards */}
-            <div className="grid grid-cols-2 gap-3 max-w-sm">
-              {features.map((feature, i) => (
-                <motion.div
-                  key={feature.label}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
-                  whileHover={{ y: -2, scale: 1.02 }}
-                  className="flex items-start gap-2.5 p-3.5 rounded-xl bg-white/8 border border-white/10 cursor-default"
-                >
-                  <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 shrink-0", feature.color)}>
-                    <feature.icon className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-white">{feature.label}</p>
-                    <p className="text-[10px] text-white/45">{feature.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Stats */}
-            <div className="flex items-center gap-8 mt-10 pt-8 border-t border-white/10">
-              {[
-                { value: '10K+', label: 'Vehicles Managed' },
-                { value: '500+', label: 'Companies Trust Us' },
-                { value: '99.9%', label: 'Uptime' },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-xl font-bold bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">{stat.value}</p>
-                  <p className="text-[10px] text-white/45">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+        {/* Soft vignette */}
+        <div className={cn(
+          "absolute inset-0",
+          isDark
+            ? "bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(0,0,0,0.5)_100%)]"
+            : "bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.15)_100%)]"
+        )} />
       </div>
 
-      {/* Right — Login Form */}
-      <div className="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16">
-        <div className="w-full max-w-sm mx-auto">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-10">
-            <div className="flex items-center gap-2 lg:hidden">
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground font-bold text-sm tahoe-glow">FF</div>
-              <span className="font-bold text-sm">FleetFlow OS</span>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              className="ml-auto h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      {/* ============================================
+          Top Section — Clock (Mojave Style)
+          ============================================ */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4">
+        {/* Clock */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-12"
+        >
+          <MojaveClock />
+        </motion.div>
+
+        {/* ============================================
+            User Avatar — Mojave Circle
+            ============================================ */}
+        <AnimatePresence>
+          {showForm && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.6, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center"
             >
-              <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-              <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            </motion.button>
-          </div>
-
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
-            {/* Welcome */}
-            <div className="mb-7">
-              <h2 className="text-xl font-bold tracking-tight">Welcome back</h2>
-              <p className="text-[13px] text-muted-foreground mt-1">Sign in to your FleetFlow OS account</p>
-            </div>
-
-            {/* Error */}
-            <AnimatePresence>
-              {error && (
-                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mb-4">
-                  <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[13px]">
-                    <AlertCircle className="h-4 w-4 shrink-0" />
-                    <span>{error}</span>
+              {/* Avatar Circle */}
+              <div className="relative">
+                <div
+                  className={cn(
+                    "w-24 h-24 rounded-full flex items-center justify-center",
+                    "mojave-frost mojave-frost-light",
+                    "retina-shadow-lg",
+                    inputFocused && "animate-mojave-pulse"
+                  )}
+                >
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-primary-foreground">FF</span>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[13px] font-medium">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email" type="email" placeholder="you@company.com"
-                    value={email} onChange={(e) => { setEmail(e.target.value); setError('') }}
-                    className="pl-10 h-10 rounded-xl bg-secondary border-border focus:bg-background transition-colors"
-                    required autoComplete="email" disabled={isLoading || demoLoading}
-                  />
                 </div>
+                {/* Online indicator */}
+                <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-[2.5px] border-white dark:border-gray-800 shadow-sm" />
               </div>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-[13px] font-medium">Password</Label>
-                  <button type="button" className="text-[11px] text-primary hover:underline font-medium">Forgot password?</button>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password"
-                    value={password} onChange={(e) => { setPassword(e.target.value); setError('') }}
-                    className="pl-10 pr-10 h-10 rounded-xl bg-secondary border-border focus:bg-background transition-colors"
-                    required autoComplete="current-password" disabled={isLoading || demoLoading}
-                  />
+              {/* User Name */}
+              <h2 className="mt-4 text-xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+                FleetFlow OS
+              </h2>
+              <p className="text-sm text-white/70 mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+                Enterprise Fleet Management
+              </p>
+
+              {/* ============================================
+                  Login Form — Mojave Centered Card
+                  ============================================ */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-8 w-full max-w-[340px]"
+              >
+                {/* Error */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto' }}
+                      exit={{ opacity: 0, y: -8, height: 0 }}
+                      className="mb-4 overflow-hidden"
+                    >
+                      <div className={cn(
+                        "flex items-center gap-2 px-4 py-3 rounded-2xl text-sm",
+                        "mojave-frost mojave-frost-light",
+                        "text-red-600 dark:text-red-400"
+                      )}>
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                        <span>{error}</span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Login Card — Frosted Glass */}
+                <div className={cn(
+                  "rounded-2xl p-6 mojave-frost mojave-frost-light",
+                  "retina-shadow-lg"
+                )}>
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    {/* Email Input */}
+                    <div>
+                      <input
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => { setEmail(e.target.value); setError('') }}
+                        onFocus={() => setInputFocused(true)}
+                        onBlur={() => setInputFocused(false)}
+                        className={cn(
+                          "w-full h-11 px-4 rounded-xl text-sm outline-none transition-all duration-200",
+                          "mojave-frost-input mojave-frost-input-light",
+                          "placeholder:text-gray-400 dark:placeholder:text-gray-500",
+                          "text-gray-900 dark:text-gray-100",
+                          "focus:ring-2 focus:ring-primary/40 focus:bg-white/70 dark:focus:bg-gray-800/70"
+                        )}
+                        required
+                        autoComplete="email"
+                        disabled={isLoading || demoLoading}
+                      />
+                    </div>
+
+                    {/* Password Input */}
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => { setPassword(e.target.value); setError('') }}
+                        onFocus={() => setInputFocused(true)}
+                        onBlur={() => setInputFocused(false)}
+                        className={cn(
+                          "w-full h-11 px-4 pr-11 rounded-xl text-sm outline-none transition-all duration-200",
+                          "mojave-frost-input mojave-frost-input-light",
+                          "placeholder:text-gray-400 dark:placeholder:text-gray-500",
+                          "text-gray-900 dark:text-gray-100",
+                          "focus:ring-2 focus:ring-primary/40 focus:bg-white/70 dark:focus:bg-gray-800/70"
+                        )}
+                        required
+                        autoComplete="current-password"
+                        disabled={isLoading || demoLoading}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+
+                    {/* Sign In Button */}
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="submit"
+                      disabled={isLoading || demoLoading}
+                      className={cn(
+                        "w-full h-11 rounded-xl font-semibold text-sm transition-all duration-200",
+                        "bg-primary text-primary-foreground",
+                        "hover:bg-primary/90",
+                        "disabled:opacity-50 disabled:cursor-not-allowed",
+                        "flex items-center justify-center gap-2"
+                      )}
+                    >
+                      {isLoading ? (
+                        <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
+                      ) : (
+                        <>Sign In <ArrowRight className="h-4 w-4" /></>
+                      )}
+                    </motion.button>
+                  </form>
+
+                  {/* Divider */}
+                  <div className="relative my-5">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className={cn("w-full border-t", isDark ? "border-white/10" : "border-black/10")} />
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className={cn(
+                        "px-3 text-[11px] font-medium",
+                        isDark ? "bg-[rgba(30,30,30,0.72)] text-white/40" : "bg-[rgba(255,255,255,0.72)] text-black/30"
+                      )}>
+                        or
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Demo Login Button */}
                   <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleDemoLogin}
+                    disabled={isLoading || demoLoading}
+                    className={cn(
+                      "w-full h-11 rounded-xl font-medium text-sm transition-all duration-200",
+                      "mojave-frost-input mojave-frost-input-light",
+                      "text-gray-700 dark:text-gray-300",
+                      "hover:bg-white/70 dark:hover:bg-gray-700/60",
+                      "disabled:opacity-50 disabled:cursor-not-allowed",
+                      "flex items-center justify-center gap-2"
+                    )}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {demoLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        Try Demo
+                        <span className={cn(
+                          "ml-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold",
+                          "bg-primary/15 text-primary"
+                        )}>
+                          VIEW ONLY
+                        </span>
+                      </>
+                    )}
                   </motion.button>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <Checkbox id="remember" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked as boolean)} disabled={isLoading || demoLoading} />
-                <Label htmlFor="remember" className="text-[12px] text-muted-foreground font-normal cursor-pointer">Keep me signed in</Label>
-              </div>
-
-              <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
-                <Button
-                  type="submit" className="w-full h-10 font-semibold gap-2 rounded-xl"
-                  disabled={isLoading || demoLoading}
+                {/* Info hint */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.6 }}
+                  className="mt-4 text-center"
                 >
-                  {isLoading ? (
-                    <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
-                  ) : (
-                    <><span>Sign In</span><ArrowRight className="h-4 w-4" /></>
-                  )}
-                </Button>
+                  <p className="text-[11px] text-white/50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
+                    <KeyRound className="inline h-3 w-3 mr-1 -mt-0.5" />
+                    New device? Serial key required to activate ERP.
+                  </p>
+                </motion.div>
               </motion.div>
-            </form>
-
-            {/* Divider */}
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-              <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground font-medium">OR</span></div>
-            </div>
-
-            {/* Demo Login — Solid Card */}
-            <motion.button
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              whileHover={{ scale: 1.01, y: -1 }}
-              whileTap={{ scale: 0.99 }}
-              onClick={handleDemoLogin}
-              disabled={isLoading || demoLoading}
-              className={cn(
-                "w-full relative overflow-hidden rounded-xl p-4 transition-all duration-300",
-                "bg-card border border-border retina-shadow",
-                "hover:border-primary/30 hover:tahoe-glow",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-              )}
-            >
-              <div className="relative flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 text-primary shrink-0">
-                  <Sparkles className="h-5 w-5" />
-                </div>
-                <div className="flex-1 text-left">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-[13px]">Try Demo Account</span>
-                    <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-[9px] font-bold text-primary">VIEW ONLY</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Explore all features with read-only access</p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-              </div>
-              {demoLoading && (
-                <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-xl">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                </div>
-              )}
-            </motion.button>
-
-            {/* Info */}
-            <div className="mt-4 p-3 rounded-xl bg-secondary border border-border">
-              <div className="flex items-start gap-2">
-                <KeyRound className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                <div className="text-[11px] text-muted-foreground space-y-0.5">
-                  <p><span className="font-medium text-foreground">Demo access:</span> View-only mode. No data can be modified.</p>
-                  <p><span className="font-medium text-foreground">New device?</span> Serial key required to activate ERP.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="mt-8 pt-5 border-t border-border">
-              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>&copy; {new Date().getFullYear()} FleetFlow OS</span>
-                <div className="flex items-center gap-3">
-                  <button className="hover:text-foreground transition-colors">Privacy</button>
-                  <button className="hover:text-foreground transition-colors">Terms</button>
-                  <button className="hover:text-foreground transition-colors">Support</button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* ============================================
+          Bottom Bar — Mojave Menu Bar
+          ============================================ */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className={cn(
+          "h-10 mojave-menubar mojave-menubar-light",
+          "flex items-center justify-between px-5 shrink-0"
+        )}
+      >
+        {/* Left — Theme Toggle */}
+        <div className="flex items-center gap-3">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setTheme(isDark ? 'light' : 'dark')}
+            className={cn(
+              "flex items-center gap-1.5 text-[11px] font-medium transition-colors",
+              isDark ? "text-white/60 hover:text-white/90" : "text-black/50 hover:text-black/80"
+            )}
+          >
+            {isDark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+            {isDark ? 'Light' : 'Dark'}
+          </motion.button>
+        </div>
+
+        {/* Center — Accessibility */}
+        <div className="flex items-center gap-4">
+          <button className={cn(
+            "text-[11px] font-medium transition-colors",
+            isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
+          )}>
+            Accessibility
+          </button>
+        </div>
+
+        {/* Right — Power Actions */}
+        <div className="flex items-center gap-3">
+          <button
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-medium transition-colors",
+              isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
+            )}
+          >
+            <RotateCw className="h-3 w-3" />
+            Restart
+          </button>
+          <button
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-medium transition-colors",
+              isDark ? "text-white/40 hover:text-white/70" : "text-black/35 hover:text-black/65"
+            )}
+          >
+            <Power className="h-3 w-3" />
+            Shut Down
+          </button>
+        </div>
+      </motion.div>
     </div>
   )
 }
