@@ -23,7 +23,7 @@ export default function CompliancePage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [compRes, vehRes] = await Promise.all([fetch('/api/fleet/compliance?XTransformPort=3000'), fetch('/api/fleet/vehicles?XTransformPort=3000')])
+      const [compRes, vehRes] = await Promise.all([fetch('/api/fleet/compliance'), fetch('/api/fleet/vehicles')])
       if (compRes.ok) { const j = await compRes.json(); setRecords(j.data || []) }
       if (vehRes.ok) { const j = await vehRes.json(); setVehicles(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
@@ -31,7 +31,7 @@ export default function CompliancePage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/compliance?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('/api/fleet/compliance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Compliance record created'); fetchData(); setOpen(false); setForm({}) } else toast.error('Failed')
     } catch (e) { toast.error('Failed') }
   }

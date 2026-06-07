@@ -67,7 +67,7 @@ export default function OwnerUpdatesPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/updates?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/updates?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -79,7 +79,7 @@ export default function OwnerUpdatesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/fleet/updates?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/updates`, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editId ? { id: editId, ...formData } : formData),
@@ -97,7 +97,7 @@ export default function OwnerUpdatesPage() {
 
   const handleAction = async (id: string, updates: Partial<UpdateRecord>) => {
     try {
-      const res = await fetch(`/api/fleet/updates?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/updates`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
@@ -112,7 +112,7 @@ export default function OwnerUpdatesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this update record?')) return
     try {
-      const res = await fetch(`/api/fleet/updates?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/updates?id=${id}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Deleted'); fetchData() }
     } catch (e) { toast.error('Failed to delete') }
   }

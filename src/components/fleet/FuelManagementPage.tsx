@@ -29,9 +29,9 @@ export default function FuelManagementPage() {
     setLoading(true)
     try {
       const [fuelRes, vehRes, driRes] = await Promise.all([
-        fetch('/api/fleet/fuel?XTransformPort=3000'),
-        fetch('/api/fleet/vehicles?XTransformPort=3000'),
-        fetch('/api/fleet/drivers?XTransformPort=3000')
+        fetch('/api/fleet/fuel'),
+        fetch('/api/fleet/vehicles'),
+        fetch('/api/fleet/drivers')
       ])
       if (fuelRes.ok) { const j = await fuelRes.json(); setRecords(j.data || []) }
       if (vehRes.ok) { const j = await vehRes.json(); setVehicles(j.data || []) }
@@ -41,7 +41,7 @@ export default function FuelManagementPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/fuel?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/fuel', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, totalCost: (form.quantity || 0) * (form.costPerUnit || 0) })
       })

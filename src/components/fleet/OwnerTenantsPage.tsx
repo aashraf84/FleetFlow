@@ -65,7 +65,7 @@ export default function OwnerTenantsPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/tenants?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/tenants?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -77,7 +77,7 @@ export default function OwnerTenantsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/fleet/tenants?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/tenants`, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editId ? { id: editId, ...formData } : formData),
@@ -95,7 +95,7 @@ export default function OwnerTenantsPage() {
 
   const handleAction = async (id: string, updates: Partial<Tenant>) => {
     try {
-      const res = await fetch(`/api/fleet/tenants?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/tenants`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
@@ -110,7 +110,7 @@ export default function OwnerTenantsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this tenant? All associated data will be affected.')) return
     try {
-      const res = await fetch(`/api/fleet/tenants?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/tenants?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success('Tenant deleted')
         addNotification({ title: 'Tenant Deleted', message: 'Tenant has been removed', type: 'warning' })

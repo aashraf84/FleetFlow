@@ -16,7 +16,7 @@ export default function MaintenanceHistoryPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/maintenance?status=completed&XTransformPort=3000')
+      const res = await fetch('/api/fleet/maintenance?status=completed')
       if (res.ok) { const j = await res.json(); setRecords(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }

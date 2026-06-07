@@ -23,7 +23,7 @@ export default function RentalContractsPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/rentals?XTransformPort=3000')
+      const res = await fetch('/api/fleet/rentals')
       if (res.ok) { const j = await res.json(); setContracts(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }

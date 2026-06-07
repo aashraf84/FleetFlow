@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/dashboard?XTransformPort=3000')
+      const res = await fetch('/api/fleet/dashboard')
       if (res.ok) {
         const json = await res.json()
         setData(json.data)

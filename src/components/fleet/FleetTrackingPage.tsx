@@ -18,7 +18,7 @@ export default function FleetTrackingPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/vehicles?XTransformPort=3000')
+      const res = await fetch('/api/fleet/vehicles')
       if (res.ok) { const json = await res.json(); setVehicles(json.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }

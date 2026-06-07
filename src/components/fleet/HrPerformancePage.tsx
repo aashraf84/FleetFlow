@@ -13,7 +13,7 @@ export default function HrPerformancePage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/hr?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setEmployees(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/hr'); if (res.ok) { const j = await res.json(); setEmployees(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const reviews = employees.flatMap(e => (e.performanceReviews || []).map((r: any) => ({ ...r, employee: e })))

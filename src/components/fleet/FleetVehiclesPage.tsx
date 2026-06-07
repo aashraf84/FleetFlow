@@ -40,7 +40,7 @@ export default function FleetVehiclesPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter !== 'all') params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/vehicles?${params}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/vehicles?${params}`)
       if (res.ok) { const json = await res.json(); setVehicles(json.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
@@ -49,7 +49,7 @@ export default function FleetVehiclesPage() {
 
   const handleSubmit = async () => {
     try {
-      const url = '/api/fleet/vehicles?XTransformPort=3000'
+      const url = '/api/fleet/vehicles'
       const res = editItem
         ? await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editItem.id, ...form }) })
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -61,7 +61,7 @@ export default function FleetVehiclesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this vehicle?')) return
     try {
-      const res = await fetch(`/api/fleet/vehicles?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/vehicles?id=${id}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Vehicle deleted'); fetchData() }
     } catch (e) { toast.error('Delete failed') }
   }

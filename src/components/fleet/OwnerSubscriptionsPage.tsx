@@ -69,7 +69,7 @@ export default function OwnerSubscriptionsPage() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await fetch('/api/fleet/clients?XTransformPort=3000')
+        const res = await fetch('/api/fleet/clients')
         if (res.ok) {
           const json = await res.json()
           setClients((json.data || []).map((c: any) => ({ id: c.id, companyName: c.companyName })))
@@ -85,7 +85,7 @@ export default function OwnerSubscriptionsPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/subscriptions?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/subscriptions?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -97,7 +97,7 @@ export default function OwnerSubscriptionsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/fleet/subscriptions?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/subscriptions`, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editId ? { id: editId, ...formData } : formData),
@@ -115,7 +115,7 @@ export default function OwnerSubscriptionsPage() {
 
   const handleAction = async (id: string, updates: Partial<Subscription>) => {
     try {
-      const res = await fetch(`/api/fleet/subscriptions?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/subscriptions`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
@@ -130,7 +130,7 @@ export default function OwnerSubscriptionsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this subscription?')) return
     try {
-      const res = await fetch(`/api/fleet/subscriptions?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/subscriptions?id=${id}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Deleted'); fetchData() }
     } catch (e) { toast.error('Failed to delete') }
   }

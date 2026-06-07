@@ -732,20 +732,21 @@ function Footer() {
 export default function Home() {
   const { isAuthenticated, deviceActivated, isDemo } = useAppStore()
   const activePage = useAppStore((s) => s.activePage)
-  const [sessionChecked, setSessionChecked] = useState(() => false)
-  const [seedDone, setSeedDone] = useState(() => false)
+  const [sessionChecked, setSessionChecked] = useState(() => true) // Start as true - no DB check needed on mount
+  const [seedDone, setSeedDone] = useState(() => true) // Seed already done via initial setup
 
+  // Seed check on mount (non-blocking, won't block page render)
   useEffect(() => {
-    if (seedDone) return
     const seedData = async () => {
       try {
-        await fetch('/api/auth/seed', { method: 'POST' })
+        const checkRes = await fetch('/api/auth/seed', { method: 'GET' })
+        if (checkRes.status === 404) {
+          await fetch('/api/auth/seed', { method: 'POST' })
+        }
       } catch {}
-      setSeedDone(true)
-      setSessionChecked(true)
     }
     seedData()
-  }, [seedDone])
+  }, [])
 
   useEffect(() => {
     if (!isAuthenticated || !sessionChecked) return
@@ -765,31 +766,6 @@ export default function Home() {
     const interval = setInterval(validateSession, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [isAuthenticated, sessionChecked])
-
-  // Loading splash
-  if (!sessionChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center gap-4"
-        >
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            className="flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-primary-foreground font-bold text-xl tahoe-glow"
-          >
-            FF
-          </motion.div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Activity className="h-4 w-4 animate-spin" />
-            <span>Loading FleetFlow OS</span>
-          </div>
-        </motion.div>
-      </div>
-    )
-  }
 
   if (!isAuthenticated) {
     return <LoginPage />

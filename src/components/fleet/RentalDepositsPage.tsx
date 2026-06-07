@@ -26,8 +26,8 @@ export default function RentalDepositsPage() {
     setLoading(true)
     try {
       const [depRes, conRes] = await Promise.all([
-        fetch('/api/fleet/deposits?XTransformPort=3000'),
-        fetch('/api/fleet/rentals?XTransformPort=3000')
+        fetch('/api/fleet/deposits'),
+        fetch('/api/fleet/rentals')
       ])
       if (depRes.ok) { const j = await depRes.json(); setDeposits(j.data || []) }
       if (conRes.ok) { const j = await conRes.json(); setContracts(j.data || []) }
@@ -36,7 +36,7 @@ export default function RentalDepositsPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/deposits?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/deposits', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Deposit recorded'); fetchData(); setOpen(false); setForm({}) }

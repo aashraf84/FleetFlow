@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 
 export async function GET() {
   try {
-    const deposits = await db.deposit.findMany({ orderBy: { createdAt: 'desc' }, include: { contract: { include: { customer: true, vehicle: true } } } })
+    const deposits = await db.deposit.findMany({ orderBy: { createdAt: 'desc' }, include: { customer: true, contract: { include: { customer: true, vehicle: true } } } })
     return NextResponse.json({ data: deposits })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch deposits' }, { status: 500 })

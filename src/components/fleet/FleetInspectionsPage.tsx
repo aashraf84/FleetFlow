@@ -26,8 +26,8 @@ export default function FleetInspectionsPage() {
     setLoading(true)
     try {
       const [inspRes, vehRes] = await Promise.all([
-        fetch('/api/fleet/inspections?XTransformPort=3000'),
-        fetch('/api/fleet/vehicles?XTransformPort=3000')
+        fetch('/api/fleet/inspections'),
+        fetch('/api/fleet/vehicles')
       ])
       if (inspRes.ok) { const json = await inspRes.json(); setInspections(json.data || []) }
       if (vehRes.ok) { const json = await vehRes.json(); setVehicles(json.data || []) }
@@ -36,7 +36,7 @@ export default function FleetInspectionsPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/inspections?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/inspections', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Inspection created'); fetchData(); setOpen(false); setForm({}) }

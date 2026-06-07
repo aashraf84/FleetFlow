@@ -14,7 +14,7 @@ export default function GpsTrackingPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/gps?XTransformPort=3000')
+      const res = await fetch('/api/fleet/gps')
       if (res.ok) { const j = await res.json(); setData(j.data || { locations: [], vehicles: [] }) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }

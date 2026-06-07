@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
     if (status) where.status = status
     const records = await db.maintenanceRecord.findMany({
       where, orderBy: { createdAt: 'desc' },
-      include: { vehicle: true, jobCard: true, spareParts: true }
+      include: { vehicle: true, jobCard: true, spareParts: { include: { sparePart: true } } }
     })
     return NextResponse.json({ data: records })
   } catch (error) {

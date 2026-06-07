@@ -52,7 +52,7 @@ export default function OwnerLicensesPage() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await fetch('/api/fleet/clients?XTransformPort=3000')
+        const res = await fetch('/api/fleet/clients')
         if (res.ok) {
           const json = await res.json()
           setClients((json.data || []).map((c: any) => ({ id: c.id, companyName: c.companyName })))
@@ -68,7 +68,7 @@ export default function OwnerLicensesPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/licenses?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/licenses?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -80,7 +80,7 @@ export default function OwnerLicensesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/fleet/licenses?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/licenses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -97,7 +97,7 @@ export default function OwnerLicensesPage() {
 
   const handleAction = async (id: string, updates: Partial<License>) => {
     try {
-      const res = await fetch(`/api/fleet/licenses?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/licenses`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),

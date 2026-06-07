@@ -13,7 +13,7 @@ export default function InventoryPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/parts?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setParts(j.data?.parts || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/parts'); if (res.ok) { const j = await res.json(); setParts(j.data?.parts || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const totalValue = parts.reduce((s, p) => s + (p.quantityInStock || 0) * (p.unitCost || 0), 0)

@@ -21,18 +21,18 @@ export default function DocumentsPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/documents?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setDocuments(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/documents'); if (res.ok) { const j = await res.json(); setDocuments(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/documents?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('/api/fleet/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Document added'); fetchData(); setOpen(false); setForm({}) } else toast.error('Failed')
     } catch (e) { toast.error('Failed') }
   }
 
   const handleDelete = async (id: string) => {
-    try { const res = await fetch(`/api/fleet/documents?id=${id}&XTransformPort=3000`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
+    try { const res = await fetch(`/api/fleet/documents?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
   return (

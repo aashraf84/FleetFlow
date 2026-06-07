@@ -73,7 +73,7 @@ export default function OwnerClientsPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/clients?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/clients?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -90,8 +90,8 @@ export default function OwnerClientsPage() {
     e.preventDefault()
     try {
       const url = editId
-        ? `/api/fleet/clients?XTransformPort=3000`
-        : `/api/fleet/clients?XTransformPort=3000`
+        ? `/api/fleet/clients`
+        : `/api/fleet/clients`
       const res = await fetch(url, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,7 +113,7 @@ export default function OwnerClientsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Are you sure you want to delete this client?')) return
     try {
-      const res = await fetch(`/api/fleet/clients?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/clients?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
         toast.success('Client deleted')
         addNotification({ title: 'Client Deleted', message: 'Client has been removed', type: 'warning' })
@@ -126,7 +126,7 @@ export default function OwnerClientsPage() {
 
   const handleStatusChange = async (id: string, status: string) => {
     try {
-      const res = await fetch(`/api/fleet/clients?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/clients`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, status }),

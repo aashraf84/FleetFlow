@@ -33,9 +33,9 @@ export default function RentalReservationsPage() {
     setLoading(true)
     try {
       const [resRes, cusRes, vehRes] = await Promise.all([
-        fetch('/api/fleet/reservations?XTransformPort=3000'),
-        fetch('/api/fleet/customers?XTransformPort=3000'),
-        fetch('/api/fleet/vehicles?XTransformPort=3000')
+        fetch('/api/fleet/reservations'),
+        fetch('/api/fleet/customers'),
+        fetch('/api/fleet/vehicles')
       ])
       if (resRes.ok) { const j = await resRes.json(); setReservations(j.data || []) }
       if (cusRes.ok) { const j = await cusRes.json(); setCustomers(j.data || []) }
@@ -45,7 +45,7 @@ export default function RentalReservationsPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/reservations?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/reservations', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Reservation created'); fetchData(); setOpen(false); setForm({}) }
@@ -55,7 +55,7 @@ export default function RentalReservationsPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch('/api/fleet/reservations?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/reservations', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status })
       })
       if (res.ok) { toast.success(`Status updated to ${status}`); fetchData() }

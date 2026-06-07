@@ -66,7 +66,7 @@ export default function OwnerRevenuePage() {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await fetch('/api/fleet/clients?XTransformPort=3000')
+        const res = await fetch('/api/fleet/clients')
         if (res.ok) {
           const json = await res.json()
           setClients((json.data || []).map((c: any) => ({ id: c.id, companyName: c.companyName })))
@@ -86,7 +86,7 @@ export default function OwnerRevenuePage() {
       if (categoryFilter) params.set('category', categoryFilter)
       if (fromDate) params.set('from', fromDate)
       if (toDate) params.set('to', toDate)
-      const res = await fetch(`/api/fleet/revenue?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/revenue?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -102,7 +102,7 @@ export default function OwnerRevenuePage() {
     try {
       const body = { ...formData, date: new Date(formData.date).toISOString() }
       if (!formData.clientId) delete (body as any).clientId
-      const res = await fetch(`/api/fleet/revenue?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/revenue`, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editId ? { id: editId, ...body } : body),
@@ -121,7 +121,7 @@ export default function OwnerRevenuePage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this revenue record?')) return
     try {
-      const res = await fetch(`/api/fleet/revenue?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/revenue?id=${id}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Deleted'); fetchData() }
     } catch (e) { toast.error('Failed to delete') }
   }

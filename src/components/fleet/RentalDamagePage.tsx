@@ -32,8 +32,8 @@ export default function RentalDamagePage() {
     setLoading(true)
     try {
       const [dmgRes, vehRes] = await Promise.all([
-        fetch('/api/fleet/damage?XTransformPort=3000'),
-        fetch('/api/fleet/vehicles?XTransformPort=3000')
+        fetch('/api/fleet/damage'),
+        fetch('/api/fleet/vehicles')
       ])
       if (dmgRes.ok) { const j = await dmgRes.json(); setReports(j.data || []) }
       if (vehRes.ok) { const j = await vehRes.json(); setVehicles(j.data || []) }
@@ -42,7 +42,7 @@ export default function RentalDamagePage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/damage?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/damage', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Damage report created'); fetchData(); setOpen(false); setForm({}) }
@@ -52,7 +52,7 @@ export default function RentalDamagePage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch('/api/fleet/damage?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/damage', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status })
       })
       if (res.ok) { toast.success('Status updated'); fetchData() }

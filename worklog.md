@@ -101,3 +101,77 @@ Stage Summary:
 - Collapsible sidebar with hover-to-reveal when collapsed
 - All pages verified working via Agent Browser
 - Lint passes clean
+
+---
+Task ID: 1
+Agent: Schema Agent
+Task: Create complete Prisma schema with 29 missing models for fleet management API routes
+
+Work Log:
+- Read worklog.md to understand previous agent work (Task 1: auth flow, Task 2: Tahoe UI)
+- Read existing schema: 13 models (Tenant, User, Session, AuditLog, Client, ClientActivity, PurchaseHistory, Subscription, License, Device, Revenue, UpdateRecord, TenantSettings)
+- Analyzed all 35+ API route files to identify referenced models and query patterns
+- Key API patterns discovered:
+  - Dashboard: db.vehicle.count(), db.reservation.count(), db.maintenanceRecord.count(), db.driver.count(), db.fuelRecord.findMany(), db.expense.findMany()
+  - Reservations: include: { customer, vehicle }
+  - Rentals: include: { customer, vehicle, reservation }
+  - Deposits: include: { contract: { include: { customer, vehicle } } }
+  - Dispatch: include: { driver, trips }
+  - Trips: include: { dispatchOrder, driver, fuelRecords }
+  - GPS: db.gpsLocation.findMany({ include: { vehicle } }), db.vehicle.findMany({ select: { currentLocation } })
+  - Maintenance: include: { vehicle, jobCard, spareParts }
+  - Workshop: db.jobCard.findMany({ include: { maintenance: { include: { vehicle } } } })
+  - Fuel: include: { vehicle, driver }
+  - Finance: include: { customer, items, payments }
+  - Insurance: include: { vehicle }
+  - HR: include: { attendance, leaveRecords }
+  - Compliance: include: { vehicle }
+  - Revenue: include: { client }
+- Added `revenues Revenue[]` relation to Client model (for db.revenue include: { client })
+- Created 29 new models:
+  1. Vehicle (21 fields, 10 relations: reservations, rentalContracts, maintenanceRecords, inspections, fuelRecords, insurancePolicies, damageReports, gpsLocations, complianceRecords, trips)
+  2. Customer (19 fields, 5 relations: reservations, rentalContracts, deposits, damageReports, invoices)
+  3. Driver (16 fields, 3 relations: trips, dispatchOrders, fuelRecords)
+  4. Reservation (13 fields, 3 relations: customer, vehicle, rentalContract)
+  5. RentalContract (17 fields, 5 relations: reservation, customer, vehicle, deposits, damageReport)
+  6. Deposit (11 fields, 2 relations: contract, customer) - added customerId for Prisma two-sided relation
+  7. DamageReport (12 fields, 3 relations: vehicle, customer, contract)
+  8. Trip (11 fields, 4 relations: dispatchOrder, driver, vehicle, fuelRecords)
+  9. DispatchOrder (9 fields, 2 relations: driver, trips)
+  10. GpsLocation (8 fields, 1 relation: vehicle)
+  11. MaintenanceRecord (12 fields, 3 relations: vehicle, jobCard, spareParts)
+  12. JobCard (10 fields, 1 relation: maintenance)
+  13. SparePart (10 fields, 2 relations: maintenanceLinks, purchaseOrderItems)
+  14. MaintenanceSparePart (explicit join model for M:N MaintenanceRecord ↔ SparePart, with quantity and cost)
+  15. PurchaseOrder (8 fields, 1 relation: items)
+  16. PurchaseOrderItem (7 fields, 2 relations: purchaseOrder, sparePart)
+  17. VehicleInspection (14 fields, 1 relation: vehicle)
+  18. Expense (9 fields, no relations)
+  19. Invoice (12 fields, 3 relations: customer, items, payments)
+  20. InvoiceItem (6 fields, 1 relation: invoice)
+  21. Payment (8 fields, 1 relation: invoice)
+  22. JournalEntry (11 fields, no relations)
+  23. InsurancePolicy (11 fields, 1 relation: vehicle)
+  24. Employee (13 fields, 2 relations: attendance, leaveRecords)
+  25. Attendance (7 fields, 1 relation: employee)
+  26. LeaveRecord (8 fields, 1 relation: employee)
+  27. ComplianceRecord (9 fields, 1 relation: vehicle)
+  28. Document (12 fields, no relations)
+  29. FuelRecord (13 fields, 3 relations: vehicle, driver, trip) - discovered from API routes, not in original task list
+- Fixed Prisma validation errors:
+  - Added @unique to RentalContract.reservationId (1:1 relation with Reservation)
+  - Added @unique to DamageReport.contractId (1:1 relation with RentalContract)
+  - Added @unique to JobCard.maintenanceId (1:1 relation with MaintenanceRecord)
+  - Added customerId + customer relation to Deposit (Prisma requires two-sided relations)
+- Ran `prisma generate` successfully
+- Ran `prisma db push` successfully - all tables created in Neon PostgreSQL
+- Ran `prisma format` to clean up schema formatting
+- Lint passes clean
+
+Stage Summary:
+- Schema now has 42 total models (13 original + 29 new)
+- All API route query patterns now have matching Prisma models and relations
+- Database fully synced with Neon PostgreSQL
+- MaintenanceSparePart explicit join model supports the `include: { spareParts: true }` pattern
+- Revenue model now has Client relation for `include: { client: true }`
+- All one-to-one and one-to-many relations properly configured with @unique where needed

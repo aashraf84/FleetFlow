@@ -26,7 +26,7 @@ export default function DriversPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch(`/api/fleet/drivers?search=${search}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/drivers?search=${search}`)
       if (res.ok) { const j = await res.json(); setData(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
@@ -35,7 +35,7 @@ export default function DriversPage() {
 
   const handleSubmit = async () => {
     try {
-      const url = '/api/fleet/drivers?XTransformPort=3000'
+      const url = '/api/fleet/drivers'
       const res = editItem
         ? await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editItem.id, ...form }) })
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -46,7 +46,7 @@ export default function DriversPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete?')) return
-    try { const res = await fetch(`/api/fleet/drivers?id=${id}&XTransformPort=3000`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
+    try { const res = await fetch(`/api/fleet/drivers?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
   const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', phone: '', licenseNumber: '', status: 'active', employmentType: 'full_time', rating: 5.0, baseSalary: 0 }); setOpen(true) }

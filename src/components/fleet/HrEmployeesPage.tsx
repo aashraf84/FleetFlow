@@ -23,12 +23,12 @@ export default function HrEmployeesPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/hr?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setEmployees(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/hr'); if (res.ok) { const j = await res.json(); setEmployees(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
     try {
-      const url = '/api/fleet/hr?XTransformPort=3000'
+      const url = '/api/fleet/hr'
       const res = editItem
         ? await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editItem.id, ...form }) })
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -38,7 +38,7 @@ export default function HrEmployeesPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Delete?')) return
-    try { const res = await fetch(`/api/fleet/hr?id=${id}&XTransformPort=3000`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
+    try { const res = await fetch(`/api/fleet/hr?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
   const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', status: 'active', baseSalary: 0 }); setOpen(true) }

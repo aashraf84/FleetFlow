@@ -57,7 +57,7 @@ export default function OwnerDevicesPage() {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
       if (statusFilter) params.set('status', statusFilter)
-      const res = await fetch(`/api/fleet/devices?${params.toString()}&XTransformPort=3000`)
+      const res = await fetch(`/api/fleet/devices?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
         setData(json.data || [])
@@ -69,7 +69,7 @@ export default function OwnerDevicesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const res = await fetch(`/api/fleet/devices?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/devices`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -85,7 +85,7 @@ export default function OwnerDevicesPage() {
 
   const handleAction = async (id: string, updates: Partial<Device>) => {
     try {
-      const res = await fetch(`/api/fleet/devices?XTransformPort=3000`, {
+      const res = await fetch(`/api/fleet/devices`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, ...updates }),
@@ -101,7 +101,7 @@ export default function OwnerDevicesPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Remove this device?')) return
     try {
-      const res = await fetch(`/api/fleet/devices?id=${id}&XTransformPort=3000`, { method: 'DELETE' })
+      const res = await fetch(`/api/fleet/devices?id=${id}`, { method: 'DELETE' })
       if (res.ok) { toast.success('Device removed'); fetchData() }
     } catch (e) { toast.error('Failed to remove device') }
   }

@@ -23,12 +23,12 @@ export default function FinanceExpensesPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/finance/expenses?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setExpenses(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/finance/expenses'); if (res.ok) { const j = await res.json(); setExpenses(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/finance/expenses?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('/api/fleet/finance/expenses', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Expense recorded'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
     } catch (e) { toast.error('Failed') }

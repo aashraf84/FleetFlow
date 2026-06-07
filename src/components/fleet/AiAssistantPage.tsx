@@ -33,7 +33,7 @@ export default function AiAssistantPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/fleet/ai?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message, context: 'fleet' })

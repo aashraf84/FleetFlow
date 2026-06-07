@@ -25,7 +25,7 @@ export default function FinanceInvoicesPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [invRes, cusRes] = await Promise.all([fetch('/api/fleet/finance?XTransformPort=3000'), fetch('/api/fleet/customers?XTransformPort=3000')])
+      const [invRes, cusRes] = await Promise.all([fetch('/api/fleet/finance'), fetch('/api/fleet/customers')])
       if (invRes.ok) { const j = await invRes.json(); setInvoices(j.data || []) }
       if (cusRes.ok) { const j = await cusRes.json(); setCustomers(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
@@ -33,7 +33,7 @@ export default function FinanceInvoicesPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/finance?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('/api/fleet/finance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Invoice created'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
     } catch (e) { toast.error('Failed') }

@@ -20,12 +20,12 @@ export default function FinanceAccountingPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/finance/accounting?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setData(j.data || { entries: [], totalDebit: 0, totalCredit: 0, balance: 0 }) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/finance/accounting'); if (res.ok) { const j = await res.json(); setData(j.data || { entries: [], totalDebit: 0, totalCredit: 0, balance: 0 }) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/finance/accounting?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, status: 'draft' }) })
+      const res = await fetch('/api/fleet/finance/accounting', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, status: 'draft' }) })
       if (res.ok) { toast.success('Journal entry created'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
     } catch (e) { toast.error('Failed') }

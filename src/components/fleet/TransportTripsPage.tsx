@@ -16,7 +16,7 @@ export default function TransportTripsPage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/fleet/trips?XTransformPort=3000')
+      const res = await fetch('/api/fleet/trips')
       if (res.ok) { const j = await res.json(); setTrips(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }

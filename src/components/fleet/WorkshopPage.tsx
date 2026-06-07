@@ -13,7 +13,7 @@ export default function WorkshopPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/workshop?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setJobCards(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/workshop'); if (res.ok) { const j = await res.json(); setJobCards(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`

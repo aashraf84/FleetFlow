@@ -31,8 +31,8 @@ export default function TransportDispatchPage() {
     setLoading(true)
     try {
       const [ordRes, driRes] = await Promise.all([
-        fetch('/api/fleet/dispatch?XTransformPort=3000'),
-        fetch('/api/fleet/drivers?XTransformPort=3000')
+        fetch('/api/fleet/dispatch'),
+        fetch('/api/fleet/drivers')
       ])
       if (ordRes.ok) { const j = await ordRes.json(); setOrders(j.data || []) }
       if (driRes.ok) { const j = await driRes.json(); setDrivers(j.data || []) }
@@ -41,7 +41,7 @@ export default function TransportDispatchPage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/dispatch?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/dispatch', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Dispatch order created'); fetchData(); setOpen(false); setForm({}) }
@@ -51,7 +51,7 @@ export default function TransportDispatchPage() {
 
   const updateStatus = async (id: string, status: string) => {
     try {
-      const res = await fetch('/api/fleet/dispatch?XTransformPort=3000', {
+      const res = await fetch('/api/fleet/dispatch', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status })
       })
       if (res.ok) { toast.success('Status updated'); fetchData() }

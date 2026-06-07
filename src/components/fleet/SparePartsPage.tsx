@@ -21,12 +21,12 @@ export default function SparePartsPage() {
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/parts?XTransformPort=3000'); if (res.ok) { const j = await res.json(); setParts(j.data?.parts || []); setLowStock(j.data?.lowStock || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try { const res = await fetch('/api/fleet/parts'); if (res.ok) { const j = await res.json(); setParts(j.data?.parts || []); setLowStock(j.data?.lowStock || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/parts?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
+      const res = await fetch('/api/fleet/parts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Part added'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
     } catch (e) { toast.error('Failed') }

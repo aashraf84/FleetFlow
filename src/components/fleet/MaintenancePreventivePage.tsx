@@ -27,7 +27,7 @@ export default function MaintenancePreventivePage() {
   const fetchData = async () => {
     setLoading(true)
     try {
-      const [mRes, vRes] = await Promise.all([fetch('/api/fleet/maintenance?type=preventive&XTransformPort=3000'), fetch('/api/fleet/vehicles?XTransformPort=3000')])
+      const [mRes, vRes] = await Promise.all([fetch('/api/fleet/maintenance?type=preventive'), fetch('/api/fleet/vehicles')])
       if (mRes.ok) { const j = await mRes.json(); setRecords(j.data || []) }
       if (vRes.ok) { const j = await vRes.json(); setVehicles(j.data || []) }
     } catch (e) { console.error(e) } finally { setLoading(false) }
@@ -35,14 +35,14 @@ export default function MaintenancePreventivePage() {
 
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/maintenance?XTransformPort=3000', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, type: 'preventive' }) })
+      const res = await fetch('/api/fleet/maintenance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, type: 'preventive' }) })
       if (res.ok) { toast.success('Maintenance scheduled'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
     } catch (e) { toast.error('Request failed') }
   }
 
   const updateStatus = async (id: string, status: string) => {
-    try { const res = await fetch('/api/fleet/maintenance?XTransformPort=3000', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) }); if (res.ok) { toast.success('Updated'); fetchData() } } catch (e) { toast.error('Failed') }
+    try { const res = await fetch('/api/fleet/maintenance', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, status }) }); if (res.ok) { toast.success('Updated'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
