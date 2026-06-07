@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useEffect, useCallback, useMemo } from 'react'
-import { useAppStore, usePageTitle, navigationGroups } from '@/lib/store'
+import { useAppStore, navigationGroups } from '@/lib/store'
 import { useTheme } from 'next-themes'
 import { 
   LayoutDashboard, Building2, CreditCard, Key, Monitor, Server, TrendingUp, RefreshCw,
   Car, BarChart3, ClipboardCheck, CalendarDays, FileText, ArrowLeftRight, Wallet, AlertTriangle,
   Users, IdCard, Radio, Route, MapPin, Fuel, Wrench, Settings, History, Cog, Package, Warehouse,
   Receipt, MinusCircle, DollarSign, BookOpen, Shield, FileCheck, UserCog, Clock, Palmtree, Banknote, Award, FolderOpen,
-  PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Command, Home, Zap, Activity
+  PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Command, HomeIcon, Zap, Activity
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -316,7 +316,7 @@ function Header() {
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
-          <Home className="h-3.5 w-3.5 text-muted-foreground" />
+          <HomeIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">/</span>
           <span className="text-sm font-medium">{pageTitle}</span>
         </div>
