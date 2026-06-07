@@ -48,3 +48,21 @@ Stage Summary:
 - super_owner users get devices auto-registered on login (no serial key needed)
 - All other users need to activate their device with a serial key on the DeviceActivationPage
 - Critical fix: db.ts now forces Neon PostgreSQL URL to override stale shell env var
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Change owner credentials to admin@apexflow.cloud / Admin@180H
+
+Work Log:
+- Updated admin user in Neon PostgreSQL: email changed from admin@fleetflow.os → admin@apexflow.cloud, password changed from admin_fleetflow_2024 → Admin@180H
+- Updated seed script (src/app/api/auth/seed/route.ts) to use new credentials for future seeds
+- Updated document uploadedBy reference from old to new email
+- Verified old credentials (admin@fleetflow.os) are correctly rejected with "Invalid email or password"
+- Verified new credentials exist in database with correct email, password, role (super_owner), and status (active)
+- Old email no longer exists in the database
+
+Stage Summary:
+- New admin credentials: admin@apexflow.cloud / Admin@180H (role: super_owner)
+- Old credentials (admin@fleetflow.os) no longer work — email removed from database
+- All code references updated

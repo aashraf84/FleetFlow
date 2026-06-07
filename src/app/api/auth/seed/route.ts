@@ -82,7 +82,7 @@ export async function POST() {
 
     // 3. USERS
     await db.user.create({ data: { email: 'demo@fleetflow.os', name: 'Demo User', password: 'demo_fleetflow_2024', role: 'demo', status: 'active', tenantId: demoTenant.id } })
-    await db.user.create({ data: { email: 'admin@fleetflow.os', name: 'System Administrator', password: 'admin_fleetflow_2024', role: 'super_owner', status: 'active', tenantId: demoTenant.id } })
+    await db.user.create({ data: { email: 'admin@apexflow.cloud', name: 'System Administrator', password: 'Admin@180H', role: 'super_owner', status: 'active', tenantId: demoTenant.id } })
     console.log('[SEED] ✓ Users (2)')
 
     // 4. LICENSE
@@ -455,7 +455,7 @@ export async function POST() {
 
     // 32. DOCUMENTS (5)
     await db.document.createMany({ data: [
-      { id: 'demo-doc-001', title: 'Rental Agreement Template 2024', type: 'contract', category: 'legal', fileName: 'rental_agreement_template_2024.pdf', fileUrl: '/documents/templates/rental_agreement_2024.pdf', fileSize: 245000, relatedEntity: 'system', relatedEntityId: 'template', uploadedBy: 'admin@fleetflow.os', status: 'active', notes: 'Updated for 2024 legal requirements', tenantId: TENANT_ID },
+      { id: 'demo-doc-001', title: 'Rental Agreement Template 2024', type: 'contract', category: 'legal', fileName: 'rental_agreement_template_2024.pdf', fileUrl: '/documents/templates/rental_agreement_2024.pdf', fileSize: 245000, relatedEntity: 'system', relatedEntityId: 'template', uploadedBy: 'admin@apexflow.cloud', status: 'active', notes: 'Updated for 2024 legal requirements', tenantId: TENANT_ID },
       { id: 'demo-doc-002', title: 'Vehicle Handover Checklist', type: 'inspection', category: 'operations', fileName: 'vehicle_handover_checklist.pdf', fileUrl: '/documents/checklists/handover_checklist.pdf', fileSize: 85000, relatedEntity: 'system', relatedEntityId: 'template', uploadedBy: 'ahmed.maktoum@fleetflow.os', status: 'active', notes: 'Pre and post rental checklist', tenantId: TENANT_ID },
       { id: 'demo-doc-003', title: 'Insurance Policy - BMW X5', type: 'insurance', category: 'vehicle', fileName: 'insurance_BMW_X5_2024.pdf', fileUrl: '/documents/insurance/ins_oc_2024_001.pdf', fileSize: 520000, relatedEntity: 'vehicle', relatedEntityId: 'demo-vehicle-002', uploadedBy: 'priya.sharma@fleetflow.os', status: 'active', notes: 'Current comprehensive insurance', tenantId: TENANT_ID },
       { id: 'demo-doc-004', title: 'Employee Handbook 2024', type: 'other', category: 'hr', fileName: 'employee_handbook_2024.pdf', fileUrl: '/documents/hr/employee_handbook_2024.pdf', fileSize: 1200000, relatedEntity: 'system', relatedEntityId: 'template', uploadedBy: 'fatima.zahra@fleetflow.os', status: 'active', notes: 'Company policies and procedures', tenantId: TENANT_ID },
