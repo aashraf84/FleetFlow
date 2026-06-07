@@ -6,7 +6,7 @@ import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Eye, EyeOff, ArrowRight, Loader2, KeyRound,
-  Sparkles, Moon, Sun
+  Moon, Sun, Truck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -37,15 +37,12 @@ export default function LoginPage() {
   const [demoLoading, setDemoLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [inputFocused, setInputFocused] = useState(false)
 
-  // Wait for mount to avoid hydration mismatch with theme
   useEffect(() => { setMounted(true) }, [])
 
-  // Show the form after a brief delay (Mojave-style appear animation)
   useEffect(() => {
     if (mounted) {
-      const timer = setTimeout(() => setShowForm(true), 400)
+      const timer = setTimeout(() => setShowForm(true), 300)
       return () => clearTimeout(timer)
     }
   }, [mounted])
@@ -88,287 +85,275 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen mojave-wallpaper-light flex items-center justify-center">
-        <div className="animate-pulse flex items-center justify-center w-16 h-16 rounded-full bg-white/20 backdrop-blur-xl">
-          <div className="w-8 h-8 rounded-full bg-white/40" />
-        </div>
+      <div className={cn(
+        "min-h-screen flex items-center justify-center",
+        isDark ? "bg-[#0a0f1a]" : "bg-gradient-to-br from-[#e8f4f8] via-[#dceef5] to-[#c8e0ec]"
+      )}>
+        <div className="animate-pulse w-16 h-16 rounded-2xl bg-primary/20" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden flex flex-col items-center justify-center">
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center">
       {/* ============================================
-          Background — Clean Gradient
+          Background — Soft Gradient
           ============================================ */}
       <div className="absolute inset-0 -z-10">
-        {/* Solid gradient background */}
-        <div
-          className={cn(
-            "absolute inset-0",
-            isDark
-              ? "bg-gradient-to-br from-[#0c1220] via-[#0f1a2e] to-[#0a0f1a]"
-              : "bg-gradient-to-br from-[#4a90a4] via-[#3a7c94] to-[#2d6a80]"
-          )}
-        />
-
-        {/* Subtle radial glow */}
         <div className={cn(
           "absolute inset-0",
           isDark
-            ? "bg-[radial-gradient(ellipse_at_50%_30%,rgba(20,184,166,0.08)_0%,transparent_60%)]"
-            : "bg-[radial-gradient(ellipse_at_50%_30%,rgba(255,255,255,0.15)_0%,transparent_60%)]"
+            ? "bg-gradient-to-br from-[#0a0f1a] via-[#0f1729] to-[#0a0e18]"
+            : "bg-gradient-to-br from-[#e8f4f8] via-[#dceef5] to-[#c8e0ec]"
         )} />
-
-        {/* Subtle noise texture overlay */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }} />
-
-        {/* Soft vignette */}
+        {/* Subtle decorative circles */}
         <div className={cn(
-          "absolute inset-0",
-          isDark
-            ? "bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.4)_100%)]"
-            : "bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(0,0,0,0.1)_100%)]"
+          "absolute -top-32 -right-32 w-96 h-96 rounded-full blur-3xl",
+          isDark ? "bg-primary/5" : "bg-primary/8"
+        )} />
+        <div className={cn(
+          "absolute -bottom-32 -left-32 w-96 h-96 rounded-full blur-3xl",
+          isDark ? "bg-primary/3" : "bg-primary/6"
         )} />
       </div>
 
       {/* ============================================
-          Theme Toggle — Top Right Corner
+          Theme Toggle — Top Right
           ============================================ */}
       <motion.button
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
         onClick={() => setTheme(isDark ? 'light' : 'dark')}
         className={cn(
           "absolute top-6 right-6 z-20",
-          "w-10 h-10 rounded-full flex items-center justify-center",
-          "mojave-frost mojave-frost-light",
-          "retina-shadow",
+          "w-9 h-9 rounded-lg flex items-center justify-center",
           "transition-all duration-200",
-          "hover:scale-110 active:scale-95",
-          "text-gray-600 dark:text-gray-300"
+          "hover:scale-105 active:scale-95",
+          isDark
+            ? "bg-white/10 text-gray-400 hover:text-gray-200 hover:bg-white/15"
+            : "bg-black/5 text-gray-500 hover:text-gray-700 hover:bg-black/8"
         )}
       >
         {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
       </motion.button>
 
       {/* ============================================
-          Center Content — Login
+          Login Card
           ============================================ */}
-      <div className="flex flex-col items-center justify-center px-4 w-full">
-        {/* ============================================
-            User Avatar
-            ============================================ */}
-        <AnimatePresence>
-          {showForm && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.6, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center"
-            >
-              {/* Avatar Circle */}
-              <div className="relative">
-                <div
-                  className={cn(
-                    "w-24 h-24 rounded-full flex items-center justify-center",
-                    "mojave-frost mojave-frost-light",
-                    "retina-shadow-lg",
-                    inputFocused && "animate-mojave-pulse"
-                  )}
-                >
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary-foreground">FF</span>
-                  </div>
-                </div>
-                {/* Online indicator */}
-                <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 shadow-sm" />
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className={cn(
+              "w-full max-w-[420px] mx-4",
+              "rounded-2xl p-8",
+              isDark
+                ? "bg-[#16181c] border border-[#2a2d35] shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+                : "bg-white border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
+            )}
+          >
+            {/* ============================================
+                Logo + Title
+                ============================================ */}
+            <div className="flex flex-col items-center text-center">
+              {/* Logo Icon */}
+              <div className={cn(
+                "w-16 h-16 rounded-2xl flex items-center justify-center",
+                isDark
+                  ? "bg-gradient-to-br from-primary to-primary/80"
+                  : "bg-gradient-to-br from-primary to-primary/80"
+              )}>
+                <Truck className="h-8 w-8 text-white" />
               </div>
 
-              {/* User Name */}
-              <h2 className="mt-4 text-xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+              <h1 className={cn(
+                "mt-5 text-2xl font-bold",
+                isDark ? "text-gray-100" : "text-gray-900"
+              )}>
                 FleetFlow OS
-              </h2>
-              <p className="text-xs text-white/60 mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
-                Enterprise Fleet Management
+              </h1>
+              <p className={cn(
+                "mt-1 text-sm",
+                isDark ? "text-gray-500" : "text-gray-500"
+              )}>
+                Enterprise Fleet Management Platform
               </p>
+            </div>
 
-              {/* ============================================
-                  Login Form — Mojave Centered Card
-                  ============================================ */}
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-6 w-full max-w-[460px]"
-              >
-                {/* Error */}
-                <AnimatePresence>
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, height: 0 }}
-                      animate={{ opacity: 1, y: 0, height: 'auto' }}
-                      exit={{ opacity: 0, y: -8, height: 0 }}
-                      className="mb-4 overflow-hidden"
-                    >
-                      <div className={cn(
-                        "flex items-center gap-2 px-4 py-3 rounded-2xl text-sm",
-                        "mojave-frost mojave-frost-light",
-                        "text-red-600 dark:text-red-400"
-                      )}>
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
-                        <span>{error}</span>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Login Card — Frosted Glass */}
-                <div className={cn(
-                  "rounded-2xl p-7 mojave-frost mojave-frost-light",
-                  "retina-shadow-lg"
-                )}>
-                  <form onSubmit={handleLogin} className="space-y-4">
-                    {/* Email Input */}
-                    <div>
-                      <input
-                        type="email"
-                        placeholder="Email"
-                        value={email}
-                        onChange={(e) => { setEmail(e.target.value); setError('') }}
-                        onFocus={() => setInputFocused(true)}
-                        onBlur={() => setInputFocused(false)}
-                        className={cn(
-                          "w-full h-12 px-4 rounded-xl text-[15px] outline-none transition-all duration-200",
-                          "mojave-frost-input mojave-frost-input-light",
-                          "placeholder:text-gray-400 dark:placeholder:text-gray-500",
-                          "text-gray-900 dark:text-gray-100",
-                          "focus:ring-2 focus:ring-primary/40 focus:bg-white/70 dark:focus:bg-gray-800/70"
-                        )}
-                        required
-                        autoComplete="email"
-                        disabled={isLoading || demoLoading}
-                      />
-                    </div>
-
-                    {/* Password Input */}
-                    <div className="relative">
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => { setPassword(e.target.value); setError('') }}
-                        onFocus={() => setInputFocused(true)}
-                        onBlur={() => setInputFocused(false)}
-                        className={cn(
-                          "w-full h-12 px-4 pr-11 rounded-xl text-[15px] outline-none transition-all duration-200",
-                          "mojave-frost-input mojave-frost-input-light",
-                          "placeholder:text-gray-400 dark:placeholder:text-gray-500",
-                          "text-gray-900 dark:text-gray-100",
-                          "focus:ring-2 focus:ring-primary/40 focus:bg-white/70 dark:focus:bg-gray-800/70"
-                        )}
-                        required
-                        autoComplete="current-password"
-                        disabled={isLoading || demoLoading}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-
-                    {/* Sign In Button */}
-                    <motion.button
-                      whileHover={{ scale: 1.01 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="submit"
-                      disabled={isLoading || demoLoading}
-                      className={cn(
-                        "w-full h-12 rounded-xl font-semibold text-[15px] transition-all duration-200",
-                        "bg-primary text-primary-foreground",
-                        "hover:bg-primary/90",
-                        "disabled:opacity-50 disabled:cursor-not-allowed",
-                        "flex items-center justify-center gap-2"
-                      )}
-                    >
-                      {isLoading ? (
-                        <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
-                      ) : (
-                        <>Sign In <ArrowRight className="h-4 w-4" /></>
-                      )}
-                    </motion.button>
-                  </form>
-
-                  {/* Divider */}
-                  <div className="relative my-5">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className={cn("w-full border-t", isDark ? "border-white/10" : "border-black/10")} />
-                    </div>
-                    <div className="relative flex justify-center">
-                      <span className={cn(
-                        "px-3 text-[11px] font-medium",
-                        isDark ? "bg-[rgba(30,30,30,0.72)] text-white/40" : "bg-[rgba(255,255,255,0.72)] text-black/30"
-                      )}>
-                        or
-                      </span>
-                    </div>
+            {/* ============================================
+                Error Message
+                ============================================ */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, height: 0 }}
+                  animate={{ opacity: 1, y: 0, height: 'auto' }}
+                  exit={{ opacity: 0, y: -8, height: 0 }}
+                  className="mt-5 overflow-hidden"
+                >
+                  <div className={cn(
+                    "flex items-center gap-2 px-4 py-3 rounded-lg text-sm",
+                    isDark
+                      ? "bg-red-500/10 text-red-400 border border-red-500/20"
+                      : "bg-red-50 text-red-600 border border-red-100"
+                  )}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+                    <span>{error}</span>
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-                  {/* Demo Login Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleDemoLogin}
-                    disabled={isLoading || demoLoading}
+            {/* ============================================
+                Form
+                ============================================ */}
+            <form onSubmit={handleLogin} className="mt-6 space-y-4">
+              {/* Email */}
+              <div>
+                <label className={cn(
+                  "block text-[11px] font-semibold tracking-wider mb-1.5",
+                  isDark ? "text-gray-400" : "text-gray-500"
+                )}>
+                  EMAIL
+                </label>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError('') }}
+                  className={cn(
+                    "w-full h-12 px-4 rounded-lg text-sm outline-none transition-all duration-200",
+                    isDark
+                      ? "bg-[#1e2028] border border-[#2a2d35] text-gray-100 placeholder:text-gray-600 focus:border-primary/60 focus:ring-1 focus:ring-primary/20"
+                      : "bg-[#fafbfc] border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/60 focus:ring-1 focus:ring-primary/20 focus:bg-white"
+                  )}
+                  required
+                  autoComplete="email"
+                  disabled={isLoading || demoLoading}
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className={cn(
+                  "block text-[11px] font-semibold tracking-wider mb-1.5",
+                  isDark ? "text-gray-400" : "text-gray-500"
+                )}>
+                  PASSWORD
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => { setPassword(e.target.value); setError('') }}
                     className={cn(
-                      "w-full h-12 rounded-xl font-medium text-[15px] transition-all duration-200",
-                      "mojave-frost-input mojave-frost-input-light",
-                      "text-gray-700 dark:text-gray-300",
-                      "hover:bg-white/70 dark:hover:bg-gray-700/60",
-                      "disabled:opacity-50 disabled:cursor-not-allowed",
-                      "flex items-center justify-center gap-2"
+                      "w-full h-12 px-4 pr-11 rounded-lg text-sm outline-none transition-all duration-200",
+                      isDark
+                        ? "bg-[#1e2028] border border-[#2a2d35] text-gray-100 placeholder:text-gray-600 focus:border-primary/60 focus:ring-1 focus:ring-primary/20"
+                        : "bg-[#fafbfc] border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/60 focus:ring-1 focus:ring-primary/20 focus:bg-white"
+                    )}
+                    required
+                    autoComplete="current-password"
+                    disabled={isLoading || demoLoading}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className={cn(
+                      "absolute right-3 top-1/2 -translate-y-1/2 transition-colors",
+                      isDark ? "text-gray-600 hover:text-gray-400" : "text-gray-400 hover:text-gray-600"
                     )}
                   >
-                    {demoLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Sparkles className="h-4 w-4 text-primary" />
-                        Try Demo
-                        <span className={cn(
-                          "ml-1 px-1.5 py-0.5 rounded-md text-[9px] font-bold",
-                          "bg-primary/15 text-primary"
-                        )}>
-                          VIEW ONLY
-                        </span>
-                      </>
-                    )}
-                  </motion.button>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
+              </div>
 
-                {/* Info hint */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5, delay: 0.6 }}
-                  className="mt-5 text-center"
-                >
-                  <p className="text-[11px] text-white/50 drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
-                    <KeyRound className="inline h-3 w-3 mr-1 -mt-0.5" />
-                    New device? Serial key required to activate ERP.
-                  </p>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+              {/* Sign In Button */}
+              <motion.button
+                whileHover={{ scale: 1.005 }}
+                whileTap={{ scale: 0.99 }}
+                type="submit"
+                disabled={isLoading || demoLoading}
+                className={cn(
+                  "w-full h-12 rounded-lg font-semibold text-sm transition-all duration-200",
+                  "bg-primary text-white",
+                  "hover:bg-primary/90 hover:shadow-md",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  "flex items-center justify-center gap-2"
+                )}
+              >
+                {isLoading ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
+                ) : (
+                  <>Sign In <ArrowRight className="h-4 w-4" /></>
+                )}
+              </motion.button>
+            </form>
+
+            {/* ============================================
+                Divider
+                ============================================ */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className={cn("w-full border-t", isDark ? "border-[#2a2d35]" : "border-gray-100")} />
+              </div>
+              <div className="relative flex justify-center">
+                <span className={cn(
+                  "px-3 text-xs font-medium",
+                  isDark ? "bg-[#16181c] text-gray-600" : "bg-white text-gray-400"
+                )}>
+                  OR
+                </span>
+              </div>
+            </div>
+
+            {/* ============================================
+                View Only / Demo Button
+                ============================================ */}
+            <motion.button
+              whileHover={{ scale: 1.005 }}
+              whileTap={{ scale: 0.99 }}
+              onClick={handleDemoLogin}
+              disabled={isLoading || demoLoading}
+              className={cn(
+                "w-full h-11 rounded-lg font-medium text-sm transition-all duration-200",
+                isDark
+                  ? "border border-primary/30 text-primary hover:bg-primary/10"
+                  : "border border-primary/40 text-primary hover:bg-primary/5",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                "flex items-center justify-center gap-2"
+              )}
+            >
+              {demoLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Eye className="h-4 w-4" />
+                  View Only
+                </>
+              )}
+            </motion.button>
+
+            {/* ============================================
+                Footer Hint
+                ============================================ */}
+            <div className="mt-6 text-center">
+              <p className={cn(
+                "text-[11px] flex items-center justify-center gap-1",
+                isDark ? "text-gray-600" : "text-gray-400"
+              )}>
+                <KeyRound className="h-3 w-3" />
+                New device? Serial key required to activate ERP.
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
