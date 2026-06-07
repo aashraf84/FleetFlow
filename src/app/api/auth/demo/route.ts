@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
 
 function generateToken(): string {
   return Array.from(crypto.getRandomValues(new Uint8Array(32)))
@@ -13,12 +14,8 @@ export async function POST(req: NextRequest) {
     deviceFingerprint = body.deviceFingerprint || 'demo-device'
   } catch {}
 
-  // Demo login — lightweight approach
-  // Try DB first with minimal operations, fallback to static response
+  // Demo login — try DB first, fallback to static response
   try {
-    const { db } = await import('@/lib/db')
-
-    // Just look up the demo user - single query
     const demoUser = await db.user.findUnique({
       where: { email: 'demo@fleetflow.os' },
       include: { tenant: true }
@@ -81,7 +78,7 @@ export async function POST(req: NextRequest) {
     },
     sessionToken,
     permissions: ['view_all'],
-    deviceActivated: true, // Skip device activation in fallback
+    deviceActivated: true,
     isDemo: true,
   })
 }
