@@ -1,9 +1,4 @@
-// Ensure DATABASE_URL is set for Prisma at runtime
-// This is needed because Next.js Turbopack may cache env variables
-if (!process.env.DATABASE_URL || process.env.DATABASE_URL.startsWith('file:')) {
-  process.env.DATABASE_URL = 'postgresql://neondb_owner:npg_e4uQwH9cNifF@ep-lucky-fog-ap5pa8qr-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require'
-}
-
+// FleetFlow Central Database — SQLite
 import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = globalThis as unknown as {

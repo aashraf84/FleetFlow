@@ -5,7 +5,7 @@ import { useAppStore } from '@/lib/store'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Eye, EyeOff, ArrowRight, Loader2, KeyRound,
+  Eye, EyeOff, ArrowRight, Loader2,
   Moon, Sun, Truck
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -339,18 +339,7 @@ export default function LoginPage() {
               )}
             </motion.button>
 
-            {/* ============================================
-                Footer Hint
-                ============================================ */}
-            <div className="mt-6 text-center">
-              <p className={cn(
-                "text-[11px] flex items-center justify-center gap-1",
-                isDark ? "text-gray-600" : "text-gray-400"
-              )}>
-                <KeyRound className="h-3 w-3" />
-                New device? Serial key required to activate ERP.
-              </p>
-            </div>
+
           </motion.div>
         )}
       </AnimatePresence>
