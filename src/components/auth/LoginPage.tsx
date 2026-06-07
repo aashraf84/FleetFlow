@@ -24,42 +24,7 @@ function getDeviceFingerprint(): string {
 }
 
 // ============================================
-// macOS Mojave Clock Component
-// ============================================
-function MojaveClock() {
-  const [time, setTime] = useState(new Date())
-
-  useEffect(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000)
-    return () => clearInterval(interval)
-  }, [])
-
-  const timeString = time.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  })
-
-  const dateString = time.toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  })
-
-  return (
-    <div className="text-center select-none">
-      <p className="text-6xl sm:text-7xl font-extralight tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.3)]">
-        {timeString}
-      </p>
-      <p className="text-lg sm:text-xl font-light text-white/80 mt-1 drop-shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
-        {dateString}
-      </p>
-    </div>
-  )
-}
-
-// ============================================
-// macOS Mojave Login Page
+// FleetFlow OS Login Page
 // ============================================
 export default function LoginPage() {
   const { login } = useAppStore()
@@ -191,21 +156,11 @@ export default function LoginPage() {
       </motion.button>
 
       {/* ============================================
-          Center Content — Clock + Login
+          Center Content — Login
           ============================================ */}
-      <div className="flex flex-col items-center justify-center px-4 py-8 w-full">
-        {/* Clock */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
-        >
-          <MojaveClock />
-        </motion.div>
-
+      <div className="flex flex-col items-center justify-center px-4 w-full">
         {/* ============================================
-            User Avatar — Mojave Circle
+            User Avatar
             ============================================ */}
         <AnimatePresence>
           {showForm && (
@@ -219,25 +174,25 @@ export default function LoginPage() {
               <div className="relative">
                 <div
                   className={cn(
-                    "w-28 h-28 rounded-full flex items-center justify-center",
+                    "w-24 h-24 rounded-full flex items-center justify-center",
                     "mojave-frost mojave-frost-light",
                     "retina-shadow-lg",
                     inputFocused && "animate-mojave-pulse"
                   )}
                 >
-                  <div className="w-[104px] h-[104px] rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
-                    <span className="text-3xl font-bold text-primary-foreground">FF</span>
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-primary-foreground">FF</span>
                   </div>
                 </div>
                 {/* Online indicator */}
-                <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-[2.5px] border-white dark:border-gray-800 shadow-sm" />
+                <div className="absolute bottom-1 right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-gray-800 shadow-sm" />
               </div>
 
               {/* User Name */}
-              <h2 className="mt-5 text-2xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
+              <h2 className="mt-4 text-xl font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.4)]">
                 FleetFlow OS
               </h2>
-              <p className="text-sm text-white/70 mt-1 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
+              <p className="text-xs text-white/60 mt-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.3)]">
                 Enterprise Fleet Management
               </p>
 
@@ -248,7 +203,7 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                className="mt-8 w-full max-w-[400px]"
+                className="mt-6 w-full max-w-[460px]"
               >
                 {/* Error */}
                 <AnimatePresence>
@@ -273,10 +228,10 @@ export default function LoginPage() {
 
                 {/* Login Card — Frosted Glass */}
                 <div className={cn(
-                  "rounded-2xl p-8 mojave-frost mojave-frost-light",
+                  "rounded-2xl p-7 mojave-frost mojave-frost-light",
                   "retina-shadow-lg"
                 )}>
-                  <form onSubmit={handleLogin} className="space-y-5">
+                  <form onSubmit={handleLogin} className="space-y-4">
                     {/* Email Input */}
                     <div>
                       <input
@@ -287,7 +242,7 @@ export default function LoginPage() {
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
                         className={cn(
-                          "w-full h-12 px-4 rounded-xl text-sm outline-none transition-all duration-200",
+                          "w-full h-12 px-4 rounded-xl text-[15px] outline-none transition-all duration-200",
                           "mojave-frost-input mojave-frost-input-light",
                           "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                           "text-gray-900 dark:text-gray-100",
@@ -309,7 +264,7 @@ export default function LoginPage() {
                         onFocus={() => setInputFocused(true)}
                         onBlur={() => setInputFocused(false)}
                         className={cn(
-                          "w-full h-12 px-4 pr-11 rounded-xl text-sm outline-none transition-all duration-200",
+                          "w-full h-12 px-4 pr-11 rounded-xl text-[15px] outline-none transition-all duration-200",
                           "mojave-frost-input mojave-frost-input-light",
                           "placeholder:text-gray-400 dark:placeholder:text-gray-500",
                           "text-gray-900 dark:text-gray-100",
@@ -335,7 +290,7 @@ export default function LoginPage() {
                       type="submit"
                       disabled={isLoading || demoLoading}
                       className={cn(
-                        "w-full h-12 rounded-xl font-semibold text-sm transition-all duration-200",
+                        "w-full h-12 rounded-xl font-semibold text-[15px] transition-all duration-200",
                         "bg-primary text-primary-foreground",
                         "hover:bg-primary/90",
                         "disabled:opacity-50 disabled:cursor-not-allowed",
@@ -351,7 +306,7 @@ export default function LoginPage() {
                   </form>
 
                   {/* Divider */}
-                  <div className="relative my-6">
+                  <div className="relative my-5">
                     <div className="absolute inset-0 flex items-center">
                       <div className={cn("w-full border-t", isDark ? "border-white/10" : "border-black/10")} />
                     </div>
@@ -372,7 +327,7 @@ export default function LoginPage() {
                     onClick={handleDemoLogin}
                     disabled={isLoading || demoLoading}
                     className={cn(
-                      "w-full h-12 rounded-xl font-medium text-sm transition-all duration-200",
+                      "w-full h-12 rounded-xl font-medium text-[15px] transition-all duration-200",
                       "mojave-frost-input mojave-frost-input-light",
                       "text-gray-700 dark:text-gray-300",
                       "hover:bg-white/70 dark:hover:bg-gray-700/60",
