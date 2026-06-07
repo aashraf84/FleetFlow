@@ -81,6 +81,15 @@ export interface NavGroup {
   items: NavItem[]
 }
 
+export function usePageTitle(): string {
+  const activePage = useAppStore((s) => s.activePage)
+  for (const group of navigationGroups) {
+    const item = group.items.find(i => i.id === activePage)
+    if (item) return item.label
+  }
+  return 'Dashboard'
+}
+
 export const navigationGroups: NavGroup[] = [
   {
     label: 'Overview',
