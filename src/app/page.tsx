@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useCallback, useMemo } from 'react'
+import React, { useEffect, useCallback, useMemo, useState } from 'react'
 import { useAppStore, navigationGroups } from '@/lib/store'
 import { useTheme } from 'next-themes'
 import { 
@@ -8,20 +8,22 @@ import {
   Car, BarChart3, ClipboardCheck, CalendarDays, FileText, ArrowLeftRight, Wallet, AlertTriangle,
   Users, IdCard, Radio, Route, MapPin, Fuel, Wrench, Settings, History, Cog, Package, Warehouse,
   Receipt, MinusCircle, DollarSign, BookOpen, Shield, FileCheck, UserCog, Clock, Palmtree, Banknote, Award, FolderOpen,
-  PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Command, HomeIcon, Zap, Activity
+  PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Zap, Activity, Eye, LogOut
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { CommandDialog, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from '@/components/ui/command'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+
+// Auth pages
+import LoginPage from '@/components/auth/LoginPage'
+import DeviceActivationPage from '@/components/auth/DeviceActivationPage'
 
 // Dynamic icon mapping
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -32,7 +34,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   PieChart, Bot,
 }
 
-// Page Content Components
+// Lazy-loaded page content components
 import DashboardPage from '@/components/fleet/DashboardPage'
 import OwnerClientsPage from '@/components/fleet/OwnerClientsPage'
 import OwnerSubscriptionsPage from '@/components/fleet/OwnerSubscriptionsPage'
@@ -124,7 +126,7 @@ const pageComponents: Record<string, React.ComponentType> = {
 }
 
 function Sidebar() {
-  const { activePage, setActivePage, sidebarCollapsed, setSidebarCollapsed } = useAppStore()
+  const { activePage, setActivePage, sidebarCollapsed, setSidebarCollapsed, user, isDemo, isViewOnly } = useAppStore()
 
   return (
     <aside className={cn(
@@ -151,6 +153,17 @@ function Sidebar() {
           <ChevronLeft className={cn("h-3.5 w-3.5 transition-transform", sidebarCollapsed && "rotate-180")} />
         </Button>
       </div>
+
+      {/* Demo Banner */}
+      {isDemo && !sidebarCollapsed && (
+        <div className="mx-3 mt-2 p-2 rounded-md bg-sidebar-accent/80 border border-sidebar-border/50">
+          <div className="flex items-center gap-1.5">
+            <Eye className="h-3 w-3 text-sidebar-primary" />
+            <span className="text-[10px] font-semibold text-sidebar-primary">DEMO MODE</span>
+          </div>
+          <p className="text-[9px] text-sidebar-foreground/60 mt-0.5">View-only access</p>
+        </div>
+      )}
 
       {/* Navigation */}
       <ScrollArea className="flex-1 py-2">
@@ -204,17 +217,24 @@ function Sidebar() {
         </nav>
       </ScrollArea>
 
-      {/* Bottom */}
+      {/* Bottom - User Info */}
       <div className="border-t border-sidebar-border p-3 shrink-0">
-        {!sidebarCollapsed && (
+        {!sidebarCollapsed && user && (
           <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-sidebar-accent/50">
             <div className="flex items-center justify-center w-7 h-7 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
-              A
+              {user.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-medium truncate">Admin User</span>
-              <span className="text-[10px] text-sidebar-foreground/50 truncate">Super Owner</span>
+              <span className="text-xs font-medium truncate">{user.name}</span>
+              <span className="text-[10px] text-sidebar-foreground/50 truncate">
+                {isDemo ? 'Demo Account' : user.role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+              </span>
             </div>
+            {isDemo && (
+              <Badge variant="secondary" className="ml-auto h-4 px-1 text-[8px] bg-sidebar-primary/20 text-sidebar-primary">
+                VIEW
+              </Badge>
+            )}
           </div>
         )}
       </div>
@@ -223,7 +243,7 @@ function Sidebar() {
 }
 
 function MobileSidebar() {
-  const { activePage, setActivePage, sidebarOpen, setSidebarOpen } = useAppStore()
+  const { activePage, setActivePage, sidebarOpen, setSidebarOpen, isDemo, user } = useAppStore()
 
   return (
     <>
@@ -242,6 +262,14 @@ function MobileSidebar() {
                 <X className="h-5 w-5" />
               </Button>
             </div>
+            {isDemo && (
+              <div className="mx-3 mt-2 p-2 rounded-md bg-sidebar-accent/80 border border-sidebar-border/50">
+                <div className="flex items-center gap-1.5">
+                  <Eye className="h-3 w-3 text-sidebar-primary" />
+                  <span className="text-[10px] font-semibold text-sidebar-primary">DEMO MODE - View Only</span>
+                </div>
+              </div>
+            )}
             <ScrollArea className="flex-1 py-2">
               <nav className="space-y-1 px-2">
                 {navigationGroups.map((group) => (
@@ -277,6 +305,16 @@ function MobileSidebar() {
                 ))}
               </nav>
             </ScrollArea>
+            {user && (
+              <div className="border-t border-sidebar-border p-3">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-xs font-medium">{user.name}</span>
+                </div>
+              </div>
+            )}
           </aside>
         </div>
       )}
@@ -285,7 +323,7 @@ function MobileSidebar() {
 }
 
 function Header() {
-  const { activePage, setActivePage, setSidebarOpen, commandOpen, setCommandOpen, notifications, dismissNotification } = useAppStore()
+  const { activePage, setActivePage, setSidebarOpen, commandOpen, setCommandOpen, notifications, dismissNotification, user, isDemo, isViewOnly, logout, sessionToken } = useAppStore()
   const { theme, setTheme } = useTheme()
 
   const pageTitle = useMemo(() => {
@@ -309,6 +347,19 @@ function Header() {
     return () => document.removeEventListener('keydown', down)
   }, [commandOpen, setCommandOpen])
 
+  const handleLogout = useCallback(async () => {
+    try {
+      if (sessionToken) {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${sessionToken}` },
+        })
+      }
+    } catch {}
+    logout()
+    toast.success('Signed out successfully')
+  }, [sessionToken, logout])
+
   return (
     <header className="h-14 border-b bg-card flex items-center justify-between px-4 gap-4 shrink-0">
       <div className="flex items-center gap-3">
@@ -316,9 +367,12 @@ function Header() {
           <Menu className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-2">
-          <HomeIcon className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">/</span>
           <span className="text-sm font-medium">{pageTitle}</span>
+          {isDemo && (
+            <Badge variant="secondary" className="h-5 px-1.5 text-[10px] bg-primary/10 text-primary font-medium">
+              <Eye className="h-3 w-3 mr-0.5" /> VIEW ONLY
+            </Badge>
+          )}
         </div>
       </div>
 
@@ -392,16 +446,23 @@ function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 gap-2 px-2">
               <Avatar className="h-7 w-7">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">A</AvatarFallback>
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                  {user?.name.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
               </Avatar>
-              <span className="hidden lg:inline text-sm font-medium">Admin</span>
+              <span className="hidden lg:inline text-sm font-medium">{user?.name || 'User'}</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col">
-                <span className="text-sm font-medium">Admin User</span>
-                <span className="text-xs text-muted-foreground">admin@fleetflow.os</span>
+                <span className="text-sm font-medium">{user?.name}</span>
+                <span className="text-xs text-muted-foreground">{user?.email}</span>
+                {isDemo && (
+                  <Badge variant="secondary" className="w-fit mt-1 h-5 px-1.5 text-[10px] bg-primary/10 text-primary">
+                    <Eye className="h-3 w-3 mr-0.5" /> Demo - View Only
+                  </Badge>
+                )}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
@@ -409,7 +470,9 @@ function Header() {
               <Settings className="mr-2 h-4 w-4" /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-destructive">Sign Out</DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+              <LogOut className="mr-2 h-4 w-4" /> Sign Out
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -443,9 +506,15 @@ function Header() {
 }
 
 function Footer() {
+  const { isDemo } = useAppStore()
   return (
     <footer className="h-8 border-t bg-card flex items-center justify-between px-4 text-[10px] text-muted-foreground shrink-0">
-      <span>FleetFlow OS v1.0.0</span>
+      <div className="flex items-center gap-2">
+        <span>FleetFlow OS v1.0.0</span>
+        {isDemo && (
+          <Badge variant="secondary" className="h-4 px-1 text-[8px] bg-primary/10 text-primary">DEMO</Badge>
+        )}
+      </div>
       <div className="flex items-center gap-3">
         <span className="flex items-center gap-1"><Zap className="h-3 w-3 text-green-500" /> System Online</span>
         <span className="flex items-center gap-1"><Activity className="h-3 w-3" /> All Services Running</span>
@@ -454,8 +523,81 @@ function Footer() {
   )
 }
 
+// ============================================
+// Main App Entry - Handles Auth Flow
+// ============================================
+
 export default function Home() {
-  const { activePage } = useAppStore()
+  const { isAuthenticated, deviceActivated, isDemo } = useAppStore()
+  const activePage = useAppStore((s) => s.activePage)
+  const [sessionChecked, setSessionChecked] = useState(() => false)
+  const [seedDone, setSeedDone] = useState(() => false)
+
+  // Seed demo data on first load
+  useEffect(() => {
+    if (seedDone) return
+    const seedData = async () => {
+      try {
+        await fetch('/api/auth/seed', { method: 'POST' })
+      } catch {}
+      setSeedDone(true)
+      setSessionChecked(true)
+    }
+    seedData()
+  }, [seedDone])
+
+  // Validate session token with backend periodically
+  useEffect(() => {
+    if (!isAuthenticated || !sessionChecked) return
+
+    const validateSession = async () => {
+      const token = useAppStore.getState().sessionToken
+      if (!token) return
+
+      try {
+        const res = await fetch('/api/auth/session', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        })
+        if (!res.ok) {
+          // Session invalid, log out
+          useAppStore.getState().logout()
+        }
+      } catch {}
+    }
+
+    validateSession()
+    const interval = setInterval(validateSession, 5 * 60 * 1000) // every 5 minutes
+    return () => clearInterval(interval)
+  }, [isAuthenticated, sessionChecked])
+
+  // Loading state
+  if (!sessionChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-primary-foreground font-bold text-lg animate-pulse">
+            FF
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Activity className="h-4 w-4 animate-spin" />
+            Loading FleetFlow OS...
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Not authenticated → Show Login
+  if (!isAuthenticated) {
+    return <LoginPage />
+  }
+
+  // Authenticated but device not activated → Show Activation
+  if (!deviceActivated) {
+    return <DeviceActivationPage />
+  }
+
+  // Authenticated & Device activated → Show Main App
   const ActiveComponent = pageComponents[activePage] || DashboardPage
 
   return (

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export type PageId = 
   | 'dashboard'
@@ -18,6 +19,46 @@ export type PageId =
   | 'documents'
   | 'reports' | 'ai-assistant' | 'settings'
 
+// ============================================
+// Auth Types
+// ============================================
+
+interface AuthUser {
+  id: string
+  email: string
+  name: string
+  role: string
+  avatar?: string | null
+  tenant: { id: string; name: string } | null
+}
+
+interface AuthState {
+  user: AuthUser | null
+  sessionToken: string | null
+  isAuthenticated: boolean
+  isDemo: boolean
+  deviceActivated: boolean
+  permissions: string[]
+  login: (user: AuthUser, token: string, permissions: string[], isDemo: boolean, deviceActivated: boolean) => void
+  logout: () => void
+  activateDevice: () => void
+  hasPermission: (permission: string) => boolean
+  isViewOnly: () => boolean
+}
+
+// ============================================
+// App State Types
+// ============================================
+
+interface Notification {
+  id: string
+  title: string
+  message: string
+  type: 'info' | 'success' | 'warning' | 'error'
+  time: Date
+  read: boolean
+}
+
 interface AppState {
   activePage: PageId
   setActivePage: (page: PageId) => void
@@ -34,41 +75,103 @@ interface AppState {
   dismissNotification: (id: string) => void
 }
 
-interface Notification {
-  id: string
-  title: string
-  message: string
-  type: 'info' | 'success' | 'warning' | 'error'
-  time: Date
-  read: boolean
-}
+// ============================================
+// Combined Store with Persist
+// ============================================
 
-export const useAppStore = create<AppState>((set) => ({
-  activePage: 'dashboard',
-  setActivePage: (page) => set({ activePage: page }),
-  sidebarOpen: true,
-  setSidebarOpen: (open) => set({ sidebarOpen: open }),
-  sidebarCollapsed: false,
-  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
-  searchQuery: '',
-  setSearchQuery: (query) => set({ searchQuery: query }),
-  commandOpen: false,
-  setCommandOpen: (open) => set({ commandOpen: open }),
-  notifications: [],
-  addNotification: (notification) => set((state) => ({
-    notifications: [{
-      ...notification,
-      id: Math.random().toString(36).substr(2, 9),
-      time: new Date(),
-      read: false,
-    }, ...state.notifications].slice(0, 50)
-  })),
-  dismissNotification: (id) => set((state) => ({
-    notifications: state.notifications.filter(n => n.id !== id)
-  })),
-}))
+interface RootStore extends AuthState, AppState {}
 
-// Navigation structure
+export const useAppStore = create<RootStore>()(
+  persist(
+    (set, get) => ({
+      // Auth state
+      user: null,
+      sessionToken: null,
+      isAuthenticated: false,
+      isDemo: false,
+      deviceActivated: true,
+      permissions: [],
+
+      login: (user, token, permissions, isDemo, deviceActivated) => set({
+        user,
+        sessionToken: token,
+        isAuthenticated: true,
+        isDemo,
+        permissions,
+        deviceActivated,
+      }),
+
+      logout: () => set({
+        user: null,
+        sessionToken: null,
+        isAuthenticated: false,
+        isDemo: false,
+        permissions: [],
+        activePage: 'dashboard',
+      }),
+
+      activateDevice: () => set({ deviceActivated: true }),
+
+      hasPermission: (permission: string) => {
+        const { permissions } = get()
+        if (permissions.includes('*')) return true
+        if (permission === 'view_all' && permissions.includes('view_all')) return true
+        return permissions.includes(permission)
+      },
+
+      isViewOnly: () => {
+        const { permissions, isDemo } = get()
+        if (isDemo) return true
+        if (permissions.includes('*')) return false
+        if (permissions.includes('edit_all')) return false
+        // Check if user only has view permissions
+        const hasEdit = permissions.some(p => p.startsWith('edit_'))
+        return !hasEdit
+      },
+
+      // App state
+      activePage: 'dashboard',
+      setActivePage: (page) => set({ activePage: page }),
+      sidebarOpen: true,
+      setSidebarOpen: (open) => set({ sidebarOpen: open }),
+      sidebarCollapsed: false,
+      setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+      searchQuery: '',
+      setSearchQuery: (query) => set({ searchQuery: query }),
+      commandOpen: false,
+      setCommandOpen: (open) => set({ commandOpen: open }),
+      notifications: [],
+      addNotification: (notification) => set((state) => ({
+        notifications: [{
+          ...notification,
+          id: Math.random().toString(36).substr(2, 9),
+          time: new Date(),
+          read: false,
+        }, ...state.notifications].slice(0, 50)
+      })),
+      dismissNotification: (id) => set((state) => ({
+        notifications: state.notifications.filter(n => n.id !== id)
+      })),
+    }),
+    {
+      name: 'fleetflow-storage',
+      partialize: (state) => ({
+        user: state.user,
+        sessionToken: state.sessionToken,
+        isAuthenticated: state.isAuthenticated,
+        isDemo: state.isDemo,
+        deviceActivated: state.deviceActivated,
+        permissions: state.permissions,
+        sidebarCollapsed: state.sidebarCollapsed,
+      }),
+    }
+  )
+)
+
+// ============================================
+// Navigation Structure
+// ============================================
+
 export interface NavItem {
   id: PageId
   label: string
