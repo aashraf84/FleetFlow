@@ -712,6 +712,18 @@ model PerformanceReview {
 }
 
 // ============================================
+// Tenant Settings
+// ============================================
+
+model TenantSettings {
+  id        String   @id @default(cuid())
+  category  String   @unique  // general, receipt, invoice, payment, tax, email, notification, security, appearance
+  data      Json     @default("{}")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+// ============================================
 // Document Management
 // ============================================
 

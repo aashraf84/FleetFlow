@@ -38,6 +38,7 @@ model Tenant {
 
   users       User[]
   clients     Client[]
+  settings    TenantSettings[]
 }
 
 // ============================================
@@ -213,4 +214,22 @@ model UpdateRecord {
   publishedAt     DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+
+// ============================================
+// Tenant Settings (stored in central DB with tenantId for multi-tenancy)
+// Categories: general, receipt, invoice, payment, tax, email, notification, security, appearance
+// ============================================
+
+model TenantSettings {
+  id        String   @id @default(cuid())
+  tenantId  String   // links to tenant; "default" for demo/global settings
+  category  String   // general, receipt, invoice, payment, tax, email, notification, security, appearance
+  data      Json     @default("{}")
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, category])
 }
