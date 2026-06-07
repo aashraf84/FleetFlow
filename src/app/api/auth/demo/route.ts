@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+
+function generateToken(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
 
 export async function POST(req: NextRequest) {
+  let deviceFingerprint = 'demo-device'
   try {
-    const { deviceFingerprint } = await req.json()
+    const body = await req.json()
+    deviceFingerprint = body.deviceFingerprint || 'demo-device'
+  } catch {}
 
-    // Find or create demo user
+  // Demo login works without database — returns a static demo user
+  // When database is available, the full flow with sessions/audit is used
+  try {
+    const { db } = await import('@/lib/db')
+
     let demoUser = await db.user.findUnique({
       where: { email: 'demo@fleetflow.os' },
       include: { tenant: true }
     })
 
     if (!demoUser) {
-      // Auto-seed demo user
-      const demoTenant = await db.tenant.findFirst({ where: { slug: 'demo' } }) 
+      const demoTenant = await db.tenant.findFirst({ where: { slug: 'demo' } })
         || await db.tenant.create({
           data: {
             name: 'FleetFlow Demo Corp',
@@ -45,7 +56,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Demo account is currently unavailable' }, { status: 403 })
     }
 
-    // Check device activation
     let deviceActivated = true
     if (deviceFingerprint) {
       const existingDevice = await db.device.findFirst({
@@ -61,9 +71,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Create session
     const sessionToken = generateToken()
-    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000) // 4 hours for demo
+    const expiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000)
 
     await db.session.create({
       data: {
@@ -106,13 +115,22 @@ export async function POST(req: NextRequest) {
       isDemo: true,
     })
   } catch (error) {
-    console.error('Demo login error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('Demo login: DB unavailable, using fallback:', (error as Error).message)
+    // Fallback: allow demo login without database
+    const sessionToken = generateToken()
+    return NextResponse.json({
+      user: {
+        id: 'demo-user-fallback',
+        email: 'demo@fleetflow.os',
+        name: 'Demo User',
+        role: 'demo',
+        avatar: null,
+        tenant: { id: 'demo-tenant-fallback', name: 'FleetFlow Demo Corp' },
+      },
+      sessionToken,
+      permissions: ['view_all'],
+      deviceActivated: true,
+      isDemo: true,
+    })
   }
-}
-
-function generateToken(): string {
-  return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-    .map(b => b.toString(16).padStart(2, '0'))
-    .join('')
 }
