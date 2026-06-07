@@ -17,6 +17,7 @@ export type PageId =
   | 'insurance' | 'compliance'
   | 'hr-employees' | 'hr-attendance' | 'hr-leave' | 'hr-payroll' | 'hr-performance'
   | 'documents'
+  | 'pos'
   | 'reports' | 'ai-assistant' | 'settings'
 
 // ============================================
@@ -223,6 +224,7 @@ export const navigationGroups: NavGroup[] = [
   {
     label: 'Rental Management',
     items: [
+      { id: 'pos', label: 'Point of Sale', icon: 'ShoppingCart' },
       { id: 'rental-reservations', label: 'Reservations', icon: 'CalendarDays' },
       { id: 'rental-contracts', label: 'Contracts', icon: 'FileText' },
       { id: 'rental-operations', label: 'Operations', icon: 'ArrowLeftRight' },
