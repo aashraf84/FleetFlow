@@ -13,10 +13,13 @@ export async function POST(req: NextRequest) {
 
     if (!demoUser) {
       // Auto-seed demo user
-      const demoTenant = await db.tenant.findFirst({ where: { name: 'FleetFlow Demo Corp' } }) 
+      const demoTenant = await db.tenant.findFirst({ where: { slug: 'demo' } }) 
         || await db.tenant.create({
           data: {
             name: 'FleetFlow Demo Corp',
+            slug: 'demo',
+            dbName: 'ff_demo',
+            dbReady: true,
             domain: 'demo.fleetflow.os',
             status: 'active',
             storageLimit: 5120,
@@ -33,25 +36,9 @@ export async function POST(req: NextRequest) {
           role: 'demo',
           status: 'active',
           tenantId: demoTenant.id,
-          avatar: null,
         },
         include: { tenant: true }
       })
-
-      // Create demo license for activation
-      const existingLicense = await db.license.findFirst({ where: { licenseKey: 'FFOS-DEMO-2024-ACTIVE' } })
-      if (!existingLicense) {
-        await db.license.create({
-          data: {
-            licenseKey: 'FFOS-DEMO-2024-ACTIVE',
-            clientId: 'demo',
-            status: 'active',
-            maxDevices: 100,
-            activationDate: new Date(),
-            expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          }
-        })
-      }
     }
 
     if (demoUser.status !== 'active') {

@@ -3,13 +3,16 @@ import { db } from '@/lib/db'
 
 export async function POST() {
   try {
-    // Create demo tenant
+    // Create demo tenant (with slug and dbName for multi-tenant)
     const demoTenant = await db.tenant.upsert({
       where: { id: 'demo-tenant-001' },
       update: {},
       create: {
         id: 'demo-tenant-001',
         name: 'FleetFlow Demo Corp',
+        slug: 'demo',
+        dbName: 'ff_demo',
+        dbReady: true,
         domain: 'demo.fleetflow.os',
         status: 'active',
         storageLimit: 5120,
@@ -25,6 +28,7 @@ export async function POST() {
       create: {
         id: 'demo-client-001',
         companyName: 'FleetFlow Demo Corp',
+        slug: 'demo',
         contactPerson: 'Demo User',
         email: 'demo@fleetflow.os',
         phone: '+1-555-0100',
@@ -65,7 +69,7 @@ export async function POST() {
       }
     })
 
-    // Create demo license
+    // Create demo license (only one per client since clientId is @unique)
     await db.license.upsert({
       where: { licenseKey: 'FFOS-DEMO-2024-ACTIVE' },
       update: {},
@@ -79,21 +83,7 @@ export async function POST() {
       }
     })
 
-    // Create enterprise license
-    await db.license.upsert({
-      where: { licenseKey: 'FFOS-ENT-2024-UNLTD' },
-      update: {},
-      create: {
-        licenseKey: 'FFOS-ENT-2024-UNLTD',
-        clientId: demoClient.id,
-        status: 'active',
-        maxDevices: 999,
-        activationDate: new Date(),
-        expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      }
-    })
-
-    return NextResponse.json({ success: true, message: 'Seed data created' })
+    return NextResponse.json({ success: true, message: 'Seed data created on Neon PostgreSQL' })
   } catch (error) {
     console.error('Seed error:', error)
     return NextResponse.json({ error: 'Failed to seed data', details: String(error) }, { status: 500 })
