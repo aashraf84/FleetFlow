@@ -83,33 +83,27 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex bg-background">
-      {/* Left — Branding with Liquid Glass */}
-      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden">
-        {/* Gradient base */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/12 via-primary/4 to-transparent" />
+      {/* Left — Branding with Solid Colors */}
+      <div className="hidden lg:flex lg:w-[55%] relative overflow-hidden bg-[#1c1c1e]">
+        {/* Gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-chart-3/10" />
         
         {/* Floating orbs */}
         <motion.div
           animate={{ y: [0, -20, 0], x: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-          className="absolute top-24 left-16 w-40 h-40 bg-primary/15 rounded-full blur-3xl"
+          className="absolute top-24 left-16 w-40 h-40 bg-primary/25 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ y: [0, 15, 0], x: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
-          className="absolute bottom-32 right-16 w-56 h-56 bg-chart-2/10 rounded-full blur-3xl"
+          className="absolute bottom-32 right-16 w-56 h-56 bg-chart-2/20 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ y: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-chart-3/5 rounded-full blur-3xl"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-chart-3/15 rounded-full blur-3xl"
         />
-
-        {/* Dot grid */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)',
-          backgroundSize: '24px 24px'
-        }} />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center px-16 xl:px-24">
@@ -123,22 +117,22 @@ export default function LoginPage() {
                 FF
               </motion.div>
               <div>
-                <h2 className="text-xl font-bold tracking-tight">FleetFlow OS</h2>
-                <p className="text-xs text-muted-foreground">Enterprise Fleet Management</p>
+                <h2 className="text-xl font-bold tracking-tight text-white">FleetFlow OS</h2>
+                <p className="text-xs text-white/50">Enterprise Fleet Management</p>
               </div>
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl xl:text-[3.25rem] font-bold leading-[1.1] mb-5">
+            <h1 className="text-4xl xl:text-[3.25rem] font-bold leading-[1.1] mb-5 text-white">
               Manage Your Fleet
               <br />
               <span className="bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">Like Never Before</span>
             </h1>
-            <p className="text-base text-muted-foreground mb-12 max-w-md leading-relaxed">
+            <p className="text-base text-white/60 mb-12 max-w-md leading-relaxed">
               Complete ERP platform for vehicle rental companies, fleet operators, transport & logistics providers.
             </p>
 
-            {/* Feature Cards — Glass */}
+            {/* Feature Cards — Solid Dark Cards */}
             <div className="grid grid-cols-2 gap-3 max-w-sm">
               {features.map((feature, i) => (
                 <motion.div
@@ -147,21 +141,21 @@ export default function LoginPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
                   whileHover={{ y: -2, scale: 1.02 }}
-                  className="flex items-start gap-2.5 p-3.5 rounded-2xl glass-card retina-shadow cursor-default"
+                  className="flex items-start gap-2.5 p-3.5 rounded-xl bg-white/8 border border-white/10 cursor-default"
                 >
-                  <div className={cn("flex items-center justify-center w-8 h-8 rounded-xl bg-primary/8 shrink-0", feature.color)}>
+                  <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 shrink-0", feature.color)}>
                     <feature.icon className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold">{feature.label}</p>
-                    <p className="text-[10px] text-muted-foreground">{feature.desc}</p>
+                    <p className="text-xs font-semibold text-white">{feature.label}</p>
+                    <p className="text-[10px] text-white/45">{feature.desc}</p>
                   </div>
                 </motion.div>
               ))}
             </div>
 
             {/* Stats */}
-            <div className="flex items-center gap-8 mt-10 pt-8 border-t border-foreground/5">
+            <div className="flex items-center gap-8 mt-10 pt-8 border-t border-white/10">
               {[
                 { value: '10K+', label: 'Vehicles Managed' },
                 { value: '500+', label: 'Companies Trust Us' },
@@ -169,7 +163,7 @@ export default function LoginPage() {
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-xl font-bold bg-gradient-to-r from-primary to-chart-1 bg-clip-text text-transparent">{stat.value}</p>
-                  <p className="text-[10px] text-muted-foreground">{stat.label}</p>
+                  <p className="text-[10px] text-white/45">{stat.label}</p>
                 </div>
               ))}
             </div>
@@ -183,7 +177,7 @@ export default function LoginPage() {
           {/* Top bar */}
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-2 lg:hidden">
-              <div className="flex items-center justify-center w-9 h-9 rounded-2xl bg-primary text-primary-foreground font-bold text-sm tahoe-glow">FF</div>
+              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground font-bold text-sm tahoe-glow">FF</div>
               <span className="font-bold text-sm">FleetFlow OS</span>
             </div>
             <motion.button
@@ -208,7 +202,7 @@ export default function LoginPage() {
             <AnimatePresence>
               {error && (
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} className="mb-4">
-                  <div className="flex items-center gap-2 p-3 rounded-2xl bg-destructive/8 border border-destructive/15 text-destructive text-[13px]">
+                  <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[13px]">
                     <AlertCircle className="h-4 w-4 shrink-0" />
                     <span>{error}</span>
                   </div>
@@ -221,11 +215,11 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <Label htmlFor="email" className="text-[13px] font-medium">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email" type="email" placeholder="you@company.com"
                     value={email} onChange={(e) => { setEmail(e.target.value); setError('') }}
-                    className="pl-10 h-10 rounded-xl bg-secondary/50 border-border/50 focus:bg-background transition-colors"
+                    className="pl-10 h-10 rounded-xl bg-secondary border-border focus:bg-background transition-colors"
                     required autoComplete="email" disabled={isLoading || demoLoading}
                   />
                 </div>
@@ -237,11 +231,11 @@ export default function LoginPage() {
                   <button type="button" className="text-[11px] text-primary hover:underline font-medium">Forgot password?</button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password" type={showPassword ? 'text' : 'password'} placeholder="Enter your password"
                     value={password} onChange={(e) => { setPassword(e.target.value); setError('') }}
-                    className="pl-10 pr-10 h-10 rounded-xl bg-secondary/50 border-border/50 focus:bg-background transition-colors"
+                    className="pl-10 pr-10 h-10 rounded-xl bg-secondary border-border focus:bg-background transition-colors"
                     required autoComplete="current-password" disabled={isLoading || demoLoading}
                   />
                   <motion.button
@@ -275,11 +269,11 @@ export default function LoginPage() {
 
             {/* Divider */}
             <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/50" /></div>
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
               <div className="relative flex justify-center"><span className="bg-background px-3 text-[11px] text-muted-foreground font-medium">OR</span></div>
             </div>
 
-            {/* Demo Login — Glass Pill */}
+            {/* Demo Login — Solid Card */}
             <motion.button
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
@@ -289,9 +283,9 @@ export default function LoginPage() {
               onClick={handleDemoLogin}
               disabled={isLoading || demoLoading}
               className={cn(
-                "w-full relative overflow-hidden rounded-2xl p-4 transition-all duration-300",
-                "glass-card retina-shadow",
-                "hover:tahoe-glow",
+                "w-full relative overflow-hidden rounded-xl p-4 transition-all duration-300",
+                "bg-card border border-border retina-shadow",
+                "hover:border-primary/30 hover:tahoe-glow",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
@@ -302,21 +296,21 @@ export default function LoginPage() {
                 <div className="flex-1 text-left">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-[13px]">Try Demo Account</span>
-                    <span className="px-1.5 py-0.5 rounded-full bg-primary/10 text-[9px] font-bold text-primary">VIEW ONLY</span>
+                    <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-[9px] font-bold text-primary">VIEW ONLY</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground mt-0.5">Explore all features with read-only access</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
               </div>
               {demoLoading && (
-                <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex items-center justify-center rounded-2xl">
+                <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-xl">
                   <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 </div>
               )}
             </motion.button>
 
             {/* Info */}
-            <div className="mt-4 p-3 rounded-2xl bg-secondary/30 border border-border/30">
+            <div className="mt-4 p-3 rounded-xl bg-secondary border border-border">
               <div className="flex items-start gap-2">
                 <KeyRound className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
                 <div className="text-[11px] text-muted-foreground space-y-0.5">
@@ -327,7 +321,7 @@ export default function LoginPage() {
             </div>
 
             {/* Footer */}
-            <div className="mt-8 pt-5 border-t border-border/30">
+            <div className="mt-8 pt-5 border-t border-border">
               <div className="flex items-center justify-between text-[11px] text-muted-foreground">
                 <span>&copy; {new Date().getFullYear()} FleetFlow OS</span>
                 <div className="flex items-center gap-3">

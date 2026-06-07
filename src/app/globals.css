@@ -47,128 +47,128 @@
 }
 
 /* ============================================
-   macOS Tahoe — Liquid Glass + Retina Colors
+   macOS Tahoe — Solid Retina Color Scheme
    ============================================ */
 
 :root {
   --radius: 0.75rem;
 
-  /* Canvas & Surfaces */
-  --background: #f5f5f7;
+  /* Canvas — Solid Off-White */
+  --background: #f0f0f3;
   --foreground: #1d1d1f;
 
-  /* Cards — subtle glass */
-  --card: rgba(255, 255, 255, 0.72);
+  /* Cards — Solid White */
+  --card: #ffffff;
   --card-foreground: #1d1d1f;
 
-  /* Popover */
-  --popover: rgba(255, 255, 255, 0.85);
+  /* Popover — Solid White */
+  --popover: #ffffff;
   --popover-foreground: #1d1d1f;
 
-  /* Primary — Tahoe Teal */
-  --primary: #0a9a8a;
+  /* Primary — Solid Tahoe Teal */
+  --primary: #0d9488;
   --primary-foreground: #ffffff;
 
-  /* Secondary */
-  --secondary: rgba(0, 0, 0, 0.04);
+  /* Secondary — Solid Light Gray */
+  --secondary: #e8e8ed;
   --secondary-foreground: #1d1d1f;
 
-  /* Muted */
-  --muted: rgba(0, 0, 0, 0.04);
-  --muted-foreground: #86868b;
+  /* Muted — Solid Gray */
+  --muted: #e8e8ed;
+  --muted-foreground: #6e6e73;
 
-  /* Accent — warm coral tint */
-  --accent: rgba(255, 149, 0, 0.08);
+  /* Accent — Solid Warm Amber */
+  --accent: #f0ebe3;
   --accent-foreground: #1d1d1f;
 
-  /* Destructive */
-  --destructive: #ff3b30;
+  /* Destructive — Solid Red */
+  --destructive: #dc2626;
 
-  /* Borders & Inputs */
-  --border: rgba(0, 0, 0, 0.08);
-  --input: rgba(0, 0, 0, 0.08);
-  --ring: #0a9a8a;
+  /* Borders — Solid Subtle */
+  --border: #d1d1d6;
+  --input: #d1d1d6;
+  --ring: #0d9488;
 
-  /* Charts — Retina Vivid */
-  --chart-1: #0a9a8a;
-  --chart-2: #ff9500;
-  --chart-3: #af52de;
-  --chart-4: #30d158;
-  --chart-5: #ff375f;
+  /* Charts — Solid Retina Vivid */
+  --chart-1: #0d9488;
+  --chart-2: #ea580c;
+  --chart-3: #9333ea;
+  --chart-4: #16a34a;
+  --chart-5: #e11d48;
 
-  /* Glass — macOS Tahoe Liquid */
-  --glass: rgba(255, 255, 255, 0.48);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-highlight: rgba(255, 255, 255, 0.8);
+  /* Glass — Solid Opaque */
+  --glass: #ffffff;
+  --glass-border: #d1d1d6;
+  --glass-highlight: #f8f8fa;
 
-  /* Sidebar — Tinted Glass */
-  --sidebar: rgba(246, 246, 248, 0.82);
-  --sidebar-foreground: #1d1d1f;
-  --sidebar-primary: #0a9a8a;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(10, 154, 138, 0.08);
-  --sidebar-accent-foreground: #1d1d1f;
-  --sidebar-border: rgba(0, 0, 0, 0.06);
-  --sidebar-ring: #0a9a8a;
+  /* Sidebar — SOLID DARK (macOS Tahoe Style) */
+  --sidebar: #1c1c1e;
+  --sidebar-foreground: #e5e5e7;
+  --sidebar-primary: #2dd4bf;
+  --sidebar-primary-foreground: #1c1c1e;
+  --sidebar-accent: #2c2c2e;
+  --sidebar-accent-foreground: #e5e5e7;
+  --sidebar-border: #2c2c2e;
+  --sidebar-ring: #2dd4bf;
 }
 
 .dark {
-  /* Canvas — Deep Space */
-  --background: #0c0c0e;
+  /* Canvas — Solid Deep Dark */
+  --background: #0a0a0b;
   --foreground: #f5f5f7;
 
-  /* Cards — Dark Glass */
-  --card: rgba(28, 28, 30, 0.72);
+  /* Cards — Solid Dark Card */
+  --card: #161618;
   --card-foreground: #f5f5f7;
 
   /* Popover */
-  --popover: rgba(28, 28, 30, 0.9);
+  --popover: #1c1c1e;
   --popover-foreground: #f5f5f7;
 
-  /* Primary — Tahoe Neon Teal */
-  --primary: #2dd4bf;
-  --primary-foreground: #0c0c0e;
+  /* Primary — Solid Neon Teal */
+  --primary: #14b8a6;
+  --primary-foreground: #0a0a0b;
 
   /* Secondary */
-  --secondary: rgba(255, 255, 255, 0.06);
+  --secondary: #1c1c1e;
   --secondary-foreground: #f5f5f7;
 
   /* Muted */
-  --muted: rgba(255, 255, 255, 0.06);
-  --muted-foreground: #86868b;
+  --muted: #1c1c1e;
+  --muted-foreground: #8e8e93;
 
   /* Accent */
-  --accent: rgba(255, 149, 0, 0.12);
+  --accent: #1c1c1e;
   --accent-foreground: #f5f5f7;
 
   /* Destructive */
-  --destructive: #ff453a;
+  --destructive: #ef4444;
 
   /* Borders */
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #2dd4bf;
+  --border: #2c2c2e;
+  --input: #2c2c2e;
+  --ring: #14b8a6;
 
-  /* Charts — Neon Retina */
-  --chart-1: #2dd4bf;
-  --chart-2: #ff9f0a;
-  --chart-3: #bf5af2;
-  --chart-4: #30d158;
-  --chart-5: #ff375f;
+  /* Charts — Solid Neon Retina */
+  --chart-1: #14b8a6;
+  --chart-2: #f59e0b;
+  --chart-3: #a855f7;
+  --chart-4: #22c55e;
+  --chart-5: #f43f5e;
 
-  /* Glass — Dark Liquid */
-  --glass: rgba(28, 28, 30, 0.48);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-highlight: rgba(255, 255, 255, 0.04);
+  /* Glass — Solid Dark */
+  --glass: #161618;
+  --glass-border: #2c2c2e;
+  --glass-highlight: #1c1c1e;
 
-  /* Sidebar — Dark Tinted Glass */
-  --sidebar: rgba(18, 18, 20, 0.85);
-  --sidebar-foreground: #f5f5f7;
+  /* Sidebar — Solid Deep Dark */
+  --sidebar: #0f0f11;
+  --sidebar-foreground: #e5e5e7;
   --sidebar-primary: #2dd4bf;
-  --sidebar-primary-foreground: #0c0c0e;
-  --sidebar-accent: rgba(45, 212, 191, 0.1);
-  --sidebar-accent-foreground: #f5f5f7;
-  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-primary-foreground: #0a0a0b;
+  --sidebar-accent: #1a1a1c;
+  --sidebar-accent-foreground: #e5e5e7;
+  --sidebar-border: #1a1a1c;
   --sidebar-ring: #2dd4bf;
 }
 
@@ -184,79 +184,69 @@
 }
 
 /* ============================================
-   macOS Tahoe Liquid Glass Utilities
+   macOS Tahoe Solid Utilities
    ============================================ */
 
 @layer utilities {
   .glass {
     background: var(--glass);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border: 1px solid var(--glass-border);
   }
 
   .glass-card {
     background: var(--card);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border);
   }
 
   .glass-sidebar {
     background: var(--sidebar);
-    backdrop-filter: blur(60px) saturate(200%);
-    -webkit-backdrop-filter: blur(60px) saturate(200%);
     border-right: 1px solid var(--sidebar-border);
   }
 
   .glass-toolbar {
     background: var(--glass);
-    backdrop-filter: blur(40px) saturate(180%);
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border-bottom: 1px solid var(--border);
   }
 
   .glass-pill {
-    background: var(--glass);
-    backdrop-filter: blur(20px) saturate(150%);
-    -webkit-backdrop-filter: blur(20px) saturate(150%);
-    border: 1px solid var(--glass-border);
+    background: var(--secondary);
+    border: 1px solid var(--border);
   }
 
   .retina-shadow {
     box-shadow:
-      0 0 0 0.5px rgba(0, 0, 0, 0.04),
-      0 2px 8px rgba(0, 0, 0, 0.04),
-      0 8px 24px rgba(0, 0, 0, 0.06);
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 4px 8px rgba(0, 0, 0, 0.06),
+      0 12px 24px rgba(0, 0, 0, 0.06);
   }
 
   .retina-shadow-lg {
     box-shadow:
-      0 0 0 0.5px rgba(0, 0, 0, 0.04),
-      0 4px 16px rgba(0, 0, 0, 0.06),
-      0 16px 48px rgba(0, 0, 0, 0.08);
+      0 2px 4px rgba(0, 0, 0, 0.04),
+      0 8px 16px rgba(0, 0, 0, 0.08),
+      0 24px 48px rgba(0, 0, 0, 0.12);
   }
 
   .dark .retina-shadow {
     box-shadow:
-      0 0 0 0.5px rgba(255, 255, 255, 0.04),
-      0 2px 8px rgba(0, 0, 0, 0.2),
-      0 8px 24px rgba(0, 0, 0, 0.3);
+      0 1px 2px rgba(0, 0, 0, 0.2),
+      0 4px 8px rgba(0, 0, 0, 0.3),
+      0 12px 24px rgba(0, 0, 0, 0.4);
   }
 
   .dark .retina-shadow-lg {
     box-shadow:
-      0 0 0 0.5px rgba(255, 255, 255, 0.04),
-      0 4px 16px rgba(0, 0, 0, 0.3),
-      0 16px 48px rgba(0, 0, 0, 0.4);
+      0 2px 4px rgba(0, 0, 0, 0.3),
+      0 8px 16px rgba(0, 0, 0, 0.4),
+      0 24px 48px rgba(0, 0, 0, 0.5);
   }
 
   .tahoe-glow {
-    box-shadow: 0 0 24px rgba(10, 154, 138, 0.15);
+    box-shadow: 0 0 20px rgba(13, 148, 136, 0.25);
   }
 
   .dark .tahoe-glow {
-    box-shadow: 0 0 24px rgba(45, 212, 191, 0.12);
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.2);
   }
 }
 
@@ -273,23 +263,35 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     border: 2px solid transparent;
     background-clip: content-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25);
+    background: rgba(0, 0, 0, 0.35);
     border: 2px solid transparent;
     background-clip: content-box;
   }
   .dark ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.15);
     border: 2px solid transparent;
     background-clip: content-box;
   }
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  /* Sidebar-specific scrollbar - lighter for dark bg */
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
     border: 2px solid transparent;
     background-clip: content-box;
   }

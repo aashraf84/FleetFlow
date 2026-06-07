@@ -75,17 +75,18 @@ export default function DeviceActivationPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {/* Ambient Background */}
+      {/* Ambient Background — Solid */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-primary/5 via-transparent to-chart-3/3" />
         <motion.div
           animate={{ y: [0, -15, 0] }}
           transition={{ repeat: Infinity, duration: 8, ease: 'easeInOut' }}
-          className="absolute top-1/4 left-1/3 w-80 h-80 bg-primary/6 rounded-full blur-3xl"
+          className="absolute top-1/4 left-1/3 w-80 h-80 bg-primary/8 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 10, ease: 'easeInOut' }}
-          className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-chart-2/5 rounded-full blur-3xl"
+          className="absolute bottom-1/3 right-1/4 w-64 h-64 bg-chart-2/8 rounded-full blur-3xl"
         />
       </div>
 
@@ -95,7 +96,7 @@ export default function DeviceActivationPage() {
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="relative w-full max-w-md"
       >
-        <div className="glass-card rounded-3xl retina-shadow-lg overflow-hidden">
+        <div className="bg-card border border-border rounded-2xl retina-shadow-lg overflow-hidden">
           {/* Header */}
           <div className="px-8 pt-8 pb-5 text-center relative">
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent" />
@@ -113,10 +114,10 @@ export default function DeviceActivationPage() {
             </p>
           </div>
 
-          {/* Device Info — Glass Card */}
-          <div className="mx-6 mb-5 p-3.5 rounded-2xl bg-secondary/30 border border-border/30">
+          {/* Device Info — Solid Card */}
+          <div className="mx-6 mb-5 p-3.5 rounded-xl bg-secondary border border-border">
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-background/80 border border-border/50 text-foreground">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-background border border-border text-foreground">
                 {deviceInfo.os === 'Windows' ? <Monitor className="h-4 w-4" /> :
                  deviceInfo.os === 'macOS' ? <Laptop className="h-4 w-4" /> :
                  deviceInfo.os === 'Android' || deviceInfo.os === 'iOS' ? <Smartphone className="h-4 w-4" /> :
@@ -126,7 +127,7 @@ export default function DeviceActivationPage() {
                 <p className="text-[13px] font-medium">{deviceInfo.deviceName}</p>
                 <p className="text-[10px] text-muted-foreground font-mono">{fingerprint}</p>
               </div>
-              <span className="ml-auto px-2 py-0.5 rounded-full bg-chart-5/10 text-chart-5 text-[9px] font-bold">NEW</span>
+              <span className="ml-auto px-2 py-0.5 rounded-md bg-chart-5/10 text-chart-5 text-[9px] font-bold">NEW</span>
             </div>
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Secure</span>
@@ -156,7 +157,7 @@ export default function DeviceActivationPage() {
                   <AnimatePresence>
                     {error && (
                       <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}>
-                        <div className="flex items-center gap-2 p-3 rounded-2xl bg-destructive/8 border border-destructive/15 text-destructive text-[13px]">
+                        <div className="flex items-center gap-2 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[13px]">
                           <AlertCircle className="h-4 w-4 shrink-0" /><span>{error}</span>
                         </div>
                       </motion.div>
@@ -166,12 +167,12 @@ export default function DeviceActivationPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="serialKey" className="text-[13px] font-medium">Serial Key</Label>
                     <div className="relative">
-                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                      <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
                         id="serialKey" type="text" placeholder="FFOS-XXXX-XXXX-XXXX"
                         value={serialKey}
                         onChange={(e) => { setSerialKey(e.target.value.toUpperCase()); setError('') }}
-                        className="pl-10 h-10 rounded-xl bg-secondary/50 border-border/50 font-mono tracking-wider uppercase focus:bg-background transition-colors"
+                        className="pl-10 h-10 rounded-xl bg-secondary border-border font-mono tracking-wider uppercase focus:bg-background transition-colors"
                         required disabled={isLoading} autoComplete="off"
                       />
                     </div>
@@ -190,7 +191,7 @@ export default function DeviceActivationPage() {
                 </form>
 
                 <div className="mt-4 relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border/30" /></div>
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
                   <div className="relative flex justify-center"><span className="bg-card px-2 text-[11px] text-muted-foreground">or</span></div>
                 </div>
 
@@ -198,13 +199,13 @@ export default function DeviceActivationPage() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={handleSkipForDemo}
-                  className="w-full mt-4 p-3 rounded-2xl glass-pill text-[13px] text-muted-foreground hover:text-primary transition-all"
+                  className="w-full mt-4 p-3 rounded-xl bg-secondary border border-border text-[13px] text-muted-foreground hover:text-primary hover:border-primary/30 transition-all"
                 >
                   <span className="font-medium">Skip for Demo</span>
-                  <span className="text-[10px] block mt-0.5 text-muted-foreground/60">Auto-activate with demo key</span>
+                  <span className="text-[10px] block mt-0.5 text-muted-foreground/70">Auto-activate with demo key</span>
                 </motion.button>
 
-                <div className="mt-5 pt-4 border-t border-border/30 text-center">
+                <div className="mt-5 pt-4 border-t border-border text-center">
                   <button onClick={() => logout()} className="text-[11px] text-muted-foreground hover:text-foreground transition-colors">
                     Sign in with a different account
                   </button>

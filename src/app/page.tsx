@@ -10,12 +10,11 @@ import {
   Users, IdCard, Radio, Route, MapPin, Fuel, Wrench, Settings, History, Cog, Package, Warehouse,
   Receipt, MinusCircle, DollarSign, BookOpen, Shield, FileCheck, UserCog, Clock, Palmtree, Banknote, Award, FolderOpen,
   PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Zap, Activity, Eye, LogOut,
-  PanelLeftClose, PanelLeft, Sparkles, Command
+  PanelLeftClose, PanelLeft, Sparkles, Command, ChevronsLeft, ChevronsRight, ChevronDown, ChevronRight
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuLabel } from '@/components/ui/dropdown-menu'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -128,44 +127,46 @@ const pageComponents: Record<string, React.ComponentType> = {
 }
 
 // ============================================
-// macOS Tahoe — Liquid Glass Sidebar
+// macOS Tahoe — Solid Dark Sidebar
 // ============================================
 
 function Sidebar() {
   const { activePage, setActivePage, sidebarCollapsed, setSidebarCollapsed, user, isDemo } = useAppStore()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
-  const [collapsedHover, setCollapsedHover] = useState(false)
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const all = new Set<string>()
+    navigationGroups.forEach(g => all.add(g.label))
+    return all
+  })
+
+  const toggleGroup = (label: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      return next
+    })
+  }
 
   return (
     <motion.aside
       initial={false}
       animate={{ width: sidebarCollapsed ? 68 : 260 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-      onMouseEnter={() => sidebarCollapsed && setCollapsedHover(true)}
-      onMouseLeave={() => setCollapsedHover(false)}
-      className={cn(
-        "hidden md:flex flex-col h-full relative z-20 shrink-0",
-        "glass-sidebar",
-      )}
+      className="hidden md:flex flex-col h-full relative z-20 shrink-0 glass-sidebar"
     >
-      {/* Ambient glow behind sidebar */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 -left-10 w-32 h-32 bg-chart-2/5 rounded-full blur-3xl" />
-      </div>
-
       {/* Logo Area */}
       <div className="relative flex items-center gap-3 px-4 h-14 shrink-0">
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground font-bold text-sm shrink-0 tahoe-glow cursor-pointer"
+          className="flex items-center justify-center w-9 h-9 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm shrink-0 tahoe-glow cursor-pointer"
           onClick={() => setActivePage('dashboard' as any)}
         >
           FF
         </motion.div>
         <AnimatePresence>
-          {(!sidebarCollapsed || collapsedHover) && (
+          {!sidebarCollapsed && (
             <motion.div
               initial={{ opacity: 0, width: 0 }}
               animate={{ opacity: 1, width: 'auto' }}
@@ -173,8 +174,8 @@ function Sidebar() {
               transition={{ duration: 0.2 }}
               className="overflow-hidden whitespace-nowrap"
             >
-              <p className="font-semibold text-sm">FleetFlow OS</p>
-              <p className="text-[10px] text-muted-foreground -mt-0.5">Enterprise ERP</p>
+              <p className="font-semibold text-sm text-sidebar-foreground">FleetFlow OS</p>
+              <p className="text-[10px] text-sidebar-foreground/50 -mt-0.5">Enterprise ERP</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -184,145 +185,153 @@ function Sidebar() {
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className={cn(
             "ml-auto h-7 w-7 rounded-lg flex items-center justify-center transition-colors shrink-0",
-            "text-muted-foreground hover:text-foreground hover:bg-accent"
+            "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
           )}
         >
-          {sidebarCollapsed ? <PanelLeft className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+          {sidebarCollapsed ? <ChevronsRight className="h-3.5 w-3.5" /> : <ChevronsLeft className="h-3.5 w-3.5" />}
         </motion.button>
       </div>
 
       {/* Demo Pill */}
-      {isDemo && (!sidebarCollapsed || collapsedHover) && (
+      {isDemo && !sidebarCollapsed && (
         <motion.div
           initial={{ opacity: 0, y: -4 }}
           animate={{ opacity: 1, y: 0 }}
           className="mx-3 mt-1 mb-2"
         >
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-            <Eye className="h-3 w-3 text-primary" />
-            <span className="text-[10px] font-semibold text-primary">DEMO</span>
-            <span className="text-[10px] text-muted-foreground">View Only</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sidebar-primary/15 border border-sidebar-primary/25">
+            <Eye className="h-3 w-3 text-sidebar-primary" />
+            <span className="text-[10px] font-bold text-sidebar-primary">DEMO</span>
+            <span className="text-[10px] text-sidebar-foreground/50">View Only</span>
           </div>
         </motion.div>
       )}
 
-      {/* Navigation */}
-      <ScrollArea className="flex-1 py-1">
+      {/* Collapsed Demo indicator */}
+      {isDemo && sidebarCollapsed && (
+        <div className="flex justify-center mb-2 mt-1">
+          <div className="w-2 h-2 rounded-full bg-sidebar-primary" />
+        </div>
+      )}
+
+      {/* Navigation — Scrollable */}
+      <div className="flex-1 overflow-y-auto sidebar-scroll py-1">
         <nav className="space-y-0.5 px-2">
-          {navigationGroups.map((group, groupIdx) => (
-            <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-3")}>
-              <AnimatePresence>
-                {(!sidebarCollapsed || collapsedHover) && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="px-2 mb-0.5"
+          {navigationGroups.map((group, groupIdx) => {
+            const isExpanded = expandedGroups.has(group.label)
+            return (
+              <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-2")}>
+                {/* Group Header — clickable to expand/collapse */}
+                {!sidebarCollapsed && (
+                  <button
+                    onClick={() => toggleGroup(group.label)}
+                    className="w-full flex items-center gap-1.5 px-2 mb-0.5 group/gh"
                   >
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35 group-hover/gh:text-sidebar-foreground/55 transition-colors">
                       {group.label}
                     </span>
-                  </motion.div>
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 0 : -90 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      <ChevronDown className="h-3 w-3 text-sidebar-foreground/25 group-hover/gh:text-sidebar-foreground/45 transition-colors" />
+                    </motion.div>
+                  </button>
                 )}
-              </AnimatePresence>
-              {group.items.map((item) => {
-                const Icon = iconMap[item.icon] || LayoutDashboard
-                const isActive = activePage === item.id
-                const isHovered = hoveredItem === item.id
-                return (
-                  <TooltipProvider key={item.id} delayDuration={0}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <motion.button
-                          onClick={() => setActivePage(item.id as any)}
-                          onMouseEnter={() => setHoveredItem(item.id)}
-                          onMouseLeave={() => setHoveredItem(null)}
-                          whileHover={{ x: 2 }}
-                          whileTap={{ scale: 0.97 }}
-                          className={cn(
-                            "relative flex items-center gap-2.5 w-full rounded-xl px-2.5 py-[7px] text-[13px] transition-all duration-200",
-                            isActive
-                              ? "text-primary font-semibold"
-                              : "text-foreground/60 hover:text-foreground",
-                            (sidebarCollapsed && !collapsedHover) && "justify-center px-0 rounded-xl"
-                          )}
-                        >
-                          {/* Active background pill */}
-                          {isActive && (
-                            <motion.div
-                              layoutId="sidebar-active"
-                              className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/15"
-                              transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                            />
-                          )}
-                          {/* Hover background */}
-                          {!isActive && isHovered && (
-                            <motion.div
-                              layoutId="sidebar-hover"
-                              className="absolute inset-0 rounded-xl bg-accent"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.15 }}
-                            />
-                          )}
-                          <Icon className={cn(
-                            "h-[18px] w-[18px] shrink-0 relative z-10 transition-colors",
-                            isActive ? "text-primary" : "text-foreground/40"
-                          )} />
-                          <AnimatePresence>
-                            {(!sidebarCollapsed || collapsedHover) && (
-                              <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="truncate relative z-10"
-                              >
-                                {item.label}
-                              </motion.span>
-                            )}
-                          </AnimatePresence>
-                          {(!sidebarCollapsed || collapsedHover) && item.badge && (
-                            <span className="ml-auto relative z-10 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary/10 text-[9px] font-bold text-primary px-1">
-                              {item.badge}
-                            </span>
-                          )}
-                        </motion.button>
-                      </TooltipTrigger>
-                      {(sidebarCollapsed && !collapsedHover) && (
-                        <TooltipContent side="right" sideOffset={8} className="text-xs font-medium glass-pill rounded-lg px-3 py-1.5">
-                          {item.label}
-                        </TooltipContent>
-                      )}
-                    </Tooltip>
-                  </TooltipProvider>
-                )
-              })}
-            </div>
-          ))}
-        </nav>
-      </ScrollArea>
+                {/* Collapsed group divider */}
+                {sidebarCollapsed && groupIdx > 0 && (
+                  <div className="mx-2 my-1.5 border-t border-sidebar-border" />
+                )}
 
-      {/* User Section — Glass Card */}
-      <div className="relative p-2 shrink-0">
+                {/* Group Items */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && group.items.map((item) => {
+                    const Icon = iconMap[item.icon] || LayoutDashboard
+                    const isActive = activePage === item.id
+                    const isHovered = hoveredItem === item.id
+                    return (
+                      <TooltipProvider key={item.id} delayDuration={0}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <motion.button
+                              onClick={() => setActivePage(item.id as any)}
+                              onMouseEnter={() => setHoveredItem(item.id)}
+                              onMouseLeave={() => setHoveredItem(null)}
+                              whileTap={{ scale: 0.97 }}
+                              className={cn(
+                                "relative flex items-center gap-2.5 w-full rounded-lg px-2.5 py-[7px] text-[13px] transition-all duration-150",
+                                isActive
+                                  ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                                  : isHovered
+                                    ? "bg-sidebar-accent text-sidebar-foreground"
+                                    : "text-sidebar-foreground/55 hover:text-sidebar-foreground",
+                                sidebarCollapsed && "justify-center px-0 rounded-lg"
+                              )}
+                            >
+                              <Icon className={cn(
+                                "h-[18px] w-[18px] shrink-0 transition-colors",
+                                isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45"
+                              )} />
+                              <AnimatePresence>
+                                {!sidebarCollapsed && (
+                                  <motion.span
+                                    initial={{ opacity: 0, width: 0 }}
+                                    animate={{ opacity: 1, width: 'auto' }}
+                                    exit={{ opacity: 0, width: 0 }}
+                                    className="truncate"
+                                  >
+                                    {item.label}
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                              {!sidebarCollapsed && item.badge && (
+                                <span className={cn(
+                                  "ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-1",
+                                  isActive
+                                    ? "bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground"
+                                    : "bg-sidebar-primary/15 text-sidebar-primary"
+                                )}>
+                                  {item.badge}
+                                </span>
+                              )}
+                            </motion.button>
+                          </TooltipTrigger>
+                          {sidebarCollapsed && (
+                            <TooltipContent side="right" sideOffset={8} className="text-xs font-medium rounded-lg px-3 py-1.5">
+                              {item.label}
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    )
+                  })}
+                </AnimatePresence>
+              </div>
+            )
+          })}
+        </nav>
+      </div>
+
+      {/* User Section — Solid Dark Card */}
+      <div className="relative p-2 shrink-0 border-t border-sidebar-border">
         {user && (
           <div className={cn(
-            "flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all",
-            "bg-accent/50 hover:bg-accent"
+            "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all",
+            "hover:bg-sidebar-accent"
           )}>
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary text-xs font-bold shrink-0">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold shrink-0">
               {user.name.charAt(0).toUpperCase()}
             </div>
             <AnimatePresence>
-              {(!sidebarCollapsed || collapsedHover) && (
+              {!sidebarCollapsed && (
                 <motion.div
                   initial={{ opacity: 0, width: 0 }}
                   animate={{ opacity: 1, width: 'auto' }}
                   exit={{ opacity: 0, width: 0 }}
                   className="flex flex-col min-w-0 overflow-hidden"
                 >
-                  <span className="text-xs font-medium truncate">{user.name}</span>
-                  <span className="text-[10px] text-muted-foreground truncate">
+                  <span className="text-xs font-medium text-sidebar-foreground truncate">{user.name}</span>
+                  <span className="text-[10px] text-sidebar-foreground/45 truncate">
                     {isDemo ? 'Demo Account' : user.role.replace(/_/g, ' ')}
                   </span>
                 </motion.div>
@@ -341,6 +350,20 @@ function Sidebar() {
 
 function MobileSidebar() {
   const { activePage, setActivePage, sidebarOpen, setSidebarOpen, isDemo, user } = useAppStore()
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const all = new Set<string>()
+    navigationGroups.forEach(g => all.add(g.label))
+    return all
+  })
+
+  const toggleGroup = (label: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev)
+      if (next.has(label)) next.delete(label)
+      else next.add(label)
+      return next
+    })
+  }
 
   return (
     <AnimatePresence>
@@ -352,7 +375,7 @@ function MobileSidebar() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 md:hidden"
           >
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <div className="fixed inset-0 bg-black/60" onClick={() => setSidebarOpen(false)} />
             <motion.aside
               initial={{ x: -280 }}
               animate={{ x: 0 }}
@@ -363,15 +386,15 @@ function MobileSidebar() {
               {/* Header */}
               <div className="flex items-center justify-between px-4 h-14 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary text-primary-foreground font-bold text-sm tahoe-glow">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm tahoe-glow">
                     FF
                   </div>
-                  <span className="font-semibold text-sm">FleetFlow OS</span>
+                  <span className="font-semibold text-sm text-sidebar-foreground">FleetFlow OS</span>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent"
+                  className="h-7 w-7 rounded-lg flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                   onClick={() => setSidebarOpen(false)}
                 >
                   <X className="h-4 w-4" />
@@ -380,63 +403,74 @@ function MobileSidebar() {
 
               {isDemo && (
                 <div className="mx-3 mb-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-primary/8 border border-primary/15">
-                    <Eye className="h-3 w-3 text-primary" />
-                    <span className="text-[10px] font-semibold text-primary">DEMO</span>
-                    <span className="text-[10px] text-muted-foreground">View Only</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sidebar-primary/15 border border-sidebar-primary/25">
+                    <Eye className="h-3 w-3 text-sidebar-primary" />
+                    <span className="text-[10px] font-bold text-sidebar-primary">DEMO</span>
+                    <span className="text-[10px] text-sidebar-foreground/50">View Only</span>
                   </div>
                 </div>
               )}
 
-              <ScrollArea className="flex-1 py-1">
+              <div className="flex-1 overflow-y-auto sidebar-scroll py-1">
                 <nav className="space-y-0.5 px-2">
-                  {navigationGroups.map((group, groupIdx) => (
-                    <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-3")}>
-                      <div className="px-2 mb-0.5">
-                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
-                          {group.label}
-                        </span>
-                      </div>
-                      {group.items.map((item) => {
-                        const Icon = iconMap[item.icon] || LayoutDashboard
-                        const isActive = activePage === item.id
-                        return (
-                          <motion.button
-                            key={item.id}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => {
-                              setActivePage(item.id as any)
-                              setSidebarOpen(false)
-                            }}
-                            className={cn(
-                              "relative flex items-center gap-2.5 w-full rounded-xl px-2.5 py-[7px] text-[13px] transition-all",
-                              isActive
-                                ? "text-primary font-semibold"
-                                : "text-foreground/60 hover:text-foreground"
-                            )}
+                  {navigationGroups.map((group, groupIdx) => {
+                    const isExpanded = expandedGroups.has(group.label)
+                    return (
+                      <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-2")}>
+                        <button
+                          onClick={() => toggleGroup(group.label)}
+                          className="w-full flex items-center gap-1.5 px-2 mb-0.5 group/gh"
+                        >
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35 group-hover/gh:text-sidebar-foreground/55 transition-colors">
+                            {group.label}
+                          </span>
+                          <motion.div
+                            animate={{ rotate: isExpanded ? 0 : -90 }}
+                            transition={{ duration: 0.15 }}
                           >
-                            {isActive && (
-                              <div className="absolute inset-0 rounded-xl bg-primary/10 border border-primary/15" />
-                            )}
-                            <Icon className={cn("h-[18px] w-[18px] shrink-0 relative z-10", isActive ? "text-primary" : "text-foreground/40")} />
-                            <span className="truncate relative z-10">{item.label}</span>
-                          </motion.button>
-                        )
-                      })}
-                    </div>
-                  ))}
+                            <ChevronDown className="h-3 w-3 text-sidebar-foreground/25 group-hover/gh:text-sidebar-foreground/45 transition-colors" />
+                          </motion.div>
+                        </button>
+                        <AnimatePresence initial={false}>
+                          {isExpanded && group.items.map((item) => {
+                            const Icon = iconMap[item.icon] || LayoutDashboard
+                            const isActive = activePage === item.id
+                            return (
+                              <motion.button
+                                key={item.id}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={() => {
+                                  setActivePage(item.id as any)
+                                  setSidebarOpen(false)
+                                }}
+                                className={cn(
+                                  "relative flex items-center gap-2.5 w-full rounded-lg px-2.5 py-[7px] text-[13px] transition-all",
+                                  isActive
+                                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+                                    : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                                )}
+                              >
+                                <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45")} />
+                                <span className="truncate">{item.label}</span>
+                              </motion.button>
+                            )
+                          })}
+                        </AnimatePresence>
+                      </div>
+                    )
+                  })}
                 </nav>
-              </ScrollArea>
+              </div>
 
               {user && (
-                <div className="p-2 shrink-0">
-                  <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-xl bg-accent/50">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/15 text-primary text-xs font-bold">
+                <div className="p-2 shrink-0 border-t border-sidebar-border">
+                  <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-sidebar-accent">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-medium truncate">{user.name}</span>
-                      <span className="text-[10px] text-muted-foreground truncate">
+                      <span className="text-xs font-medium text-sidebar-foreground truncate">{user.name}</span>
+                      <span className="text-[10px] text-sidebar-foreground/45 truncate">
                         {isDemo ? 'Demo Account' : user.role.replace(/_/g, ' ')}
                       </span>
                     </div>
@@ -452,7 +486,7 @@ function MobileSidebar() {
 }
 
 // ============================================
-// macOS Tahoe — Floating Toolbar
+// macOS Tahoe — Solid Toolbar
 // ============================================
 
 function Header() {
@@ -506,7 +540,7 @@ function Header() {
         </motion.button>
         <span className="text-[13px] font-semibold">{pageTitle}</span>
         {isDemo && (
-          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/8 text-[10px] font-semibold text-primary border border-primary/15">
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-bold text-primary">
             <Eye className="h-2.5 w-2.5" /> VIEW ONLY
           </span>
         )}
@@ -518,11 +552,11 @@ function Header() {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => setCommandOpen(true)}
-          className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-full glass-pill text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+          className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-lg bg-secondary text-muted-foreground hover:text-foreground transition-colors cursor-pointer border border-border"
         >
           <Search className="h-3.5 w-3.5" />
           <span className="text-xs">Search</span>
-          <kbd className="flex items-center gap-0.5 rounded-md bg-background/50 px-1.5 h-5 text-[10px] font-medium text-muted-foreground">
+          <kbd className="flex items-center gap-0.5 rounded bg-background px-1.5 h-5 text-[10px] font-medium text-muted-foreground border border-border">
             <span>⌘</span>K
           </kbd>
         </motion.button>
@@ -550,17 +584,17 @@ function Header() {
               )}
             </motion.button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0 glass-card rounded-2xl retina-shadow-lg" align="end">
-            <div className="p-3 border-b border-border/50">
+          <PopoverContent className="w-80 p-0 rounded-2xl retina-shadow-lg border border-border" align="end">
+            <div className="p-3 border-b border-border">
               <h4 className="font-semibold text-sm">Notifications</h4>
             </div>
-            <ScrollArea className="h-64">
+            <div className="max-h-64 overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-6 text-center text-sm text-muted-foreground">No notifications</div>
               ) : (
                 <div className="p-1.5">
                   {notifications.slice(0, 10).map((n) => (
-                    <div key={n.id} className="flex items-start gap-2 p-2.5 rounded-xl hover:bg-accent text-sm transition-colors">
+                    <div key={n.id} className="flex items-start gap-2 p-2.5 rounded-lg hover:bg-accent text-sm transition-colors">
                       <div className={cn(
                         "mt-0.5 h-2 w-2 rounded-full shrink-0",
                         n.type === 'success' && "bg-chart-4",
@@ -583,7 +617,7 @@ function Header() {
                   ))}
                 </div>
               )}
-            </ScrollArea>
+            </div>
           </PopoverContent>
         </Popover>
 
@@ -604,23 +638,23 @@ function Header() {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center gap-2 h-8 px-2 rounded-xl hover:bg-accent transition-colors"
+              className="flex items-center gap-2 h-8 px-2 rounded-lg hover:bg-accent transition-colors"
             >
               <Avatar className="h-6 w-6">
-                <AvatarFallback className="bg-primary/15 text-primary text-[10px] font-bold">
+                <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
                   {user?.name.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
               </Avatar>
               <span className="hidden lg:inline text-[13px] font-medium">{user?.name}</span>
             </motion.button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 glass-card rounded-2xl retina-shadow-lg">
+          <DropdownMenuContent align="end" className="w-56 rounded-2xl retina-shadow-lg border border-border">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium">{user?.name}</span>
                 <span className="text-xs text-muted-foreground">{user?.email}</span>
                 {isDemo && (
-                  <span className="flex items-center gap-1 w-fit mt-1 px-2 py-0.5 rounded-full bg-primary/8 text-[10px] font-semibold text-primary border border-primary/15">
+                  <span className="flex items-center gap-1 w-fit mt-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-bold text-primary">
                     <Eye className="h-2.5 w-2.5" /> Demo
                   </span>
                 )}
@@ -667,7 +701,7 @@ function Header() {
 }
 
 // ============================================
-// macOS Tahoe — Minimal Footer
+// macOS Tahoe — Solid Footer
 // ============================================
 
 function Footer() {
@@ -678,7 +712,7 @@ function Footer() {
         <span className="font-medium">FleetFlow OS</span>
         <span className="text-muted-foreground/40">v1.0.0</span>
         {isDemo && (
-          <span className="px-1.5 py-0.5 rounded-full bg-primary/8 text-[8px] font-semibold text-primary">DEMO</span>
+          <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-[8px] font-bold text-primary">DEMO</span>
         )}
       </div>
       <div className="flex items-center gap-3">
