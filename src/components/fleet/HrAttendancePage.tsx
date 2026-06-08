@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Clock, Plus, Edit } from 'lucide-react'
 import { toast } from 'sonner'
@@ -126,20 +127,20 @@ export default function HrAttendancePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editItem ? 'Edit Attendance' : 'Record Attendance'}</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="col-span-2"><Label className="text-xs">Employee</Label>
-              <Select value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })} disabled={!!editItem}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select employee" /></SelectTrigger>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Attendance' : 'Record Attendance'}</DialogTitle><DialogDescription>{editItem ? 'Update attendance record details.' : 'Record a new attendance entry for an employee.'}</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
+              <Select required value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })} disabled={!!editItem}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an employee" /></SelectTrigger>
                 <SelectContent>
                   {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Date</Label><Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Status</Label>
-              <Select value={form.status || 'present'} onValueChange={v => setForm({ ...form, status: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+            <div><Label className="text-xs">Date <span className="text-destructive">*</span></Label><Input required type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-10 mt-1" placeholder="Select date" /></div>
+            <div><Label className="text-xs">Status <span className="text-destructive">*</span></Label>
+              <Select required value={form.status || 'present'} onValueChange={v => setForm({ ...form, status: v })}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="present">Present</SelectItem>
                   <SelectItem value="late">Late</SelectItem>
@@ -149,9 +150,9 @@ export default function HrAttendancePage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Check In</Label><Input type="datetime-local" value={form.checkIn || ''} onChange={e => setForm({ ...form, checkIn: e.target.value })} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Check Out</Label><Input type="datetime-local" value={form.checkOut || ''} onChange={e => setForm({ ...form, checkOut: e.target.value })} className="h-9 mt-1" /></div>
-            <div className="col-span-2"><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="h-9 mt-1" /></div>
+            <div><Label className="text-xs">Check In</Label><Input type="datetime-local" value={form.checkIn || ''} onChange={e => setForm({ ...form, checkIn: e.target.value })} className="h-10 mt-1" placeholder="Check-in time" /></div>
+            <div><Label className="text-xs">Check Out</Label><Input type="datetime-local" value={form.checkOut || ''} onChange={e => setForm({ ...form, checkOut: e.target.value })} className="h-10 mt-1" placeholder="Check-out time" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="min-h-[80px] mt-1" placeholder="Any additional notes about this attendance record" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Record'}</Button></DialogFooter>
         </DialogContent>

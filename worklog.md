@@ -402,3 +402,350 @@ Stage Summary:
 - Mobile-responsive with compact popover
 - User menu enhanced with role badge and subscription quick-access
 - API auto-creates subscription from client's subscriptionPlan if missing
+
+## Task 2-b: Fix forms/dialogs in Fleet Finance pages
+
+### Summary
+Fixed all four fleet finance component files to widen dialog forms, improve form layouts, fix CRUD issues, and add dialog descriptions.
+
+### Files Modified
+
+1. **FinanceInvoicesPage.tsx**
+   - Widened create/edit dialog: `max-w-2xl` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Widened view dialog: `max-w-lg` → `max-w-2xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions to both dialogs
+   - Changed form layouts to responsive: `grid-cols-2` → `grid-cols-1 md:grid-cols-2`, `grid-cols-3` → `grid-cols-1 md:grid-cols-3`
+   - Made textareas full-width with `col-span-1 md:col-span-2` and `min-h-[80px]`
+   - Increased input heights from `h-9` → `h-10`
+   - Added issue date field alongside due date in a responsive grid
+   - Added `required` markers on mandatory fields (Customer, Due Date)
+   - Added descriptive placeholders
+
+2. **FinanceExpensesPage.tsx**
+   - Widened create/edit dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and description
+   - Changed all form layouts to responsive `grid-cols-1 md:grid-cols-2`
+   - Made description and notes fields full-width with `col-span-1 md:col-span-2`
+   - Increased input heights from `h-9` → `h-10`
+   - Added `required` markers on Category, Amount, Description, Date
+   - Added descriptive placeholders
+
+3. **FinancePaymentsPage.tsx**
+   - Widened dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and description
+   - **CRUD fix**: Added `editId` state, `openEdit()` function, and PUT support in `handleSubmit()`
+   - Added Edit menu item in dropdown with Pencil icon
+   - Changed dialog title to support both create and edit modes
+   - Changed all form layouts to responsive `grid-cols-1 md:grid-cols-2`
+   - Made notes field full-width with `col-span-1 md:col-span-2`
+   - Increased input heights from `h-9` → `h-10`
+   - Added `required` markers on Amount, Method, Payment Date
+   - Added descriptive placeholders
+
+4. **FinanceAccountingPage.tsx**
+   - Widened dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and description
+   - Changed all form layouts to responsive `grid-cols-1 md:grid-cols-2`
+   - Made description field full-width with `col-span-1 md:col-span-2`
+   - Increased input heights from `h-9` → `h-10`
+   - Added `required` markers on Debit Account, Credit Account, Amount, Date
+   - Added descriptive placeholders
+
+### Lint Result
+Passed with zero errors.
+
+## Task ID: 2-c — Fix HR Fleet Component Dialogs & Forms
+
+### Summary
+Fixed all 5 HR fleet component files to widen dialog forms, improve form layouts, and enhance CRUD functionality.
+
+### Files Modified
+1. **HrEmployeesPage.tsx**
+   - Changed `DialogContent` from `max-w-lg` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Changed form grid from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+   - Changed all input heights from `h-9` to `h-10`
+   - Added `DialogDescription` import and descriptive text under `DialogTitle`
+   - Added `Textarea` import and replaced notes Input with Textarea (`min-h-[80px]`)
+   - Added `address` and `notes` fields to `openCreate` form defaults
+   - Added `required` attribute to mandatory fields (firstName, lastName, email, department, position, baseSalary)
+   - Added descriptive placeholder text to all inputs
+   - Added `<span className="text-destructive">*</span>` indicators on required fields
+   - Used `col-span-1 md:col-span-2` for full-width fields (address, notes)
+
+2. **HrAttendancePage.tsx**
+   - Changed `DialogContent` from `max-w-lg` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Changed form grid from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+   - Changed all input/trigger heights from `h-9` to `h-10`
+   - Added `DialogDescription` import and descriptive text under `DialogTitle`
+   - Added `Textarea` import and replaced notes Input with Textarea (`min-h-[80px]`)
+   - Added `required` attribute to mandatory fields (employeeId, date, status)
+   - Added descriptive placeholder text to all inputs
+   - Added `<span className="text-destructive">*</span>` indicators on required fields
+   - Used `col-span-1 md:col-span-2` for full-width fields (employee, notes)
+
+3. **HrLeavePage.tsx**
+   - Changed `DialogContent` from `max-w-lg` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Changed form grid from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+   - Changed all input/trigger heights from `h-9` to `h-10`
+   - Added `DialogDescription` import and descriptive text under `DialogTitle`
+   - Added `Textarea` import and replaced reason Input with Textarea (`min-h-[80px]`)
+   - Added `required` attribute to mandatory fields (employeeId, type, startDate, endDate, reason)
+   - Added descriptive placeholder text to all inputs
+   - Added `<span className="text-destructive">*</span>` indicators on required fields
+   - Used `col-span-1 md:col-span-2` for full-width fields (employee, reason)
+
+4. **HrPayrollPage.tsx**
+   - Changed `DialogContent` from `max-w-lg` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Changed form grid from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+   - Changed all input/trigger heights from `h-9` to `h-10`
+   - Changed net pay display height from `h-9` to `h-10`
+   - Added `DialogDescription` import and descriptive text under `DialogTitle`
+   - Added `Textarea` import and replaced notes Input with Textarea (`min-h-[80px]`)
+   - Added `required` attribute to mandatory fields (employeeId, period)
+   - Added descriptive placeholder text to all inputs
+   - Added `<span className="text-destructive">*</span>` indicators on required fields
+   - Used `col-span-1 md:col-span-2` for full-width fields (employee, net pay, notes)
+
+5. **HrPerformancePage.tsx**
+   - Changed `DialogContent` from `max-w-lg max-h-[85vh] overflow-y-auto` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Changed form grid from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+   - Changed all input/trigger heights from `h-9` to `h-10`
+   - Added `DialogDescription` import and descriptive text under `DialogTitle`
+   - Added `Textarea` import and replaced goals, feedback, strengths, improvements Inputs with Textareas (`min-h-[80px]`)
+   - Added `required` attribute to mandatory fields (employeeId, reviewer, period, rating)
+   - Added descriptive placeholder text to all inputs
+   - Added `<span className="text-destructive">*</span>` indicators on required fields
+   - Used `col-span-1 md:col-span-2` for full-width fields (employee, goals, feedback, strengths, improvements)
+
+### Verification
+- Lint check passed with no errors
+- Dev server running without compilation errors
+
+## Task 2-a: Fix Forms/Dialogs in Fleet Components
+
+### Summary
+Fixed all 7 fleet component files to widen dialog forms, improve form layouts, add DialogDescription, and improve CRUD usability.
+
+### Changes Made
+
+#### 1. FleetInspectionsPage.tsx
+- **DialogContent**: Changed create/edit dialogs from `max-w-lg max-h-[85vh]` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **View dialog**: Changed from `max-w-lg` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Delete dialog**: Changed from bare `<DialogContent>` to `<DialogContent className="max-w-md">`
+- **Added** `DialogDescription` import and descriptions to all 4 dialogs
+- **Form layout**: Changed from `space-y-4` with nested `grid grid-cols-2/3` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Textareas**: Added `min-h-[80px]` and `col-span-1 md:col-span-2`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for required fields
+- **Placeholders**: Added descriptive placeholder text to all inputs
+- **Required**: Added `required` attribute to mandatory fields (Vehicle, Inspector Name)
+- **Replaced** inline `ConditionSelect` sub-component with full Select elements for consistency
+
+#### 2. FleetVehiclesPage.tsx
+- **DialogContent**: Changed create/edit dialog from `max-w-2xl` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **View dialog**: Changed from `max-w-lg` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Added** `DialogDescription` import and descriptions to both dialogs
+- **Form layout**: Changed from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for Vehicle Number, Registration Number, Make, Model
+- **Placeholders**: Added descriptive placeholder text (e.g., "e.g. V-001", "e.g. Toyota")
+- **Required**: Added `required` attribute to mandatory fields
+- **Current Location**: Changed from `col-span-2` to `col-span-1 md:col-span-2`
+
+#### 3. RentalContractsPage.tsx
+- **DialogContent**: Changed create/edit dialogs from `max-w-2xl` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **Detail dialog**: Kept at `max-w-2xl max-h-[90vh] overflow-y-auto` (view-only)
+- **Added** `DialogDescription` import and descriptions to all 3 dialogs
+- **Form layout**: Changed from `grid grid-cols-2` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for Customer, Vehicle, Start Date, End Date
+- **Placeholders**: Added descriptive placeholder text
+- **Textareas**: Added `min-h-[80px]` and `col-span-1 md:col-span-2`
+- **Required**: Added `required` attribute to mandatory fields
+
+#### 4. RentalOperationsPage.tsx
+- **DialogContent**: Changed pickup/return dialogs from bare `<DialogContent>` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Timeline dialog**: Changed from `max-w-lg` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Added** `DialogDescription` import and descriptions to all 3 dialogs
+- **Form layout**: Changed from `space-y-4` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class
+- **Textareas**: Added `min-h-[80px]` and `col-span-1 md:col-span-2`
+- **Info boxes**: Applied `col-span-1 md:col-span-2` for full-width display
+- **Required**: Added `required` attribute to mileage fields
+
+#### 5. RentalReservationsPage.tsx
+- **DialogContent**: Changed from bare `<DialogContent>` to `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **Added** `DialogDescription` import and description
+- **Form layout**: Changed from `space-y-4` with nested grids to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for Customer, Vehicle, Start Date, End Date
+- **Placeholders**: Added descriptive placeholder text
+- **Required**: Added `required` attribute to mandatory fields
+
+#### 6. RentalDepositsPage.tsx
+- **DialogContent**: Changed from bare `<DialogContent>` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Added** `DialogDescription` import and description
+- **Form layout**: Changed from `space-y-4` with nested grid to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Contract select**: Applied `col-span-1 md:col-span-2` for full width
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for Contract, Amount
+- **Placeholders**: Added descriptive placeholder text
+- **Required**: Added `required` attribute to Amount field
+
+#### 7. RentalDamagePage.tsx
+- **DialogContent**: Changed from bare `<DialogContent>` to `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **Added** `DialogDescription` import and `Textarea` import
+- **Added** description to dialog header
+- **Form layout**: Changed from `space-y-4` with nested grid to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- **Vehicle/Description selects**: Applied `col-span-1 md:col-span-2` for full width
+- **Description field**: Changed from `<Input>` to `<Textarea>` with `min-h-[80px]`
+- **Input heights**: Changed from `h-9` to `h-10`
+- **Labels**: Removed `text-xs` class, added `*` markers for Vehicle, Description
+- **Placeholders**: Added descriptive placeholder text
+- **Required**: Added `required` attribute to Vehicle and Description fields
+
+### Lint Result
+✅ `bun run lint` passed with no errors
+
+---
+
+## Task ID: 2-e — Fix Fleet Forms/Dialogs
+
+### Summary
+Fixed all 12 fleet component files to widen dialogs, improve form layouts, add DialogDescription, and ensure CRUD operations work correctly.
+
+### Changes Made
+
+#### 1. Widen All Dialog Forms
+- **FuelManagementPage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **SparePartsPage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, adjust stock dialog → `max-w-2xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **InsurancePage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **CompliancePage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **InventoryPage.tsx**: Stock adjustment dialog → `max-w-2xl max-h-[90vh] overflow-y-auto`, stock transfer dialog → `max-w-2xl max-h-[90vh] overflow-y-auto`
+- **WorkshopPage.tsx**: Create dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, edit dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **MaintenancePreventivePage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **MaintenanceCorrectivePage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **TransportDispatchPage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`
+- **TransportTripsPage.tsx**: Form dialog → `max-w-3xl max-h-[90vh] overflow-y-auto`, delete dialog → `max-w-md`
+- **MaintenanceHistoryPage.tsx**: No dialogs (view-only) — no changes needed
+- **GpsTrackingPage.tsx**: No dialogs (view-only) — no changes needed
+
+#### 2. Improve Form Layouts
+- Changed form containers from `space-y-4` to `grid grid-cols-1 md:grid-cols-2 gap-4`
+- Made textareas span full width with `col-span-1 md:col-span-2`
+- Added `min-h-[80px]` to all textareas
+- Changed input heights from `h-9` to `h-10` for all form fields
+- Added descriptive placeholder text to all input fields
+- Added `required` attribute to mandatory fields with visual `*` indicators
+
+#### 3. Add DialogDescription
+- Imported `DialogDescription` in all 10 files that have dialogs
+- Added `<DialogDescription>` under every `<DialogTitle>` for form dialogs and delete confirmation dialogs
+
+#### 4. CRUD Verification
+- All create forms properly POST to the correct API endpoint (verified existing code)
+- All edit forms properly PUT with an `id` field (verified existing code)
+- Form data is correctly mapped to API expected field names (verified existing code)
+- Dialogs open/close properly via state management (verified existing code)
+- Edit mode pre-fills existing data correctly (verified existing code)
+
+### Lint Result
+- `bun run lint` — passed with no errors
+
+---
+Task ID: 2-d
+Agent: Fleet Forms/Dialogs Fix Agent
+Task: Fix forms/dialogs in 10 fleet component files — widen dialogs, improve layouts, fix CRUD
+
+### Summary
+Fixed all 10 fleet component files to widen dialog forms, improve form layouts with responsive grids, upgrade input heights, add DialogDescription, convert text fields to Textareas, add required attributes and placeholders.
+
+### Files Modified
+
+1. **OwnerClientsPage.tsx**
+   - Create/Edit dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Activity dialog: `max-w-md` → `max-w-2xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions to both dialogs
+   - Added `Textarea` import; Notes field changed from Input to Textarea with `min-h-[80px]` and `col-span-1 md:col-span-2`
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input heights: `h-9` → `h-10`
+   - Added descriptive placeholders to all fields
+   - Added SelectValue placeholder text (e.g., "Select industry", "Select plan")
+
+2. **OwnerSubscriptionsPage.tsx**
+   - Create/Edit dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Auto Renewal toggle: `col-span-2` → `col-span-1 md:col-span-2`
+   - Added descriptive placeholders (price, user limit)
+
+3. **OwnerLicensesPage.tsx**
+   - Generate dialog: `max-w-md` → `max-w-2xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and description
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added placeholder text for Max Devices field
+
+4. **OwnerDevicesPage.tsx**
+   - Register dialog: `max-w-md` → `max-w-2xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and description
+   - Form grid: merged two separate `grid-cols-2 gap-3` into single `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added descriptive SelectValue placeholders ("Select browser", "Select OS")
+
+5. **OwnerTenantsPage.tsx**
+   - Create/Edit dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input heights: `h-9` → `h-10`
+   - Modules field: `col-span-2` → `col-span-1 md:col-span-2`
+   - Added descriptive placeholders (name, user limit, storage limit)
+
+6. **OwnerRevenuePage.tsx**
+   - Create/Edit dialog: `max-w-md` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Added `Textarea` import; Description field changed from Input to Textarea with `min-h-[80px]` and `col-span-1 md:col-span-2`
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added descriptive placeholders (amount, description)
+
+7. **OwnerUpdatesPage.tsx**
+   - Create/Edit dialog: `max-w-lg` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Added `Textarea` import; Release Notes changed from Input to Textarea with `min-h-[80px]`
+   - Form grid: `grid-cols-2 gap-3` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added SelectValue placeholder text for Type and Status selectors
+
+8. **CustomersPage.tsx**
+   - Create/Edit dialog: `max-w-2xl` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Form grid: `grid-cols-2` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added `required` attribute on First Name, Last Name, Email fields
+   - Added descriptive placeholders to all fields
+   - Added SelectValue placeholder text for Credit Rating and Status selectors
+
+9. **DriversPage.tsx**
+   - Create/Edit dialog: `max-w-2xl` → `max-w-3xl max-h-[90vh] overflow-y-auto`
+   - Added `DialogDescription` import and descriptions
+   - Form grid: `grid-cols-2` → `grid-cols-1 md:grid-cols-2 gap-4`
+   - All input/trigger heights: `h-9` → `h-10`
+   - Added `required` attribute on First Name, Last Name, Phone, License Number fields
+   - Added descriptive placeholders to all fields
+   - Added SelectValue placeholder text for Employment Type and Status selectors
+
+10. **DocumentsPage.tsx**
+    - Create dialog: bare `<DialogContent>` → `<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">`
+    - Added `DialogDescription` import and description
+    - Added `Textarea` import; Description changed from Input to Textarea with `min-h-[80px]` and `col-span-1 md:col-span-2`
+    - Form layout: `space-y-4` single column → `grid grid-cols-1 md:grid-cols-2 gap-4`
+    - All input/trigger heights: `h-9` → `h-10`
+    - Added `required` attribute on Title field
+    - Added descriptive placeholders to all fields
+
+### Verification
+- Lint check passed with zero errors
+- Dev server running without compilation errors

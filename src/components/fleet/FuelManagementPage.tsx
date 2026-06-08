@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -170,28 +170,27 @@ export default function FuelManagementPage() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{editMode ? 'Edit Fuel Record' : 'Add Fuel Record'}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Fuel Type</Label><Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem></SelectContent></Select></div>
-              <div><Label className="text-xs">Quantity (L)</Label><Input type="number" value={form.quantity || ''} onChange={e => setForm({...form, quantity: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Cost Per Unit ($)</Label><Input type="number" value={form.costPerUnit || ''} onChange={e => setForm({...form, costPerUnit: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Station/Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-9 mt-1" /></div>
-            </div>
-            <div><Label className="text-xs">Date</Label><Input type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} className="h-9 mt-1" /></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editMode ? 'Edit Fuel Record' : 'Add Fuel Record'}</DialogTitle>
+            <DialogDescription>{editMode ? 'Update the fuel record details below.' : 'Fill in the details to add a new fuel record.'}</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Fuel Type <span className="text-destructive">*</span></Label><Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select fuel type" /></SelectTrigger><SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem></SelectContent></Select></div>
+            <div><Label className="text-xs">Quantity (L) <span className="text-destructive">*</span></Label><Input type="number" value={form.quantity || ''} onChange={e => setForm({...form, quantity: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 50" required /></div>
+            <div><Label className="text-xs">Cost Per Unit ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.costPerUnit || ''} onChange={e => setForm({...form, costPerUnit: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 1.50" required /></div>
+            <div><Label className="text-xs">Station/Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-10 mt-1" placeholder="e.g. Shell Station" /></div>
+            <div><Label className="text-xs">Date <span className="text-destructive">*</span></Label><Input type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} className="h-10 mt-1" required /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add Record'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Delete Fuel Record</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Delete Fuel Record</DialogTitle><DialogDescription>This action cannot be undone.</DialogDescription></DialogHeader>
           <p className="text-sm text-muted-foreground py-4">Are you sure you want to delete this fuel record? This action cannot be undone.</p>
           <DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Delete</Button></DialogFooter>
         </DialogContent>

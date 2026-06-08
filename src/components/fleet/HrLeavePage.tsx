@@ -4,10 +4,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Palmtree, Plus, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -128,19 +129,19 @@ export default function HrLeavePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>Request Leave</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="col-span-2"><Label className="text-xs">Employee</Label>
-              <Select value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select employee" /></SelectTrigger>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Request Leave</DialogTitle><DialogDescription>Submit a new leave request for an employee.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
+              <Select required value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an employee" /></SelectTrigger>
                 <SelectContent>
                   {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Type</Label>
-              <Select value={form.type || 'annual'} onValueChange={v => setForm({ ...form, type: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+            <div><Label className="text-xs">Leave Type <span className="text-destructive">*</span></Label>
+              <Select required value={form.type || 'annual'} onValueChange={v => setForm({ ...form, type: v })}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select leave type" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="annual">Annual</SelectItem>
                   <SelectItem value="sick">Sick</SelectItem>
@@ -151,9 +152,9 @@ export default function HrLeavePage() {
               </Select>
             </div>
             <div></div>
-            <div><Label className="text-xs">Start Date</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({ ...form, startDate: e.target.value })} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">End Date</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({ ...form, endDate: e.target.value })} className="h-9 mt-1" /></div>
-            <div className="col-span-2"><Label className="text-xs">Reason</Label><Input value={form.reason || ''} onChange={e => setForm({ ...form, reason: e.target.value })} className="h-9 mt-1" /></div>
+            <div><Label className="text-xs">Start Date <span className="text-destructive">*</span></Label><Input required type="date" value={form.startDate || ''} onChange={e => setForm({ ...form, startDate: e.target.value })} className="h-10 mt-1" placeholder="Leave start date" /></div>
+            <div><Label className="text-xs">End Date <span className="text-destructive">*</span></Label><Input required type="date" value={form.endDate || ''} onChange={e => setForm({ ...form, endDate: e.target.value })} className="h-10 mt-1" placeholder="Leave end date" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Reason <span className="text-destructive">*</span></Label><Textarea required value={form.reason || ''} onChange={e => setForm({ ...form, reason: e.target.value })} className="min-h-[80px] mt-1" placeholder="Provide a reason for the leave request" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Submit Request</Button></DialogFooter>
         </DialogContent>

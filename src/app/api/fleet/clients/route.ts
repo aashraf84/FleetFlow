@@ -65,6 +65,15 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
+    // Auto-generate slug if not provided
+    if (!body.slug) {
+      body.slug = (body.companyName || 'client').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now().toString(36)
+    }
+    // Map industry to industryType if needed
+    if (body.industry && !body.industryType) {
+      body.industryType = body.industry
+      delete body.industry
+    }
     const client = await db.client.create({ data: body })
 
     // Create subscription if plan specified

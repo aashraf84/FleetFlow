@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -108,15 +108,19 @@ export default function TransportDispatchPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Dispatch Order</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Origin</Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Destination</Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.filter(d => d.status === 'active').map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Priority</Label><Select value={form.priority || 'normal'} onValueChange={v => setForm({...form, priority: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="urgent">Urgent</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Route Name</Label><Input value={form.routeName || ''} onChange={e => setForm({...form, routeName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-9 mt-1" /></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New Dispatch Order</DialogTitle>
+            <DialogDescription>Create a new dispatch order for a vehicle and driver.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
+            <div><Label className="text-xs">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
+            <div><Label className="text-xs">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.filter(d => d.status === 'active').map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Priority <span className="text-destructive">*</span></Label><Select value={form.priority || 'normal'} onValueChange={v => setForm({...form, priority: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select priority" /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="urgent">Urgent</SelectItem></SelectContent></Select></div>
+            <div><Label className="text-xs">Route Name</Label><Input value={form.routeName || ''} onChange={e => setForm({...form, routeName: e.target.value})} className="h-10 mt-1" placeholder="e.g. Route 42 - North" /></div>
+            <div><Label className="text-xs">Scheduled Departure</Label><Input type="datetime-local" value={form.scheduledDeparture ? form.scheduledDeparture.slice(0, 16) : ''} onChange={e => setForm({...form, scheduledDeparture: e.target.value})} className="h-10 mt-1" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Additional dispatch notes..." /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
         </DialogContent>

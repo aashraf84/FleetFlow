@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -258,14 +258,17 @@ export default function FinanceInvoicesPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify the invoice details below.' : 'Fill in the details to create a new invoice.'}</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs">Customer</Label>
-                <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })} disabled={!!editId}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
+                <Label className="text-xs">Customer <span className="text-destructive">*</span></Label>
+                <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })} disabled={!!editId} required>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a customer" /></SelectTrigger>
                   <SelectContent>
                     {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}
                   </SelectContent>
@@ -274,7 +277,7 @@ export default function FinanceInvoicesPage() {
               <div>
                 <Label className="text-xs">Type</Label>
                 <Select value={form.type || 'rental'} onValueChange={v => setForm({ ...form, type: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select invoice type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="rental">Rental</SelectItem>
                     <SelectItem value="transport">Transport</SelectItem>
@@ -326,33 +329,39 @@ export default function FinanceInvoicesPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label className="text-xs">Subtotal ($)</Label>
                 <Input type="number" value={form.subtotal || ''} onChange={e => {
                   const val = parseFloat(e.target.value) || 0
                   setForm({ ...form, subtotal: val, totalAmount: val + (form.taxAmount || 0) })
-                }} className="h-9 mt-1" />
+                }} className="h-10 mt-1" placeholder="0.00" />
               </div>
               <div>
                 <Label className="text-xs">Tax ($)</Label>
                 <Input type="number" value={form.taxAmount || ''} onChange={e => {
                   const val = parseFloat(e.target.value) || 0
                   setForm({ ...form, taxAmount: val, totalAmount: (form.subtotal || 0) + val })
-                }} className="h-9 mt-1" />
+                }} className="h-10 mt-1" placeholder="0.00" />
               </div>
               <div>
                 <Label className="text-xs">Total ($)</Label>
-                <Input type="number" value={form.totalAmount || ''} readOnly className="h-9 mt-1 bg-muted font-medium" />
+                <Input type="number" value={form.totalAmount || ''} readOnly className="h-10 mt-1 bg-muted font-medium" placeholder="0.00" />
               </div>
             </div>
-            <div>
-              <Label className="text-xs">Due Date</Label>
-              <Input type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="h-9 mt-1" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Issue Date</Label>
+                <Input type="date" value={form.issueDate || ''} onChange={e => setForm({ ...form, issueDate: e.target.value })} className="h-10 mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs">Due Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="h-10 mt-1" required />
+              </div>
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 text-xs" rows={2} />
+              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
             </div>
           </div>
           <DialogFooter>
@@ -364,8 +373,11 @@ export default function FinanceInvoicesPage() {
 
       {/* View Invoice Dialog */}
       <Dialog open={!!viewInvoice} onOpenChange={() => setViewInvoice(null)}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Invoice {viewInvoice?.invoiceNumber}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Invoice {viewInvoice?.invoiceNumber}</DialogTitle>
+            <DialogDescription>View the full invoice details below.</DialogDescription>
+          </DialogHeader>
           {viewInvoice && (
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-2 gap-3 text-sm">

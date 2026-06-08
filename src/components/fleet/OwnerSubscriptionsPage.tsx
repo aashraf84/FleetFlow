@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
@@ -318,16 +318,17 @@ export default function OwnerSubscriptionsPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Subscription' : 'Add Subscription'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify subscription plan and billing details' : 'Create a new subscription for a client'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Client *</Label>
                 <Select value={formData.clientId} onValueChange={(v) => setFormData({ ...formData, clientId: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
                   <SelectContent>
                     {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>)}
                   </SelectContent>
@@ -336,7 +337,7 @@ export default function OwnerSubscriptionsPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">Plan Type *</Label>
                 <Select value={formData.planType} onValueChange={(v) => setFormData({ ...formData, planType: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select plan" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="trial">Trial</SelectItem>
                     <SelectItem value="monthly">Monthly - $299</SelectItem>
@@ -347,21 +348,21 @@ export default function OwnerSubscriptionsPage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Start Date</Label>
-                <Input type="date" className="h-9 text-sm" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
+                <Input type="date" className="h-10 text-sm" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Expiry Date</Label>
-                <Input type="date" className="h-9 text-sm" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} />
+                <Input type="date" className="h-10 text-sm" value={formData.expiryDate} onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Price ($)</Label>
-                <Input type="number" className="h-9 text-sm" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} />
+                <Input type="number" className="h-10 text-sm" value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} placeholder="0.00" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">User Limit</Label>
-                <Input type="number" className="h-9 text-sm" value={formData.userLimit} onChange={(e) => setFormData({ ...formData, userLimit: Number(e.target.value) })} />
+                <Input type="number" className="h-10 text-sm" value={formData.userLimit} onChange={(e) => setFormData({ ...formData, userLimit: Number(e.target.value) })} placeholder="5" />
               </div>
-              <div className="flex items-center gap-2 col-span-2">
+              <div className="flex items-center gap-2 col-span-1 md:col-span-2">
                 <Switch checked={formData.autoRenewal} onCheckedChange={(v) => setFormData({ ...formData, autoRenewal: v })} />
                 <Label className="text-xs">Auto Renewal</Label>
               </div>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -87,16 +87,17 @@ export default function MaintenanceCorrectivePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Repair Request</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Category</Label><Select value={form.category || 'repair'} onValueChange={v => setForm({...form, category: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="repair">Repair</SelectItem><SelectItem value="body_work">Body Work</SelectItem><SelectItem value="electrical">Electrical</SelectItem><SelectItem value="ac">AC</SelectItem><SelectItem value="engine">Engine</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Description</Label><Input value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="h-9 mt-1" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Estimated Cost ($)</Label><Input type="number" value={form.cost || ''} onChange={e => setForm({...form, cost: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            </div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>New Repair Request</DialogTitle>
+            <DialogDescription>Create a new corrective maintenance repair request for a vehicle.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Category <span className="text-destructive">*</span></Label><Select value={form.category || 'repair'} onValueChange={v => setForm({...form, category: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent><SelectItem value="repair">Repair</SelectItem><SelectItem value="body_work">Body Work</SelectItem><SelectItem value="electrical">Electrical</SelectItem><SelectItem value="ac">AC</SelectItem><SelectItem value="engine">Engine</SelectItem><SelectItem value="other">Other</SelectItem></SelectContent></Select></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Description <span className="text-destructive">*</span></Label><Input value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="h-10 mt-1" placeholder="e.g. Engine overheating, brake noise" required /></div>
+            <div><Label className="text-xs">Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-10 mt-1" placeholder="e.g. ABC Auto Repair" /></div>
+            <div><Label className="text-xs">Estimated Cost ($)</Label><Input type="number" value={form.cost || ''} onChange={e => setForm({...form, cost: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
         </DialogContent>

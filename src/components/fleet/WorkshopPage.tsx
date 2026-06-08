@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -271,13 +271,16 @@ export default function WorkshopPage() {
 
       {/* Create Job Card Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Create Job Card</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-xs">Maintenance Record</Label>
-              <Select value={createForm.maintenanceId || ''} onValueChange={v => setCreateForm({ ...createForm, maintenanceId: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select maintenance record" /></SelectTrigger>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create Job Card</DialogTitle>
+            <DialogDescription>Create a new job card from an existing maintenance record.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2">
+              <Label className="text-xs">Maintenance Record <span className="text-destructive">*</span></Label>
+              <Select value={createForm.maintenanceId || ''} onValueChange={v => setCreateForm({ ...createForm, maintenanceId: v })} required>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select maintenance record" /></SelectTrigger>
                 <SelectContent>
                   {availableMaintenance.length === 0 ? (
                     <SelectItem value="_none" disabled>No available maintenance records</SelectItem>
@@ -292,16 +295,16 @@ export default function WorkshopPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Technician Name</Label>
-              <Input value={createForm.technician || ''} onChange={e => setCreateForm({ ...createForm, technician: e.target.value })} className="h-9 mt-1" placeholder="Enter technician name" />
+              <Label className="text-xs">Technician Name <span className="text-destructive">*</span></Label>
+              <Input value={createForm.technician || ''} onChange={e => setCreateForm({ ...createForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" required />
             </div>
             <div>
               <Label className="text-xs">Estimated Hours</Label>
-              <Input type="number" step="0.5" value={createForm.estimatedHours || ''} onChange={e => setCreateForm({ ...createForm, estimatedHours: e.target.value })} className="h-9 mt-1" placeholder="0" />
+              <Input type="number" step="0.5" value={createForm.estimatedHours || ''} onChange={e => setCreateForm({ ...createForm, estimatedHours: e.target.value })} className="h-10 mt-1" placeholder="0" />
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Notes</Label>
-              <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1" rows={3} placeholder="Optional notes" />
+              <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Optional notes about the job" />
             </div>
           </div>
           <DialogFooter>
@@ -313,40 +316,40 @@ export default function WorkshopPage() {
 
       {/* Edit Job Card Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Edit Job Card</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Job Card</DialogTitle>
+            <DialogDescription>Update the job card details, hours, and costs.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div>
               <Label className="text-xs">Technician</Label>
-              <Input value={editForm.technician || ''} onChange={e => setEditForm({ ...editForm, technician: e.target.value })} className="h-9 mt-1" />
+              <Input value={editForm.technician || ''} onChange={e => setEditForm({ ...editForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Estimated Hours</Label>
-                <Input type="number" step="0.5" value={editForm.estimatedHours || 0} onChange={e => setEditForm({ ...editForm, estimatedHours: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Actual Hours</Label>
-                <Input type="number" step="0.5" value={editForm.actualHours || 0} onChange={e => setEditForm({ ...editForm, actualHours: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
-              </div>
+            <div className="col-span-1 md:col-span-2"></div>
+            <div>
+              <Label className="text-xs">Estimated Hours</Label>
+              <Input type="number" step="0.5" value={editForm.estimatedHours || 0} onChange={e => setEditForm({ ...editForm, estimatedHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Labor Cost ($)</Label>
-                <Input type="number" step="0.01" value={editForm.laborCost || 0} onChange={e => setEditForm({ ...editForm, laborCost: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Parts Cost ($)</Label>
-                <Input type="number" step="0.01" value={editForm.partsCost || 0} onChange={e => setEditForm({ ...editForm, partsCost: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
-              </div>
+            <div>
+              <Label className="text-xs">Actual Hours</Label>
+              <Input type="number" step="0.5" value={editForm.actualHours || 0} onChange={e => setEditForm({ ...editForm, actualHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
             </div>
-            <div className="p-3 bg-muted rounded-md">
+            <div>
+              <Label className="text-xs">Labor Cost ($)</Label>
+              <Input type="number" step="0.01" value={editForm.laborCost || 0} onChange={e => setEditForm({ ...editForm, laborCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+            </div>
+            <div>
+              <Label className="text-xs">Parts Cost ($)</Label>
+              <Input type="number" step="0.01" value={editForm.partsCost || 0} onChange={e => setEditForm({ ...editForm, partsCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+            </div>
+            <div className="col-span-1 md:col-span-2 p-3 bg-muted rounded-md">
               <span className="text-xs text-muted-foreground">Total Cost: </span>
               <span className="font-bold">${((editForm.laborCost || 0) + (editForm.partsCost || 0)).toLocaleString()}</span>
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Notes</Label>
-              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1" rows={3} />
+              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes..." />
             </div>
           </div>
           <DialogFooter>
@@ -358,8 +361,11 @@ export default function WorkshopPage() {
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Delete Job Card</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete Job Card</DialogTitle>
+            <DialogDescription>This action cannot be undone. Only open job cards can be deleted.</DialogDescription>
+          </DialogHeader>
           <p className="text-sm text-muted-foreground py-4">
             Are you sure you want to delete this job card? Only open job cards can be deleted. This action cannot be undone.
           </p>

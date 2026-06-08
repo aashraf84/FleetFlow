@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, MoreHorizontal, CheckCircle2, RotateCcw, Trash2, XCircle
+  Plus, Pencil, MoreHorizontal, CheckCircle2, RotateCcw, Trash2, XCircle
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -35,6 +35,7 @@ export default function FinancePaymentsPage() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<any>(emptyForm)
 
   useEffect(() => { fetchData() }, [])
@@ -51,15 +52,45 @@ export default function FinancePaymentsPage() {
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
+  const openCreate = () => {
+    setEditId(null)
+    setForm({ ...emptyForm })
+    setOpen(true)
+  }
+
+  const openEdit = (pay: any) => {
+    setEditId(pay.id)
+    setForm({
+      invoiceId: pay.invoiceId || '',
+      amount: pay.amount || 0,
+      method: pay.method || 'cash',
+      reference: pay.reference || '',
+      paidDate: pay.paidDate ? new Date(pay.paidDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      notes: pay.notes || '',
+      status: pay.status || 'completed',
+    })
+    setOpen(true)
+  }
+
   const handleSubmit = async () => {
     try {
-      const res = await fetch('/api/fleet/finance/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
-      })
-      if (res.ok) { toast.success('Payment recorded'); fetchData(); setOpen(false); setForm(emptyForm) }
-      else toast.error('Failed to record payment')
+      if (editId) {
+        const res = await fetch('/api/fleet/finance/payments', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editId, ...form }),
+        })
+        if (res.ok) { toast.success('Payment updated'); fetchData(); setOpen(false); setEditId(null); setForm(emptyForm) }
+        else toast.error('Failed to update payment')
+      } else {
+        const res = await fetch('/api/fleet/finance/payments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(form),
+        })
+        if (res.ok) { toast.success('Payment recorded'); fetchData(); setOpen(false); setForm(emptyForm) }
+        else toast.error('Failed to record payment')
+      }
     } catch (e) { toast.error('Failed') }
   }
 
@@ -86,10 +117,7 @@ export default function FinancePaymentsPage() {
     } catch (e) { toast.error('Failed') }
   }
 
-  const openCreate = () => {
-    setForm({ ...emptyForm })
-    setOpen(true)
-  }
+
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
 
@@ -158,6 +186,9 @@ export default function FinancePaymentsPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEdit(p)}>
+                            <Pencil className="mr-2 h-3.5 w-3.5" /> Edit
+                          </DropdownMenuItem>
                           {p.status === 'pending' && (
                             <DropdownMenuItem onClick={() => handleStatusChange(p.id, 'completed')}>
                               <CheckCircle2 className="mr-2 h-3.5 w-3.5" /> Mark as Completed
@@ -187,15 +218,19 @@ export default function FinancePaymentsPage() {
         </ScrollArea>
       </CardContent></Card>
 
-      {/* Record Payment Dialog */}
+      {/* Record/Edit Payment Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>Record Payment</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editId ? 'Edit Payment' : 'Record Payment'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify the payment details below.' : 'Fill in the details to record a new payment.'}</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label className="text-xs">Invoice (optional)</Label>
-              <Select value={form.invoiceId || '_none'} onValueChange={v => setForm({ ...form, invoiceId: v === '_none' ? '' : v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select invoice" /></SelectTrigger>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Invoice (optional)</Label>
+                <Select value={form.invoiceId || '_none'} onValueChange={v => setForm({ ...form, invoiceId: v === '_none' ? '' : v })}>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an invoice" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">No invoice</SelectItem>
                   {eligibleInvoices.map(inv => (
@@ -205,16 +240,17 @@ export default function FinancePaymentsPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Amount ($)</Label>
-                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Method</Label>
+                <Label className="text-xs">Amount ($) <span className="text-destructive">*</span></Label>
+                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Method <span className="text-destructive">*</span></Label>
                 <Select value={form.method || 'cash'} onValueChange={v => setForm({ ...form, method: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="card">Card</SelectItem>
@@ -225,34 +261,36 @@ export default function FinancePaymentsPage() {
                 </Select>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs">Reference</Label>
-                <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-9 mt-1" placeholder="Transaction ref" />
+                <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-10 mt-1" placeholder="Transaction reference number" />
               </div>
               <div>
-                <Label className="text-xs">Payment Date</Label>
-                <Input type="date" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} className="h-9 mt-1" />
+                <Label className="text-xs">Payment Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} className="h-10 mt-1" required />
               </div>
             </div>
-            <div>
-              <Label className="text-xs">Status</Label>
-              <Select value={form.status || 'completed'} onValueChange={v => setForm({ ...form, status: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Status</Label>
+                <Select value={form.status || 'completed'} onValueChange={v => setForm({ ...form, status: v })}>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 text-xs" rows={2} />
+              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>Record Payment</Button>
+            <Button onClick={handleSubmit}>{editId ? 'Update' : 'Record Payment'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

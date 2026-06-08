@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -294,15 +294,16 @@ export default function RentalContractsPage() {
 
       {/* Create Contract Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Rental Contract</DialogTitle>
+            <DialogDescription>Create a new rental contract by selecting customer, vehicle, and setting terms.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div>
-              <Label className="text-xs">Customer *</Label>
+              <Label>Customer *</Label>
               <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
                 <SelectContent>
                   {customers.map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
@@ -311,12 +312,12 @@ export default function RentalContractsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Vehicle *</Label>
+              <Label>Vehicle *</Label>
               <Select value={form.vehicleId || ''} onValueChange={v => {
                 const veh = vehicles.find(x => x.id === v)
                 setForm({ ...form, vehicleId: v, dailyRate: veh?.dailyRate || form.dailyRate })
               }}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
                 <SelectContent>
                   {vehicles.filter(v => v.status === 'available' || v.status === 'rented').map(v => (
                     <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>
@@ -324,8 +325,8 @@ export default function RentalContractsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Reservation (Optional)</Label>
+            <div className="col-span-1 md:col-span-2">
+              <Label>Reservation (Optional)</Label>
               <Select value={form.reservationId || '_none'} onValueChange={v => {
                 if (v === '_none') {
                   setForm({ ...form, reservationId: '' })
@@ -341,7 +342,7 @@ export default function RentalContractsPage() {
                   })
                 }
               }}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select reservation (optional)" /></SelectTrigger>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select reservation (optional)" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="_none">None</SelectItem>
                   {reservations.filter(r => r.status === 'confirmed' || r.status === 'active').map(r => (
@@ -353,52 +354,52 @@ export default function RentalContractsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Start Date</Label>
+              <Label>Start Date *</Label>
               <Input type="date" value={form.startDate || ''} onChange={e => {
                 const updated = { ...form, startDate: e.target.value }
                 const totals = calcTotals(updated)
                 setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" required />
             </div>
             <div>
-              <Label className="text-xs">End Date</Label>
+              <Label>End Date *</Label>
               <Input type="date" value={form.endDate || ''} onChange={e => {
                 const updated = { ...form, endDate: e.target.value }
                 const totals = calcTotals(updated)
                 setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" required />
             </div>
             <div>
-              <Label className="text-xs">Daily Rate ($)</Label>
+              <Label>Daily Rate ($)</Label>
               <Input type="number" value={form.dailyRate || ''} onChange={e => {
                 const updated = { ...form, dailyRate: parseFloat(e.target.value) || 0 }
                 const totals = calcTotals(updated)
                 setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" placeholder="0.00" />
             </div>
             <div>
-              <Label className="text-xs">Total Days (auto)</Label>
-              <Input type="number" value={calcTotals(form).totalDays} disabled className="h-9 mt-1 bg-muted" />
+              <Label>Total Days (auto)</Label>
+              <Input type="number" value={calcTotals(form).totalDays} disabled className="h-10 mt-1 bg-muted" />
             </div>
             <div>
-              <Label className="text-xs">Total Amount ($) (auto)</Label>
-              <Input type="number" value={calcTotals(form).totalAmount} disabled className="h-9 mt-1 bg-muted" />
+              <Label>Total Amount ($) (auto)</Label>
+              <Input type="number" value={calcTotals(form).totalAmount} disabled className="h-10 mt-1 bg-muted" />
             </div>
             <div>
-              <Label className="text-xs">Deposit Amount ($)</Label>
-              <Input type="number" value={form.depositAmount || ''} onChange={e => setForm({ ...form, depositAmount: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
+              <Label>Deposit Amount ($)</Label>
+              <Input type="number" value={form.depositAmount || ''} onChange={e => setForm({ ...form, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" />
             </div>
             <div>
-              <Label className="text-xs">Mileage Limit (km)</Label>
-              <Input type="number" value={form.mileageLimit || ''} onChange={e => setForm({ ...form, mileageLimit: e.target.value })} className="h-9 mt-1" />
+              <Label>Mileage Limit (km)</Label>
+              <Input type="number" value={form.mileageLimit || ''} onChange={e => setForm({ ...form, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" />
             </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Terms & Conditions</Label>
-              <Textarea value={form.terms || ''} onChange={e => setForm({ ...form, terms: e.target.value })} className="mt-1" rows={3} placeholder="Enter contract terms..." />
+            <div className="col-span-1 md:col-span-2">
+              <Label>Terms & Conditions</Label>
+              <Textarea value={form.terms || ''} onChange={e => setForm({ ...form, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." />
             </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1" rows={2} placeholder="Additional notes..." />
+            <div className="col-span-1 md:col-span-2">
+              <Label>Notes</Label>
+              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." />
             </div>
           </div>
           <DialogFooter>
@@ -410,15 +411,16 @@ export default function RentalContractsPage() {
 
       {/* Edit Contract Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Contract</DialogTitle>
+            <DialogDescription>Update the rental contract details, rates, and terms.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div>
-              <Label className="text-xs">Customer</Label>
+              <Label>Customer *</Label>
               <Select value={editForm.customerId || ''} onValueChange={v => setEditForm({ ...editForm, customerId: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
                 <SelectContent>
                   {customers.map(c => (
                     <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
@@ -427,12 +429,12 @@ export default function RentalContractsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Vehicle</Label>
+              <Label>Vehicle *</Label>
               <Select value={editForm.vehicleId || ''} onValueChange={v => {
                 const veh = vehicles.find(x => x.id === v)
                 setEditForm({ ...editForm, vehicleId: v, dailyRate: veh?.dailyRate || editForm.dailyRate })
               }}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
                 <SelectContent>
                   {vehicles.map(v => (
                     <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>
@@ -441,52 +443,52 @@ export default function RentalContractsPage() {
               </Select>
             </div>
             <div>
-              <Label className="text-xs">Start Date</Label>
+              <Label>Start Date *</Label>
               <Input type="date" value={editForm.startDate || ''} onChange={e => {
                 const updated = { ...editForm, startDate: e.target.value }
                 const totals = calcTotals(updated)
                 setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" required />
             </div>
             <div>
-              <Label className="text-xs">End Date</Label>
+              <Label>End Date *</Label>
               <Input type="date" value={editForm.endDate || ''} onChange={e => {
                 const updated = { ...editForm, endDate: e.target.value }
                 const totals = calcTotals(updated)
                 setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" required />
             </div>
             <div>
-              <Label className="text-xs">Daily Rate ($)</Label>
+              <Label>Daily Rate ($)</Label>
               <Input type="number" value={editForm.dailyRate || ''} onChange={e => {
                 const updated = { ...editForm, dailyRate: parseFloat(e.target.value) || 0 }
                 const totals = calcTotals(updated)
                 setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-9 mt-1" />
+              }} className="h-10 mt-1" placeholder="0.00" />
             </div>
             <div>
-              <Label className="text-xs">Total Days (auto)</Label>
-              <Input type="number" value={calcTotals(editForm).totalDays} disabled className="h-9 mt-1 bg-muted" />
+              <Label>Total Days (auto)</Label>
+              <Input type="number" value={calcTotals(editForm).totalDays} disabled className="h-10 mt-1 bg-muted" />
             </div>
             <div>
-              <Label className="text-xs">Total Amount ($) (auto)</Label>
-              <Input type="number" value={calcTotals(editForm).totalAmount} disabled className="h-9 mt-1 bg-muted" />
+              <Label>Total Amount ($) (auto)</Label>
+              <Input type="number" value={calcTotals(editForm).totalAmount} disabled className="h-10 mt-1 bg-muted" />
             </div>
             <div>
-              <Label className="text-xs">Deposit Amount ($)</Label>
-              <Input type="number" value={editForm.depositAmount || ''} onChange={e => setEditForm({ ...editForm, depositAmount: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
+              <Label>Deposit Amount ($)</Label>
+              <Input type="number" value={editForm.depositAmount || ''} onChange={e => setEditForm({ ...editForm, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" />
             </div>
             <div>
-              <Label className="text-xs">Mileage Limit (km)</Label>
-              <Input type="number" value={editForm.mileageLimit || ''} onChange={e => setEditForm({ ...editForm, mileageLimit: e.target.value })} className="h-9 mt-1" />
+              <Label>Mileage Limit (km)</Label>
+              <Input type="number" value={editForm.mileageLimit || ''} onChange={e => setEditForm({ ...editForm, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" />
             </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Terms & Conditions</Label>
-              <Textarea value={editForm.terms || ''} onChange={e => setEditForm({ ...editForm, terms: e.target.value })} className="mt-1" rows={3} />
+            <div className="col-span-1 md:col-span-2">
+              <Label>Terms & Conditions</Label>
+              <Textarea value={editForm.terms || ''} onChange={e => setEditForm({ ...editForm, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." />
             </div>
-            <div className="col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1" rows={2} />
+            <div className="col-span-1 md:col-span-2">
+              <Label>Notes</Label>
+              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." />
             </div>
           </div>
           <DialogFooter>
@@ -501,6 +503,7 @@ export default function RentalContractsPage() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Contract Details — {detailItem?.contractNumber}</DialogTitle>
+            <DialogDescription>View full contract details, customer and vehicle information, and rental timeline.</DialogDescription>
           </DialogHeader>
           {detailItem && (
             <div className="space-y-6 py-4">

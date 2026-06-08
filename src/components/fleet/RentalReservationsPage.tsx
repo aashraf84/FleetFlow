@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -133,21 +133,17 @@ export default function RentalReservationsPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Reservation</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Customer</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available').map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Start Date</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">End Date</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-9 mt-1" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Total Amount ($)</Label><Input type="number" value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            </div>
-            <div><Label className="text-xs">Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({...form, depositAmount: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Pickup Location</Label><Input value={form.pickupLocation || ''} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="h-9 mt-1" /></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>New Reservation</DialogTitle><DialogDescription>Create a new rental reservation by selecting customer, vehicle, and rental dates.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label>Customer *</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available').map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Start Date *</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
+            <div><Label>End Date *</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
+            <div><Label>Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+            <div><Label>Total Amount ($)</Label><Input type="number" value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+            <div><Label>Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({...form, depositAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+            <div><Label>Pickup Location</Label><Input value={form.pickupLocation || ''} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
         </DialogContent>

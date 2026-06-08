@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -97,16 +97,14 @@ export default function RentalDepositsPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Record Deposit</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Contract</Label><Select value={form.contractId || ''} onValueChange={v => setForm({...form, contractId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select contract" /></SelectTrigger><SelectContent>{contracts.map(c => <SelectItem key={c.id} value={c.id}>{c.contractNumber} - {c.customer ? `${c.customer.firstName} ${c.customer.lastName}` : 'N/A'}</SelectItem>)}</SelectContent></Select></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Type</Label><Select value={form.type || 'collection'} onValueChange={v => setForm({...form, type: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="collection">Collection</SelectItem><SelectItem value="refund">Refund</SelectItem><SelectItem value="adjustment">Adjustment</SelectItem><SelectItem value="deduction">Deduction</SelectItem></SelectContent></Select></div>
-              <div><Label className="text-xs">Method</Label><Select value={form.method || 'cash'} onValueChange={v => setForm({...form, method: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="card">Card</SelectItem><SelectItem value="bank_transfer">Bank Transfer</SelectItem><SelectItem value="check">Check</SelectItem></SelectContent></Select></div>
-            </div>
-            <div><Label className="text-xs">Amount ($)</Label><Input type="number" value={form.amount || ''} onChange={e => setForm({...form, amount: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Reason</Label><Input value={form.reason || ''} onChange={e => setForm({...form, reason: e.target.value})} className="h-9 mt-1" /></div>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Record Deposit</DialogTitle><DialogDescription>Record a deposit collection, refund, or deduction for a rental contract.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2"><Label>Contract *</Label><Select value={form.contractId || ''} onValueChange={v => setForm({...form, contractId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select contract" /></SelectTrigger><SelectContent>{contracts.map(c => <SelectItem key={c.id} value={c.id}>{c.contractNumber} - {c.customer ? `${c.customer.firstName} ${c.customer.lastName}` : 'N/A'}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Type</Label><Select value={form.type || 'collection'} onValueChange={v => setForm({...form, type: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="collection">Collection</SelectItem><SelectItem value="refund">Refund</SelectItem><SelectItem value="adjustment">Adjustment</SelectItem><SelectItem value="deduction">Deduction</SelectItem></SelectContent></Select></div>
+            <div><Label>Method</Label><Select value={form.method || 'cash'} onValueChange={v => setForm({...form, method: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select method" /></SelectTrigger><SelectContent><SelectItem value="cash">Cash</SelectItem><SelectItem value="card">Card</SelectItem><SelectItem value="bank_transfer">Bank Transfer</SelectItem><SelectItem value="check">Check</SelectItem></SelectContent></Select></div>
+            <div><Label>Amount ($) *</Label><Input type="number" value={form.amount || ''} onChange={e => setForm({...form, amount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" required /></div>
+            <div><Label>Reason</Label><Input value={form.reason || ''} onChange={e => setForm({...form, reason: e.target.value})} className="h-10 mt-1" placeholder="Reason for deposit or deduction" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Record</Button></DialogFooter>
         </DialogContent>

@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { UserCog, Plus, Search, Edit, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -41,7 +42,7 @@ export default function HrEmployeesPage() {
     try { const res = await fetch(`/api/fleet/hr?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
-  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', status: 'active', baseSalary: 0 }); setOpen(true) }
+  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', phone: '', department: '', position: '', baseSalary: 0, status: 'active', address: '', notes: '' }); setOpen(true) }
   const openEdit = (item: any) => { setEditItem(item); setForm(item); setOpen(true) }
 
   return (
@@ -82,16 +83,18 @@ export default function HrEmployeesPage() {
         </ScrollArea>
       </CardContent></Card>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editItem ? 'Edit Employee' : 'Add Employee'}</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">First Name</Label><Input value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Last Name</Label><Input value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Email</Label><Input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Phone</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Department</Label><Input value={form.department || ''} onChange={e => setForm({...form, department: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Position</Label><Input value={form.position || ''} onChange={e => setForm({...form, position: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Base Salary ($)</Label><Input type="number" value={form.baseSalary || ''} onChange={e => setForm({...form, baseSalary: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="on_leave">On Leave</SelectItem><SelectItem value="terminated">Terminated</SelectItem></SelectContent></Select></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Employee' : 'Add Employee'}</DialogTitle><DialogDescription>{editItem ? 'Update employee information and details.' : 'Fill in the details to add a new employee.'}</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">First Name <span className="text-destructive">*</span></Label><Input required value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-10 mt-1" placeholder="Enter first name" /></div>
+            <div><Label className="text-xs">Last Name <span className="text-destructive">*</span></Label><Input required value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-10 mt-1" placeholder="Enter last name" /></div>
+            <div><Label className="text-xs">Email <span className="text-destructive">*</span></Label><Input required type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-10 mt-1" placeholder="employee@company.com" /></div>
+            <div><Label className="text-xs">Phone</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-10 mt-1" placeholder="e.g. +1 555-0100" /></div>
+            <div><Label className="text-xs">Department <span className="text-destructive">*</span></Label><Input required value={form.department || ''} onChange={e => setForm({...form, department: e.target.value})} className="h-10 mt-1" placeholder="e.g. Engineering, Sales" /></div>
+            <div><Label className="text-xs">Position <span className="text-destructive">*</span></Label><Input required value={form.position || ''} onChange={e => setForm({...form, position: e.target.value})} className="h-10 mt-1" placeholder="e.g. Senior Developer" /></div>
+            <div><Label className="text-xs">Base Salary ($) <span className="text-destructive">*</span></Label><Input required type="number" value={form.baseSalary || ''} onChange={e => setForm({...form, baseSalary: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+            <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="on_leave">On Leave</SelectItem><SelectItem value="terminated">Terminated</SelectItem></SelectContent></Select></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Employee address" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="min-h-[80px] mt-1" placeholder="Additional notes about the employee" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -217,34 +217,37 @@ export default function FinanceAccountingPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editId ? 'Edit Journal Entry' : 'New Journal Entry'}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editId ? 'Edit Journal Entry' : 'New Journal Entry'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify the journal entry details below.' : 'Fill in the details to create a new journal entry.'}</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs">Debit Account</Label>
-                <Input value={form.debitAccount || ''} onChange={e => setForm({ ...form, debitAccount: e.target.value })} className="h-9 mt-1" placeholder="e.g., Cash, Accounts Receivable" />
+                <Label className="text-xs">Debit Account <span className="text-destructive">*</span></Label>
+                <Input value={form.debitAccount || ''} onChange={e => setForm({ ...form, debitAccount: e.target.value })} className="h-10 mt-1" placeholder="e.g., Cash, Accounts Receivable" required />
               </div>
               <div>
-                <Label className="text-xs">Credit Account</Label>
-                <Input value={form.creditAccount || ''} onChange={e => setForm({ ...form, creditAccount: e.target.value })} className="h-9 mt-1" placeholder="e.g., Revenue, Accounts Payable" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Amount ($)</Label>
-                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
-              </div>
-              <div>
-                <Label className="text-xs">Date</Label>
-                <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-9 mt-1" />
+                <Label className="text-xs">Credit Account <span className="text-destructive">*</span></Label>
+                <Input value={form.creditAccount || ''} onChange={e => setForm({ ...form, creditAccount: e.target.value })} className="h-10 mt-1" placeholder="e.g., Revenue, Accounts Payable" required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs">Amount ($) <span className="text-destructive">*</span></Label>
+                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
+              </div>
+              <div>
+                <Label className="text-xs">Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-10 mt-1" required />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs">Type</Label>
                 <Select value={form.type || 'debit'} onValueChange={v => setForm({ ...form, type: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select entry type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="debit">Debit</SelectItem>
                     <SelectItem value="credit">Credit</SelectItem>
@@ -253,18 +256,18 @@ export default function FinanceAccountingPage() {
               </div>
               <div>
                 <Label className="text-xs">Reference</Label>
-                <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-9 mt-1" placeholder="Optional reference" />
+                <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-10 mt-1" placeholder="Optional reference number" />
               </div>
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Description</Label>
-              <Textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="mt-1 text-xs" rows={2} placeholder="Entry description" />
+              <Textarea value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Describe the journal entry..." rows={3} />
             </div>
             {editId && (
               <div>
                 <Label className="text-xs">Status</Label>
                 <Select value={form.status || 'draft'} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="posted">Posted</SelectItem>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Progress } from '@/components/ui/progress'
@@ -292,31 +292,32 @@ export default function OwnerTenantsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Tenant' : 'Create Tenant'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify tenant configuration and resource limits' : 'Set up a new tenant on the platform with custom settings'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Name *</Label>
-                <Input className="h-9 text-sm" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+                <Input className="h-10 text-sm" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required placeholder="Enter tenant name" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Domain</Label>
-                <Input className="h-9 text-sm" value={formData.domain} onChange={(e) => setFormData({ ...formData, domain: e.target.value })} placeholder="tenant.fleetflow.os" />
+                <Input className="h-10 text-sm" value={formData.domain} onChange={(e) => setFormData({ ...formData, domain: e.target.value })} placeholder="tenant.fleetflow.os" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">User Limit</Label>
-                <Input type="number" className="h-9 text-sm" value={formData.userLimit} onChange={(e) => setFormData({ ...formData, userLimit: Number(e.target.value) })} />
+                <Input type="number" className="h-10 text-sm" value={formData.userLimit} onChange={(e) => setFormData({ ...formData, userLimit: Number(e.target.value) })} placeholder="10" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Storage Limit (MB)</Label>
-                <Input type="number" className="h-9 text-sm" value={formData.storageLimit} onChange={(e) => setFormData({ ...formData, storageLimit: Number(e.target.value) })} />
+                <Input type="number" className="h-10 text-sm" value={formData.storageLimit} onChange={(e) => setFormData({ ...formData, storageLimit: Number(e.target.value) })} placeholder="1024" />
               </div>
-              <div className="col-span-2 space-y-1.5">
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
                 <Label className="text-xs">Modules</Label>
-                <Input className="h-9 text-sm" value={formData.modulesEnabled} onChange={(e) => setFormData({ ...formData, modulesEnabled: e.target.value })} placeholder="fleet,rental,customer,driver" />
+                <Input className="h-10 text-sm" value={formData.modulesEnabled} onChange={(e) => setFormData({ ...formData, modulesEnabled: e.target.value })} placeholder="fleet,rental,customer,driver" />
               </div>
             </div>
             <DialogFooter>

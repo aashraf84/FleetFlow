@@ -4,10 +4,11 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Award, Plus, Star, Send, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
@@ -150,21 +151,21 @@ export default function HrPerformancePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto"><DialogHeader><DialogTitle>New Performance Review</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="col-span-2"><Label className="text-xs">Employee</Label>
-              <Select value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select employee" /></SelectTrigger>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>New Performance Review</DialogTitle><DialogDescription>Create a performance review for an employee.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
+              <Select required value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an employee" /></SelectTrigger>
                 <SelectContent>
                   {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Reviewer</Label><Input value={form.reviewer || ''} onChange={e => setForm({ ...form, reviewer: e.target.value })} className="h-9 mt-1" placeholder="Reviewer name" /></div>
-            <div><Label className="text-xs">Period</Label><Input value={form.period || ''} onChange={e => setForm({ ...form, period: e.target.value })} className="h-9 mt-1" placeholder="e.g. 2024-Q1" /></div>
-            <div><Label className="text-xs">Rating (1-5)</Label>
-              <Select value={form.rating || '3'} onValueChange={v => setForm({ ...form, rating: v })}>
-                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+            <div><Label className="text-xs">Reviewer <span className="text-destructive">*</span></Label><Input required value={form.reviewer || ''} onChange={e => setForm({ ...form, reviewer: e.target.value })} className="h-10 mt-1" placeholder="Reviewer name" /></div>
+            <div><Label className="text-xs">Period <span className="text-destructive">*</span></Label><Input required value={form.period || ''} onChange={e => setForm({ ...form, period: e.target.value })} className="h-10 mt-1" placeholder="e.g. 2024-Q1" /></div>
+            <div><Label className="text-xs">Rating (1-5) <span className="text-destructive">*</span></Label>
+              <Select required value={form.rating || '3'} onValueChange={v => setForm({ ...form, rating: v })}>
+                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select rating" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">1 - Needs Improvement</SelectItem>
                   <SelectItem value="2">2 - Below Expectations</SelectItem>
@@ -174,11 +175,11 @@ export default function HrPerformancePage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label className="text-xs">Review Date</Label><Input type="date" value={form.reviewDate || ''} onChange={e => setForm({ ...form, reviewDate: e.target.value })} className="h-9 mt-1" /></div>
-            <div className="col-span-2"><Label className="text-xs">Goals</Label><Input value={form.goals || ''} onChange={e => setForm({ ...form, goals: e.target.value })} className="h-9 mt-1" placeholder="Employee goals" /></div>
-            <div className="col-span-2"><Label className="text-xs">Feedback</Label><Input value={form.feedback || ''} onChange={e => setForm({ ...form, feedback: e.target.value })} className="h-9 mt-1" placeholder="General feedback" /></div>
-            <div className="col-span-2"><Label className="text-xs">Strengths</Label><Input value={form.strengths || ''} onChange={e => setForm({ ...form, strengths: e.target.value })} className="h-9 mt-1" placeholder="Key strengths" /></div>
-            <div className="col-span-2"><Label className="text-xs">Areas for Improvement</Label><Input value={form.improvements || ''} onChange={e => setForm({ ...form, improvements: e.target.value })} className="h-9 mt-1" placeholder="Areas to improve" /></div>
+            <div><Label className="text-xs">Review Date</Label><Input type="date" value={form.reviewDate || ''} onChange={e => setForm({ ...form, reviewDate: e.target.value })} className="h-10 mt-1" placeholder="Select date" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Goals</Label><Textarea value={form.goals || ''} onChange={e => setForm({ ...form, goals: e.target.value })} className="min-h-[80px] mt-1" placeholder="Employee goals and objectives" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Feedback</Label><Textarea value={form.feedback || ''} onChange={e => setForm({ ...form, feedback: e.target.value })} className="min-h-[80px] mt-1" placeholder="General performance feedback" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Strengths</Label><Textarea value={form.strengths || ''} onChange={e => setForm({ ...form, strengths: e.target.value })} className="min-h-[80px] mt-1" placeholder="Key strengths demonstrated" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Areas for Improvement</Label><Textarea value={form.improvements || ''} onChange={e => setForm({ ...form, improvements: e.target.value })} className="min-h-[80px] mt-1" placeholder="Areas where improvement is needed" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create Review</Button></DialogFooter>
         </DialogContent>

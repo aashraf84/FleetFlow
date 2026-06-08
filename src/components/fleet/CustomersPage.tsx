@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -100,21 +100,24 @@ export default function CustomersPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>{editItem ? 'Edit Customer' : 'Add Customer'}</DialogTitle></DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">First Name</Label><Input value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Last Name</Label><Input value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Email</Label><Input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Phone</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Company</Label><Input value={form.companyName || ''} onChange={e => setForm({...form, companyName: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Driving License</Label><Input value={form.drivingLicense || ''} onChange={e => setForm({...form, drivingLicense: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">City</Label><Input value={form.city || ''} onChange={e => setForm({...form, city: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Country</Label><Input value={form.country || ''} onChange={e => setForm({...form, country: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">ID Number</Label><Input value={form.idNumber || ''} onChange={e => setForm({...form, idNumber: e.target.value})} className="h-9 mt-1" /></div>
-            <div><Label className="text-xs">Credit Rating</Label><Select value={form.creditRating || 'good'} onValueChange={v => setForm({...form, creditRating: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="excellent">Excellent</SelectItem><SelectItem value="good">Good</SelectItem><SelectItem value="fair">Fair</SelectItem><SelectItem value="poor">Poor</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="blacklisted">Blacklisted</SelectItem></SelectContent></Select></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editItem ? 'Edit Customer' : 'Add Customer'}</DialogTitle>
+            <DialogDescription>{editItem ? 'Update customer personal information and settings' : 'Register a new customer with personal and contact details'}</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">First Name *</Label><Input value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-10 mt-1" required placeholder="Enter first name" /></div>
+            <div><Label className="text-xs">Last Name *</Label><Input value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-10 mt-1" required placeholder="Enter last name" /></div>
+            <div><Label className="text-xs">Email *</Label><Input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-10 mt-1" required placeholder="customer@email.com" /></div>
+            <div><Label className="text-xs">Phone</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-10 mt-1" placeholder="+1 (555) 000-0000" /></div>
+            <div><Label className="text-xs">Company</Label><Input value={form.companyName || ''} onChange={e => setForm({...form, companyName: e.target.value})} className="h-10 mt-1" placeholder="Company name" /></div>
+            <div><Label className="text-xs">Driving License</Label><Input value={form.drivingLicense || ''} onChange={e => setForm({...form, drivingLicense: e.target.value})} className="h-10 mt-1" placeholder="License number" /></div>
+            <div><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Street address" /></div>
+            <div><Label className="text-xs">City</Label><Input value={form.city || ''} onChange={e => setForm({...form, city: e.target.value})} className="h-10 mt-1" placeholder="City" /></div>
+            <div><Label className="text-xs">Country</Label><Input value={form.country || ''} onChange={e => setForm({...form, country: e.target.value})} className="h-10 mt-1" placeholder="Country" /></div>
+            <div><Label className="text-xs">ID Number</Label><Input value={form.idNumber || ''} onChange={e => setForm({...form, idNumber: e.target.value})} className="h-10 mt-1" placeholder="ID number" /></div>
+            <div><Label className="text-xs">Credit Rating</Label><Select value={form.creditRating || 'good'} onValueChange={v => setForm({...form, creditRating: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select rating" /></SelectTrigger><SelectContent><SelectItem value="excellent">Excellent</SelectItem><SelectItem value="good">Good</SelectItem><SelectItem value="fair">Fair</SelectItem><SelectItem value="poor">Poor</SelectItem></SelectContent></Select></div>
+            <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="blacklisted">Blacklisted</SelectItem></SelectContent></Select></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>

@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Textarea } from '@/components/ui/textarea'
 import { AlertTriangle, Plus, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -117,15 +118,13 @@ export default function RentalDamagePage() {
       </Card>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>New Damage Report</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Description</Label><Input value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="h-9 mt-1" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Repair Estimate ($)</Label><Input type="number" value={form.repairEstimate || ''} onChange={e => setForm({...form, repairEstimate: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Customer Liability ($)</Label><Input type="number" value={form.customerLiability || ''} onChange={e => setForm({...form, customerLiability: parseFloat(e.target.value)})} className="h-9 mt-1" /></div>
-            </div>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>New Damage Report</DialogTitle><DialogDescription>Report vehicle damage with details, repair estimates, and liability information.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="col-span-1 md:col-span-2"><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+            <div className="col-span-1 md:col-span-2"><Label>Description *</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe the damage in detail" required /></div>
+            <div><Label>Repair Estimate ($)</Label><Input type="number" value={form.repairEstimate || ''} onChange={e => setForm({...form, repairEstimate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+            <div><Label>Customer Liability ($)</Label><Input type="number" value={form.customerLiability || ''} onChange={e => setForm({...form, customerLiability: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
         </DialogContent>

@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -321,36 +322,37 @@ export default function OwnerClientsPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Client' : 'Add New Client'}</DialogTitle>
+            <DialogDescription>{editId ? 'Update client information and settings' : 'Enter details to register a new enterprise client'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Company Name *</Label>
-                <Input className="h-9 text-sm" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required />
+                <Input className="h-10 text-sm" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required placeholder="Enter company name" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Contact Person *</Label>
-                <Input className="h-9 text-sm" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required />
+                <Input className="h-10 text-sm" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required placeholder="Full name of contact person" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Email *</Label>
-                <Input type="email" className="h-9 text-sm" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required />
+                <Input type="email" className="h-10 text-sm" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required placeholder="contact@company.com" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Phone</Label>
-                <Input className="h-9 text-sm" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+                <Input className="h-10 text-sm" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Country</Label>
-                <Input className="h-9 text-sm" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
+                <Input className="h-10 text-sm" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} placeholder="United States" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Industry</Label>
                 <Select value={formData.industryType} onValueChange={(v) => setFormData({ ...formData, industryType: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select industry" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Logistics">Logistics</SelectItem>
                     <SelectItem value="Transport">Transport</SelectItem>
@@ -366,7 +368,7 @@ export default function OwnerClientsPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">Subscription Plan</Label>
                 <Select value={formData.subscriptionPlan} onValueChange={(v) => setFormData({ ...formData, subscriptionPlan: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select plan" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="trial">Trial</SelectItem>
                     <SelectItem value="monthly">Monthly</SelectItem>
@@ -378,7 +380,7 @@ export default function OwnerClientsPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs">License Status</Label>
                 <Select value={formData.licenseStatus} onValueChange={(v) => setFormData({ ...formData, licenseStatus: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select status" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="expired">Expired</SelectItem>
@@ -387,10 +389,10 @@ export default function OwnerClientsPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Notes</Label>
-              <Input className="h-9 text-sm" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
+                <Label className="text-xs">Notes</Label>
+                <Textarea className="min-h-[80px] text-sm" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes about this client..." />
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
@@ -402,9 +404,10 @@ export default function OwnerClientsPage() {
 
       {/* Activity Dialog */}
       <Dialog open={!!activityClient} onOpenChange={() => setActivityClient(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Activity - {activityClient?.companyName}</DialogTitle>
+            <DialogDescription>Recent activity log for this client</DialogDescription>
           </DialogHeader>
           {activityClient?.activities && activityClient.activities.length > 0 ? (
             <ScrollArea className="h-64">

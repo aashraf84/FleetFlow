@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -160,17 +160,18 @@ export default function CompliancePage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{editMode ? 'Edit Compliance Record' : 'Add Compliance Record'}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Type</Label><Select value={form.type || 'road_tax'} onValueChange={v => setForm({...form, type: v})}><SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="road_tax">Road Tax</SelectItem><SelectItem value="permit">Permit</SelectItem><SelectItem value="fitness_certificate">Fitness Certificate</SelectItem><SelectItem value="emission">Emission</SelectItem><SelectItem value="registration">Registration</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Document/Certificate Number</Label><Input value={form.certificateNumber || form.documentNumber || ''} onChange={e => setForm({...form, certificateNumber: e.target.value, documentNumber: e.target.value})} className="h-9 mt-1" /></div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Issue Date</Label><Input type="date" value={form.issueDate || ''} onChange={e => setForm({...form, issueDate: e.target.value})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Expiry Date</Label><Input type="date" value={form.expiryDate || ''} onChange={e => setForm({...form, expiryDate: e.target.value})} className="h-9 mt-1" /></div>
-            </div>
-            <div><Label className="text-xs">Issuing Authority</Label><Input value={form.issuingAuthority || ''} onChange={e => setForm({...form, issuingAuthority: e.target.value})} className="h-9 mt-1" /></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editMode ? 'Edit Compliance Record' : 'Add Compliance Record'}</DialogTitle>
+            <DialogDescription>{editMode ? 'Update the compliance record details below.' : 'Fill in the details to add a new compliance record.'}</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Type <span className="text-destructive">*</span></Label><Select value={form.type || 'road_tax'} onValueChange={v => setForm({...form, type: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="road_tax">Road Tax</SelectItem><SelectItem value="permit">Permit</SelectItem><SelectItem value="fitness_certificate">Fitness Certificate</SelectItem><SelectItem value="emission">Emission</SelectItem><SelectItem value="registration">Registration</SelectItem></SelectContent></Select></div>
+            <div><Label className="text-xs">Document/Certificate Number <span className="text-destructive">*</span></Label><Input value={form.certificateNumber || form.documentNumber || ''} onChange={e => setForm({...form, certificateNumber: e.target.value, documentNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. CERT-2024-001" required /></div>
+            <div><Label className="text-xs">Issuing Authority</Label><Input value={form.issuingAuthority || ''} onChange={e => setForm({...form, issuingAuthority: e.target.value})} className="h-10 mt-1" placeholder="e.g. DMV, Transport Authority" /></div>
+            <div><Label className="text-xs">Issue Date</Label><Input type="date" value={form.issueDate || ''} onChange={e => setForm({...form, issueDate: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label className="text-xs">Expiry Date <span className="text-destructive">*</span></Label><Input type="date" value={form.expiryDate || ''} onChange={e => setForm({...form, expiryDate: e.target.value})} className="h-10 mt-1" required /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>
@@ -178,8 +179,8 @@ export default function CompliancePage() {
 
       {/* Delete Confirmation */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Delete Compliance Record</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Delete Compliance Record</DialogTitle><DialogDescription>This action cannot be undone.</DialogDescription></DialogHeader>
           <p className="text-sm text-muted-foreground py-4">Are you sure you want to delete this compliance record? This action cannot be undone.</p>
           <DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Delete</Button></DialogFooter>
         </DialogContent>

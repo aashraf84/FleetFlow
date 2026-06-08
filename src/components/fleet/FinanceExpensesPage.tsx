@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -212,14 +212,17 @@ export default function FinanceExpensesPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader><DialogTitle>{editId ? 'Edit Expense' : 'Record Expense'}</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editId ? 'Edit Expense' : 'Record Expense'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify the expense details below.' : 'Fill in the details to record a new expense.'}</DialogDescription>
+          </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs">Category</Label>
-                <Select value={form.category || 'maintenance'} onValueChange={v => setForm({ ...form, category: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                <Label className="text-xs">Category <span className="text-destructive">*</span></Label>
+                <Select value={form.category || 'maintenance'} onValueChange={v => setForm({ ...form, category: v })} required>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="maintenance">Maintenance</SelectItem>
                     <SelectItem value="fuel">Fuel</SelectItem>
@@ -232,29 +235,29 @@ export default function FinanceExpensesPage() {
                 </Select>
               </div>
               <div>
-                <Label className="text-xs">Amount ($)</Label>
-                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-9 mt-1" />
+                <Label className="text-xs">Amount ($) <span className="text-destructive">*</span></Label>
+                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
               </div>
             </div>
-            <div>
-              <Label className="text-xs">Description</Label>
-              <Input value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="h-9 mt-1" />
+            <div className="col-span-1 md:col-span-2">
+              <Label className="text-xs">Description <span className="text-destructive">*</span></Label>
+              <Input value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="h-10 mt-1" placeholder="Enter expense description" required />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs">Vendor</Label>
-                <Input value={form.vendor || ''} onChange={e => setForm({ ...form, vendor: e.target.value })} className="h-9 mt-1" />
+                <Input value={form.vendor || ''} onChange={e => setForm({ ...form, vendor: e.target.value })} className="h-10 mt-1" placeholder="Vendor or supplier name" />
               </div>
               <div>
-                <Label className="text-xs">Date</Label>
-                <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-9 mt-1" />
+                <Label className="text-xs">Date <span className="text-destructive">*</span></Label>
+                <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-10 mt-1" required />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-xs">Payment Method</Label>
                 <Select value={form.paymentMethod || ''} onValueChange={v => setForm({ ...form, paymentMethod: v })}>
-                  <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select method" /></SelectTrigger>
+                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cash">Cash</SelectItem>
                     <SelectItem value="card">Card</SelectItem>
@@ -267,7 +270,7 @@ export default function FinanceExpensesPage() {
                 <div>
                   <Label className="text-xs">Status</Label>
                   <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
-                    <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="approved">Approved</SelectItem>
@@ -278,9 +281,9 @@ export default function FinanceExpensesPage() {
                 </div>
               )}
             </div>
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 text-xs" rows={2} />
+              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
             </div>
           </div>
           <DialogFooter>

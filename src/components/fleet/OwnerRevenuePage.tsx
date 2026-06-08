@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import {
@@ -356,16 +357,17 @@ export default function OwnerRevenuePage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Revenue Record' : 'Add Revenue Record'}</DialogTitle>
+            <DialogDescription>{editId ? 'Update revenue transaction details' : 'Record a new revenue transaction'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Category *</Label>
                 <Select value={formData.category} onValueChange={(v) => setFormData({ ...formData, category: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select category" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="sales">Sales</SelectItem>
                     <SelectItem value="subscription">Subscription</SelectItem>
@@ -376,25 +378,25 @@ export default function OwnerRevenuePage() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Amount ($) *</Label>
-                <Input type="number" step="0.01" className="h-9 text-sm" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })} required />
+                <Input type="number" step="0.01" className="h-10 text-sm" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: Number(e.target.value) })} required placeholder="0.00" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Date</Label>
-                <Input type="date" className="h-9 text-sm" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                <Input type="date" className="h-10 text-sm" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Client</Label>
                 <Select value={formData.clientId} onValueChange={(v) => setFormData({ ...formData, clientId: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
                   <SelectContent>
                     {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">Description</Label>
-              <Input className="h-9 text-sm" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
+              <div className="col-span-1 md:col-span-2 space-y-1.5">
+                <Label className="text-xs">Description</Label>
+                <Textarea className="min-h-[80px] text-sm" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Describe this revenue transaction..." />
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>

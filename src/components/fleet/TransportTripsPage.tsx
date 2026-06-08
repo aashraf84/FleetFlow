@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -186,22 +186,19 @@ export default function TransportTripsPage() {
 
       {/* Create/Edit Trip Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{editMode ? 'Edit Trip' : 'New Trip'}</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-              <div><Label className="text-xs">Vehicle</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Origin</Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-9 mt-1" placeholder="e.g. Warehouse A" /></div>
-              <div><Label className="text-xs">Destination</Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-9 mt-1" placeholder="e.g. Client Site B" /></div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div><Label className="text-xs">Start Time</Label><Input type="datetime-local" value={form.startTime || ''} onChange={e => setForm({...form, startTime: e.target.value})} className="h-9 mt-1" /></div>
-              <div><Label className="text-xs">Est. Distance (km)</Label><Input type="number" value={form.distance || ''} onChange={e => setForm({...form, distance: parseFloat(e.target.value) || 0})} className="h-9 mt-1" /></div>
-            </div>
-            <div><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1" rows={2} placeholder="Trip notes..." /></div>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editMode ? 'Edit Trip' : 'New Trip'}</DialogTitle>
+            <DialogDescription>{editMode ? 'Update the trip details below.' : 'Fill in the details to create a new trip.'}</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div><Label className="text-xs">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+            <div><Label className="text-xs">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
+            <div><Label className="text-xs">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
+            <div><Label className="text-xs">Start Time <span className="text-destructive">*</span></Label><Input type="datetime-local" value={form.startTime || ''} onChange={e => setForm({...form, startTime: e.target.value})} className="h-10 mt-1" required /></div>
+            <div><Label className="text-xs">Est. Distance (km)</Label><Input type="number" value={form.distance || ''} onChange={e => setForm({...form, distance: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Trip notes..." /></div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update Trip' : 'Create Trip'}</Button></DialogFooter>
         </DialogContent>
@@ -209,8 +206,8 @@ export default function TransportTripsPage() {
 
       {/* Delete Confirmation */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Delete Trip</DialogTitle></DialogHeader>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Delete Trip</DialogTitle><DialogDescription>This action cannot be undone.</DialogDescription></DialogHeader>
           <p className="text-sm text-muted-foreground py-4">Are you sure you want to delete this trip? This action cannot be undone.</p>
           <DialogFooter><Button variant="outline" onClick={() => setDeleteOpen(false)}>Cancel</Button><Button variant="destructive" onClick={handleDelete}>Delete</Button></DialogFooter>
         </DialogContent>

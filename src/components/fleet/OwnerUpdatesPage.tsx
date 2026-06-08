@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
@@ -314,20 +315,21 @@ export default function OwnerUpdatesPage() {
 
       {/* Publish Update Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Update' : 'Publish New Update'}</DialogTitle>
+            <DialogDescription>{editId ? 'Modify update version, release notes, and settings' : 'Create a new platform update version with release notes'}</DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Version *</Label>
-                <Input className="h-9 text-sm font-mono" value={formData.version} onChange={(e) => setFormData({ ...formData, version: e.target.value })} required placeholder="e.g., 2.3.0" />
+                <Input className="h-10 text-sm font-mono" value={formData.version} onChange={(e) => setFormData({ ...formData, version: e.target.value })} required placeholder="e.g., 2.3.0" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs">Type *</Label>
                 <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
-                  <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="major">Major</SelectItem>
                     <SelectItem value="minor">Minor</SelectItem>
@@ -339,7 +341,7 @@ export default function OwnerUpdatesPage() {
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Release Notes *</Label>
-              <Input className="h-9 text-sm" value={formData.releaseNotes} onChange={(e) => setFormData({ ...formData, releaseNotes: e.target.value })} required placeholder="Describe what's new in this version..." />
+              <Textarea className="min-h-[80px] text-sm" value={formData.releaseNotes} onChange={(e) => setFormData({ ...formData, releaseNotes: e.target.value })} required placeholder="Describe what's new in this version..." />
             </div>
             <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
@@ -354,7 +356,7 @@ export default function OwnerUpdatesPage() {
             <div className="space-y-1.5">
               <Label className="text-xs">Status</Label>
               <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="draft">Draft</SelectItem>
                   <SelectItem value="published">Published</SelectItem>
