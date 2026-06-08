@@ -333,3 +333,31 @@ Stage Summary:
 - FinancePaymentsPage: record payments with invoice selector, status actions (complete/refund/fail), delete
 - FinanceAccountingPage: edit drafts, post/void status changes, delete drafts, date/reference/type fields
 - All components use shadcn/ui DropdownMenu, Dialog, toast notifications, and follow existing code patterns
+
+---
+Task ID: 7
+Agent: Main Agent
+Task: Fix LoginPage hydration mismatch and push to GitHub
+
+Work Log:
+- Identified root cause: `isDark ? ... : ...` conditional className pattern in LoginPage causes SSR/client mismatch
+  - Server renders with resolvedTheme=undefined → isDark=false → light mode classes
+  - Client may resolve theme immediately → isDark=true → dark mode classes
+  - Result: React hydration warning about mismatched className
+- Fixed by converting ALL `isDark ? light : dark` patterns to Tailwind `dark:` variant prefix
+  - Background gradient: `bg-gradient-to-br from-[#e8f4f8] ... dark:from-[#0a0f1a] ...`
+  - Decorative circles: `bg-primary/8 dark:bg-primary/5`
+  - Theme toggle button: `bg-black/5 text-gray-500 ... dark:bg-white/10 dark:text-gray-400 ...`
+  - Login card: `bg-white border-gray-100 ... dark:bg-[#16181c] dark:border-[#2a2d35] ...`
+  - Input fields: `bg-[#fafbfc] border-gray-200 ... dark:bg-[#1e2028] dark:border-[#2a2d35] ...`
+  - Error message, divider, demo button: all converted to `dark:` variants
+- Removed `cn()` utility import (no longer needed without conditional classes)
+- Also updated the loading fallback (`!mounted` state) to use `dark:` variants for consistent appearance
+- Lint check passed with zero errors
+- Successfully pushed to GitHub (commit 98b1afe)
+
+Stage Summary:
+- Hydration mismatch FIXED — server and client now render identical className strings
+- Theme-dependent styling now uses Tailwind CSS `dark:` prefix (CSS-only, no JS dependency)
+- LoginPage visual appearance unchanged in both light and dark modes
+- Code pushed to GitHub
