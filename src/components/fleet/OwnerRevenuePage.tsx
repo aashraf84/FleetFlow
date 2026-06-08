@@ -53,6 +53,7 @@ export default function OwnerRevenuePage() {
   const [stats, setStats] = useState<Stats>({ totalRevenue: 0, monthlyRevenue: 0, annualRevenue: 0, pendingPayments: 0, totalRecords: 0 })
   const [revenueTrend, setRevenueTrend] = useState<{ month: string; amount: number }[]>([])
   const [categoryChart, setCategoryChart] = useState<{ name: string; value: number }[]>([])
+  const [subMetrics, setSubMetrics] = useState({ newSubsGrowthPct: 0, renewalRate: 0, avgRevPerClient: 0, churnRate: 0, retentionRate: 0, revenueGrowthPct: 0 })
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -93,6 +94,7 @@ export default function OwnerRevenuePage() {
         setStats(json.stats || { totalRevenue: 0, monthlyRevenue: 0, annualRevenue: 0, pendingPayments: 0, totalRecords: 0 })
         setRevenueTrend(json.revenueTrend || [])
         setCategoryChart(json.categoryChart || [])
+        setSubMetrics(json.subscriptionMetrics || { newSubsGrowthPct: 0, renewalRate: 0, avgRevPerClient: 0, churnRate: 0, retentionRate: 0, revenueGrowthPct: 0 })
       }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
@@ -142,10 +144,10 @@ export default function OwnerRevenuePage() {
   const fmtDate = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
   const statCards = [
-    { label: 'Total Revenue', value: fmt(stats.totalRevenue), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30', trend: '+12.5%', up: true },
-    { label: 'Monthly Revenue', value: fmt(stats.monthlyRevenue), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30', trend: '+8.2%', up: true },
-    { label: 'Annual Revenue', value: fmt(stats.annualRevenue), icon: Calendar, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30', trend: '+15.3%', up: true },
-    { label: 'Pending Payments', value: fmt(stats.pendingPayments), icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30', trend: '-3.1%', up: false },
+    { label: 'Total Revenue', value: fmt(stats.totalRevenue), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30', trend: `${subMetrics.revenueGrowthPct >= 0 ? '+' : ''}${subMetrics.revenueGrowthPct}%`, up: subMetrics.revenueGrowthPct >= 0 },
+    { label: 'Monthly Revenue', value: fmt(stats.monthlyRevenue), icon: TrendingUp, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30', trend: `${subMetrics.revenueGrowthPct >= 0 ? '+' : ''}${subMetrics.revenueGrowthPct}%`, up: subMetrics.revenueGrowthPct >= 0 },
+    { label: 'Annual Revenue', value: fmt(stats.annualRevenue), icon: Calendar, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30', trend: subMetrics.avgRevPerClient > 0 ? `$${(subMetrics.avgRevPerClient / 1000).toFixed(1)}k/client` : '—', up: true },
+    { label: 'Pending Payments', value: fmt(stats.pendingPayments), icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30', trend: stats.totalRevenue > 0 ? `${Math.round(stats.pendingPayments / stats.totalRevenue * 100)}% of rev` : '—', up: false },
   ]
 
   return (
@@ -313,16 +315,16 @@ export default function OwnerRevenuePage() {
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-emerald-600">+18%</p>
+                <p className="text-2xl font-bold text-emerald-600">+{subMetrics.newSubsGrowthPct}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">New Subscriptions</p>
               </div>
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-blue-600">92%</p>
+                <p className="text-2xl font-bold text-blue-600">{subMetrics.renewalRate}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Renewal Rate</p>
               </div>
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-violet-600">$4.2k</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Avg. Rev/User</p>
+                <p className="text-2xl font-bold text-violet-600">${(subMetrics.avgRevPerClient / 1000).toFixed(1)}k</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Avg. Rev/Client</p>
               </div>
             </div>
           </CardContent>
@@ -336,15 +338,15 @@ export default function OwnerRevenuePage() {
           <CardContent>
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-red-600">2.1%</p>
+                <p className="text-2xl font-bold text-red-600">{subMetrics.churnRate}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Churn Rate</p>
               </div>
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-amber-600">14d</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Avg. Lifetime</p>
+                <p className="text-2xl font-bold text-amber-600">{subMetrics.renewalRate}%</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Auto-Renewal</p>
               </div>
               <div className="text-center p-3 rounded-lg border">
-                <p className="text-2xl font-bold text-emerald-600">97.9%</p>
+                <p className="text-2xl font-bold text-emerald-600">{subMetrics.retentionRate}%</p>
                 <p className="text-[10px] text-muted-foreground mt-1">Retention</p>
               </div>
             </div>

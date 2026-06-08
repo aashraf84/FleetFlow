@@ -3,8 +3,8 @@ import { sql } from '@/lib/sql'
 
 export async function GET() {
   try {
-    // 4 parallel HTTP-based queries — no connection pool limits
-    const [vehicles, reservations, revenues, maintenanceDue] = await Promise.all([
+    // 8 parallel HTTP-based queries — all real data from DB
+    const [vehicles, reservations, revenues, maintenanceDue, drivers, clients, expenses, subscriptions] = await Promise.all([
       sql`SELECT id, make, model, status, "dailyRate" FROM "Vehicle"`,
       sql`SELECT r.id, r."reservationCode", r."customerId", r."vehicleId", r."startDate", r."endDate", r."totalAmount", r.status,
                  c."firstName" as "customerFirstName", c."lastName" as "customerLastName",
@@ -13,16 +13,20 @@ export async function GET() {
           LEFT JOIN "Customer" c ON r."customerId" = c.id
           LEFT JOIN "Vehicle" v ON r."vehicleId" = v.id
           ORDER BY r."createdAt" DESC LIMIT 10`,
-      sql`SELECT amount, date, category FROM "Revenue" LIMIT 200`,
+      sql`SELECT amount, date, category FROM "Revenue"`,
       sql`SELECT m.id, m.type, m.category, m."scheduledDate", m.status, m.cost,
                  v.make as "vehicleMake", v.model as "vehicleModel"
           FROM "MaintenanceRecord" m
           LEFT JOIN "Vehicle" v ON m."vehicleId" = v.id
           WHERE m.status IN ('scheduled', 'in_progress')
           ORDER BY m."scheduledDate" ASC LIMIT 8`,
+      sql`SELECT id FROM "Driver" WHERE status = 'active'`,
+      sql`SELECT id, "createdAt" FROM "Client" WHERE status = 'active'`,
+      sql`SELECT amount, category FROM "Expense"`,
+      sql`SELECT id FROM "Subscription" WHERE status = 'active'`,
     ])
 
-    // Compute everything from the 4 queries above — no more DB calls
+    // Compute everything from the queries above
     const totalVehicles = vehicles.length
     const statusCounts: Record<string, number> = {}
     vehicles.forEach((v: any) => { statusCounts[v.status] = (statusCounts[v.status] || 0) + 1 })
@@ -38,6 +42,26 @@ export async function GET() {
     const now = new Date()
     const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
     const monthlyRevenue = revenues.filter((r: any) => new Date(r.date) >= thisMonth).reduce((s: number, r: any) => s + r.amount, 0)
+
+    // Real expense data from DB
+    const totalExpenses = expenses.reduce((s: number, e: any) => s + e.amount, 0)
+    const fuelCosts = expenses.filter((e: any) => e.category === 'fuel').reduce((s: number, e: any) => s + e.amount, 0)
+
+    // Real driver/client/subscription counts from DB
+    const activeDrivers = drivers.length
+    const activeClients = clients.length
+    const newThisMonth = clients.filter((c: any) => new Date(c.createdAt) >= thisMonth).length
+    const totalSubscriptions = subscriptions.length
+    const maintenanceDueCount = maintenanceDue.length
+
+    // Calculate outstanding payments from unpaid invoice amounts
+    let outstandingPayments = 0
+    try {
+      const unpaidInvoices = await sql`SELECT ("totalAmount" - "paidAmount") as outstanding FROM "Invoice" WHERE status IN ('sent', 'partial', 'overdue')`
+      outstandingPayments = unpaidInvoices.reduce((s: number, i: any) => s + (i.outstanding || 0), 0)
+    } catch {
+      outstandingPayments = 0
+    }
 
     // Revenue trend by month
     const revenueByMonth: Record<string, number> = {}
@@ -69,16 +93,6 @@ export async function GET() {
       .slice(-12)
       .map(([month, count]) => ({ month, count }))
 
-    // Estimate expenses and other stats from what we have (no extra DB calls)
-    const totalExpenses = Math.round(totalRevenue * 0.62)
-    const fuelCosts = Math.round(totalExpenses * 0.28)
-    const outstandingPayments = Math.round(totalRevenue * 0.08)
-    const activeDrivers = 8
-    const maintenanceDueCount = maintenanceDue.length
-    const activeClients = 7
-    const newThisMonth = 2
-    const totalSubscriptions = 7
-
     const recentReservations = reservations.map((r: any) => ({
       id: r.id,
       code: r.reservationCode,
@@ -103,12 +117,12 @@ export async function GET() {
           reservedVehicles,
           fleetUtilization,
           totalRevenue: Math.round(totalRevenue),
-          totalExpenses,
+          totalExpenses: Math.round(totalExpenses),
           activeDrivers,
           maintenanceDue: maintenanceDueCount,
           vehiclesInService,
-          fuelCosts,
-          outstandingPayments,
+          fuelCosts: Math.round(fuelCosts),
+          outstandingPayments: Math.round(outstandingPayments),
           monthlyRevenue: Math.round(monthlyRevenue),
           activeClients,
           newThisMonth,

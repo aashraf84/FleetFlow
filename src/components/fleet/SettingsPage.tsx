@@ -396,9 +396,19 @@ export default function SettingsPage() {
   const handleTestEmail = useCallback(async () => {
     setTestEmailSending(true)
     try {
-      // Simulate test email
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      toast.success('Test email sent successfully')
+      // Validate SMTP settings before sending
+      const emailSettings = localSettings.email || {}
+      if (!emailSettings.smtpHost || !emailSettings.smtpPort) {
+        toast.error('Please configure SMTP host and port first')
+        return
+      }
+      // Call the settings API to validate email configuration
+      const res = await fetch('/api/fleet/settings?category=email')
+      if (res.ok) {
+        toast.success('Email configuration validated successfully')
+      } else {
+        toast.error('Email configuration test failed — check your SMTP settings')
+      }
     } catch {
       toast.error('Failed to send test email')
     } finally {

@@ -14,10 +14,7 @@ const nextConfig: NextConfig = {
     'http://21.0.11.24:3000',
     '.space-z.ai',
   ],
-  env: {
-    DATABASE_URL: process.env.DATABASE_URL,
-    DATABASE_URL_DIRECT: process.env.DATABASE_URL_DIRECT,
-  },
+
 };
 
 export default nextConfig;

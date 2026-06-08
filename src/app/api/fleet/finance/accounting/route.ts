@@ -4,8 +4,9 @@ import { db } from '@/lib/db'
 export async function GET() {
   try {
     const entries = await db.journalEntry.findMany({ orderBy: { date: 'desc' } })
-    const totalDebit = entries.filter(e => e.status === 'posted').reduce((s, e) => s + e.amount, 0)
-    const totalCredit = entries.filter(e => e.status === 'posted').reduce((s, e) => s + e.amount, 0)
+    // Fix: Use type field to differentiate debit vs credit entries
+    const totalDebit = entries.filter(e => e.status === 'posted' && e.type === 'debit').reduce((s, e) => s + e.amount, 0)
+    const totalCredit = entries.filter(e => e.status === 'posted' && e.type === 'credit').reduce((s, e) => s + e.amount, 0)
     const recentEntries = entries.slice(0, 50)
     return NextResponse.json({ data: { entries: recentEntries, totalDebit, totalCredit, balance: totalDebit - totalCredit } })
   } catch (error) {
