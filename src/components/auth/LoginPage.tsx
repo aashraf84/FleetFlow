@@ -85,10 +85,7 @@ export default function LoginPage() {
 
   if (!mounted) {
     return (
-      <div className={cn(
-        "min-h-screen flex items-center justify-center",
-        isDark ? "bg-[#0a0f1a]" : "bg-gradient-to-br from-[#e8f4f8] via-[#dceef5] to-[#c8e0ec]"
-      )}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse w-16 h-16 rounded-2xl bg-primary/20" />
       </div>
     )
