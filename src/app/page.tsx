@@ -10,7 +10,8 @@ import {
   Users, IdCard, Radio, Route, MapPin, Fuel, Wrench, Settings, History, Cog, Package, Warehouse,
   Receipt, MinusCircle, DollarSign, BookOpen, Shield, FileCheck, UserCog, Clock, Palmtree, Banknote, Award, FolderOpen,
   PieChart, Bot, Search, Bell, Sun, Moon, Menu, ChevronLeft, X, Zap, Activity, Eye, LogOut,
-  PanelLeftClose, PanelLeft, Sparkles, Command, ChevronsLeft, ChevronsRight, ChevronDown, ChevronRight
+  PanelLeftClose, PanelLeft, Sparkles, Command, ChevronsLeft, ChevronsRight, ChevronDown, ChevronRight,
+  Crown, Globe, HardDrive, Calendar, ArrowUpRight, CheckCircle2, XCircle, Pause, Clock4, UsersRound
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -550,9 +551,72 @@ function MobileSidebar() {
 // macOS Tahoe — Solid Toolbar
 // ============================================
 
+// ============================================
+// Client Info & Subscription Types
+// ============================================
+interface ClientInfoData {
+  client: {
+    id: string; companyName: string; slug: string; contactPerson: string;
+    email: string; phone: string; subscriptionPlan: string;
+    licenseStatus: string; status: string; createdAt: string;
+  } | null
+  subscription: {
+    id: string; planType: string; startDate: string; expiryDate: string;
+    autoRenewal: boolean; price: number; currency: string; status: string;
+    userLimit: number; storageLimit: number; activeModules: string[];
+  } | null
+  license: {
+    id: string; licenseKey: string; activationDate: string; expiryDate: string;
+    status: string; maxDevices: number;
+  } | null
+  tenant: {
+    id: string; name: string; slug: string; activeUsers: number; userLimit: number;
+    storageUsed: number; storageLimit: number; modulesEnabled: string[];
+  } | null
+  stats: {
+    total: number; active: number; suspended: number; expired: number; revenue: number;
+  }
+}
+
+function SubscriptionStatusBadge({ status }: { status: string }) {
+  const config: Record<string, { icon: React.ReactNode; className: string; label: string }> = {
+    active: { icon: <CheckCircle2 className="h-3 w-3" />, className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20', label: 'Active' },
+    suspended: { icon: <Pause className="h-3 w-3" />, className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20', label: 'Suspended' },
+    expired: { icon: <XCircle className="h-3 w-3" />, className: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20', label: 'Expired' },
+    cancelled: { icon: <XCircle className="h-3 w-3" />, className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20', label: 'Cancelled' },
+  }
+  const c = config[status] || config.active
+  return (
+    <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border', c.className)}>
+      {c.icon} {c.label}
+    </span>
+  )
+}
+
+function PlanBadge({ planType }: { planType: string }) {
+  const config: Record<string, { icon: React.ReactNode; className: string; label: string }> = {
+    trial: { icon: <Clock4 className="h-3 w-3" />, className: 'bg-gray-500/10 text-gray-600 dark:text-gray-400', label: 'Trial' },
+    monthly: { icon: <Calendar className="h-3 w-3" />, className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400', label: 'Monthly' },
+    annual: { icon: <CalendarDays className="h-3 w-3" />, className: 'bg-purple-500/10 text-purple-600 dark:text-purple-400', label: 'Annual' },
+    enterprise: { icon: <Crown className="h-3 w-3" />, className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400', label: 'Enterprise' },
+    custom: { icon: <Sparkles className="h-3 w-3" />, className: 'bg-rose-500/10 text-rose-600 dark:text-rose-400', label: 'Custom' },
+  }
+  const c = config[planType] || config.monthly
+  return (
+    <span className={cn('inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold', c.className)}>
+      {c.icon} {c.label}
+    </span>
+  )
+}
+
+// ============================================
+// macOS Tahoe — Enhanced Interactive Topbar
+// ============================================
+
 function Header() {
   const { activePage, setActivePage, setSidebarOpen, commandOpen, setCommandOpen, notifications, dismissNotification, user, isDemo, logout, sessionToken } = useAppStore()
   const { theme, setTheme } = useTheme()
+  const [clientInfo, setClientInfo] = useState<ClientInfoData | null>(null)
 
   const pageTitle = useMemo(() => {
     for (const group of navigationGroups) {
@@ -563,6 +627,22 @@ function Header() {
   }, [activePage])
 
   const unreadCount = notifications.filter(n => !n.read).length
+
+  // Fetch client info on mount
+  useEffect(() => {
+    const fetchClientInfo = async () => {
+      try {
+        const res = await fetch('/api/fleet/client-info')
+        if (res.ok) {
+          const json = await res.json()
+          setClientInfo(json.data)
+        }
+      } catch {}
+    }
+    fetchClientInfo()
+    const interval = setInterval(fetchClientInfo, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -588,6 +668,15 @@ function Header() {
     toast.success('Signed out successfully')
   }, [sessionToken, logout])
 
+  // Helpers for client info display
+  const sub = clientInfo?.subscription
+  const client = clientInfo?.client
+  const tenant = clientInfo?.tenant
+  const license = clientInfo?.license
+  const daysRemaining = sub?.expiryDate ? Math.max(0, Math.ceil((new Date(sub.expiryDate).getTime() - Date.now()) / 86400000)) : null
+  const storageUsedPct = tenant ? Math.round((tenant.storageUsed / Math.max(tenant.storageLimit, 1)) * 100) : null
+  const usersUsedPct = tenant ? Math.round((tenant.activeUsers / Math.max(tenant.userLimit, 1)) * 100) : null
+
   return (
     <header className="h-12 glass-toolbar flex items-center justify-between px-3 gap-3 shrink-0 z-10">
       <div className="flex items-center gap-2">
@@ -608,6 +697,271 @@ function Header() {
       </div>
 
       <div className="flex items-center gap-1">
+        {/* ====== Client & Subscription Info Popover ====== */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="hidden md:flex items-center gap-2 h-8 px-2.5 rounded-lg hover:bg-accent transition-colors border border-transparent hover:border-border"
+            >
+              <div className="flex items-center gap-1.5">
+                <div className={cn(
+                  "h-5 w-5 rounded-md flex items-center justify-center",
+                  sub?.status === 'active' ? 'bg-emerald-500/10' : sub?.status === 'suspended' ? 'bg-amber-500/10' : 'bg-gray-500/10'
+                )}>
+                  <Building2 className={cn(
+                    "h-3 w-3",
+                    sub?.status === 'active' ? 'text-emerald-600 dark:text-emerald-400' : sub?.status === 'suspended' ? 'text-amber-600 dark:text-amber-400' : 'text-gray-500'
+                  )} />
+                </div>
+                <div className="flex flex-col items-start leading-none">
+                  <span className="text-[11px] font-semibold truncate max-w-[120px]">{client?.companyName || 'No Client'}</span>
+                  <span className="text-[9px] text-muted-foreground">{sub ? `${sub.planType.charAt(0).toUpperCase() + sub.planType.slice(1)} · $${sub.price}/mo` : 'No Plan'}</span>
+                </div>
+                <ChevronDown className="h-3 w-3 text-muted-foreground" />
+              </div>
+            </motion.button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[380px] p-0 rounded-2xl shadow-xl border border-border" align="end">
+            {/* Header */}
+            <div className="p-4 border-b border-border bg-gradient-to-r from-primary/5 to-transparent">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Building2 className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold">{client?.companyName || 'No Client'}</h4>
+                    <p className="text-[11px] text-muted-foreground">{client?.email || 'No email'}</p>
+                  </div>
+                </div>
+                {sub && <SubscriptionStatusBadge status={sub.status} />}
+              </div>
+            </div>
+
+            {/* Subscription Details */}
+            {sub && (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Subscription</span>
+                  <PlanBadge planType={sub.planType} />
+                </div>
+
+                {/* Key Metrics Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
+                    <DollarSign className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-sm font-bold">${sub.price}</p>
+                    <p className="text-[9px] text-muted-foreground">/month</p>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
+                    <Calendar className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-sm font-bold">{daysRemaining !== null ? daysRemaining : '—'}</p>
+                    <p className="text-[9px] text-muted-foreground">days left</p>
+                  </div>
+                  <div className="rounded-xl bg-secondary/50 p-2.5 text-center">
+                    <UsersRound className="h-3.5 w-3.5 mx-auto text-muted-foreground mb-1" />
+                    <p className="text-sm font-bold">{sub.userLimit || '—'}</p>
+                    <p className="text-[9px] text-muted-foreground">user limit</p>
+                  </div>
+                </div>
+
+                {/* Expiry Progress */}
+                {sub.startDate && sub.expiryDate && (() => {
+                  const start = new Date(sub.startDate).getTime()
+                  const end = new Date(sub.expiryDate).getTime()
+                  const now = Date.now()
+                  const pct = Math.min(100, Math.max(0, Math.round(((now - start) / (end - start)) * 100)))
+                  const isExpiring = daysRemaining !== null && daysRemaining <= 30
+                  return (
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">Period Progress</span>
+                        <span className={cn('font-semibold', isExpiring ? 'text-amber-600 dark:text-amber-400' : '')}>{pct}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                        <div
+                          className={cn(
+                            'h-full rounded-full transition-all duration-500',
+                            isExpiring ? 'bg-amber-500' : pct > 90 ? 'bg-red-500' : 'bg-primary'
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
+                        <span>{new Date(sub.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                        <span>{new Date(sub.expiryDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                    </div>
+                  )
+                })()}
+
+                {/* Auto Renewal */}
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[11px] text-muted-foreground">Auto Renewal</span>
+                  <span className={cn(
+                    'flex items-center gap-1 text-[11px] font-semibold',
+                    sub.autoRenewal ? 'text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
+                  )}>
+                    {sub.autoRenewal ? <><CheckCircle2 className="h-3 w-3" /> Enabled</> : <><XCircle className="h-3 w-3" /> Disabled</>}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Tenant / Usage Info */}
+            {tenant && (
+              <div className="px-4 pb-3 space-y-3">
+                <div className="h-px bg-border" />
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Usage</span>
+
+                {/* Storage Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <HardDrive className="h-3 w-3" /> Storage
+                    </span>
+                    <span className="font-medium">{tenant.storageUsed}MB / {tenant.storageLimit}MB</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all',
+                        (storageUsedPct ?? 0) > 90 ? 'bg-red-500' : (storageUsedPct ?? 0) > 70 ? 'bg-amber-500' : 'bg-primary'
+                      )}
+                      style={{ width: `${storageUsedPct ?? 0}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Users Bar */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <Users className="h-3 w-3" /> Active Users
+                    </span>
+                    <span className="font-medium">{tenant.activeUsers} / {tenant.userLimit}</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all',
+                        (usersUsedPct ?? 0) > 90 ? 'bg-red-500' : (usersUsedPct ?? 0) > 70 ? 'bg-amber-500' : 'bg-primary'
+                      )}
+                      style={{ width: `${usersUsedPct ?? 0}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* License Info */}
+            {license && (
+              <div className="px-4 pb-3 space-y-2">
+                <div className="h-px bg-border" />
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                    <Key className="h-3 w-3" /> License
+                  </span>
+                  <span className="text-[11px] font-mono font-medium">{license.licenseKey}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Max Devices</span>
+                  <span className="text-[11px] font-medium">{license.maxDevices}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Stats */}
+            {clientInfo?.stats && (
+              <div className="px-4 pb-3">
+                <div className="h-px bg-border mb-3" />
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { label: 'Total', value: clientInfo.stats.total, color: 'text-foreground' },
+                    { label: 'Active', value: clientInfo.stats.active, color: 'text-emerald-600 dark:text-emerald-400' },
+                    { label: 'Suspended', value: clientInfo.stats.suspended, color: 'text-amber-600 dark:text-amber-400' },
+                    { label: 'Revenue', value: `$${Number(clientInfo.stats.revenue).toLocaleString()}`, color: 'text-primary' },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-lg bg-secondary/50 p-2 text-center">
+                      <p className={cn('text-xs font-bold', s.color)}>{s.value}</p>
+                      <p className="text-[9px] text-muted-foreground">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="p-3 border-t border-border bg-secondary/20 rounded-b-2xl">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setActivePage('owner-subscriptions') }}
+                  className="flex-1 h-8 rounded-lg text-[11px] font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <CreditCard className="h-3 w-3" /> Manage Subscription
+                </button>
+                <button
+                  onClick={() => { setActivePage('owner-clients') }}
+                  className="h-8 px-3 rounded-lg text-[11px] font-semibold border border-border hover:bg-accent transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Building2 className="h-3 w-3" /> Clients
+                </button>
+              </div>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* Mobile: Just client icon */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <motion.button
+              whileTap={{ scale: 0.95 }}
+              className="md:hidden h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            >
+              <Building2 className="h-4 w-4" />
+            </motion.button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[320px] p-0 rounded-2xl shadow-xl border border-border" align="end">
+            <div className="p-4 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold">{client?.companyName || 'No Client'}</h4>
+                  {sub && <PlanBadge planType={sub.planType} />}
+                </div>
+              </div>
+            </div>
+            {sub && (
+              <div className="p-4 space-y-2">
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Status</span>
+                  <SubscriptionStatusBadge status={sub.status} />
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Price</span>
+                  <span className="font-semibold">${sub.price}/mo</span>
+                </div>
+                <div className="flex justify-between text-[11px]">
+                  <span className="text-muted-foreground">Days Remaining</span>
+                  <span className={cn('font-semibold', daysRemaining !== null && daysRemaining <= 30 ? 'text-amber-600 dark:text-amber-400' : '')}>{daysRemaining ?? '—'}</span>
+                </div>
+              </div>
+            )}
+            <div className="p-3 border-t border-border">
+              <button
+                onClick={() => setActivePage('owner-subscriptions')}
+                className="w-full h-8 rounded-lg text-[11px] font-semibold bg-primary text-white hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <CreditCard className="h-3 w-3" /> Manage Subscription
+              </button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {/* Search Pill */}
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -693,7 +1047,7 @@ function Header() {
           <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
         </motion.button>
 
-        {/* User Menu */}
+        {/* User menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <motion.button
@@ -714,14 +1068,20 @@ function Header() {
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium">{user?.name}</span>
                 <span className="text-xs text-muted-foreground">{user?.email}</span>
-                {isDemo && (
-                  <span className="flex items-center gap-1 w-fit mt-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-bold text-primary">
-                    <Eye className="h-2.5 w-2.5" /> Demo
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="px-1.5 py-0.5 rounded bg-secondary text-[10px] font-semibold text-muted-foreground">{user?.role?.replace('_', ' ').toUpperCase()}</span>
+                  {isDemo && (
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-primary/10 text-[10px] font-bold text-primary">
+                      <Eye className="h-2.5 w-2.5" /> Demo
+                    </span>
+                  )}
+                </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setActivePage('owner-subscriptions')} className="rounded-lg">
+              <CreditCard className="mr-2 h-4 w-4" /> Subscription
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setActivePage('settings')} className="rounded-lg">
               <Settings className="mr-2 h-4 w-4" /> Settings
             </DropdownMenuItem>

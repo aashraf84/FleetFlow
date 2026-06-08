@@ -361,3 +361,44 @@ Stage Summary:
 - Theme-dependent styling now uses Tailwind CSS `dark:` prefix (CSS-only, no JS dependency)
 - LoginPage visual appearance unchanged in both light and dark modes
 - Code pushed to GitHub
+
+---
+Task ID: 8
+Agent: Main Agent
+Task: Make topbar more interactive with client info and subscription details
+
+Work Log:
+- Created new API endpoint `/api/fleet/client-info/route.ts` that returns:
+  - Client info (company name, email, contact, subscription plan, license status)
+  - Subscription details (plan type, price, dates, auto-renewal, status, user/storage limits)
+  - License info (license key, max devices, activation/expiry)
+  - Tenant info (active users, storage usage, enabled modules)
+  - Subscription stats (total, active, suspended, expired, revenue)
+- API auto-creates a Subscription record if client has a subscriptionPlan but no Subscription record
+- Completely redesigned the Header component with interactive features:
+  - Client info button in topbar showing company name + plan type + price (e.g., "FleetFlow Demo Corp · Enterprise · $9999/mo")
+  - Rich popover on click with:
+    - Client header with company name, email, and status badge
+    - Subscription section with plan badge, price/days/users metrics grid
+    - Period progress bar with start/end dates and visual indicator for expiring subscriptions
+    - Auto renewal status indicator
+    - Usage section with storage and user progress bars (color-coded: green/amber/red)
+    - License info section showing license key and max devices
+    - Quick stats grid (Total, Active, Suspended, Revenue)
+    - Action buttons: "Manage Subscription" and "Clients"
+  - Mobile-responsive: separate compact popover for mobile with Building2 icon trigger
+  - User menu dropdown enhanced with role badge and "Subscription" menu item
+  - Client info auto-refreshes every 60 seconds
+- Added helper components: SubscriptionStatusBadge and PlanBadge with color-coded icons
+- Added new Lucide icons: Crown, Globe, HardDrive, Calendar, ArrowUpRight, CheckCircle2, XCircle, Pause, Clock4, UsersRound
+- Created enterprise subscription for demo client via API (auto-create from client plan)
+- Browser verified: popover shows all details correctly (VLM confirmed)
+- Lint check passed with zero errors
+
+Stage Summary:
+- Topbar is now highly interactive with client info + subscription popover
+- Rich data display: plan type, price, days remaining, progress bars, usage metrics, license info
+- Auto-refreshes every 60 seconds for real-time data
+- Mobile-responsive with compact popover
+- User menu enhanced with role badge and subscription quick-access
+- API auto-creates subscription from client's subscriptionPlan if missing
