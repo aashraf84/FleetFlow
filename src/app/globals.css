@@ -101,15 +101,15 @@
   --glass-border: #d1d1d6;
   --glass-highlight: #f8f8fa;
 
-  /* Sidebar — SOLID DARK (macOS Tahoe Style) */
-  --sidebar: #1c1c1e;
-  --sidebar-foreground: #e5e5e7;
-  --sidebar-primary: #2dd4bf;
-  --sidebar-primary-foreground: #1c1c1e;
-  --sidebar-accent: #2c2c2e;
-  --sidebar-accent-foreground: #e5e5e7;
-  --sidebar-border: #2c2c2e;
-  --sidebar-ring: #2dd4bf;
+  /* Sidebar — Light mode matches app background */
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1d1d1f;
+  --sidebar-primary: #0d9488;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0f0f3;
+  --sidebar-accent-foreground: #1d1d1f;
+  --sidebar-border: #e5e5ea;
+  --sidebar-ring: #0d9488;
 }
 
 .dark {
@@ -284,13 +284,23 @@
     background-clip: content-box;
   }
 
-  /* Sidebar-specific scrollbar - lighter for dark bg */
+  /* Sidebar-specific scrollbar - adapts to sidebar background */
   .sidebar-scroll::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.15);
     border: 2px solid transparent;
     background-clip: content-box;
   }
   .sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .dark .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .dark .sidebar-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.25);
     border: 2px solid transparent;
     background-clip: content-box;

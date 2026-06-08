@@ -127,8 +127,17 @@ const pageComponents: Record<string, React.ComponentType> = {
 }
 
 // ============================================
-// macOS Tahoe — Solid Dark Sidebar
+// macOS Tahoe — Adaptive Sidebar
 // ============================================
+
+// Helper to darken a hex color for active state
+function adjustColor(hex: string, amount: number): string {
+  const num = parseInt(hex.replace('#', ''), 16)
+  const r = Math.min(255, Math.max(0, (num >> 16) + amount))
+  const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00FF) + amount))
+  const b = Math.min(255, Math.max(0, (num & 0x0000FF) + amount))
+  return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`
+}
 
 function Sidebar() {
   const { activePage, setActivePage, sidebarCollapsed, setSidebarCollapsed, user, isDemo } = useAppStore()
@@ -148,6 +157,10 @@ function Sidebar() {
     })
   }
 
+  // Find which group the active page belongs to
+  const activeGroup = navigationGroups.find(g => g.items.some(i => i.id === activePage))
+  const activeColor = activeGroup?.color || '#0d9488'
+
   return (
     <motion.aside
       initial={false}
@@ -160,7 +173,8 @@ function Sidebar() {
         <motion.div
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="flex items-center justify-center w-9 h-9 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm shrink-0 tahoe-glow cursor-pointer"
+          className="flex items-center justify-center w-9 h-9 rounded-xl font-bold text-sm shrink-0 cursor-pointer"
+          style={{ backgroundColor: activeColor, color: '#ffffff' }}
           onClick={() => setActivePage('dashboard' as any)}
         >
           FF
@@ -175,7 +189,7 @@ function Sidebar() {
               className="overflow-hidden whitespace-nowrap"
             >
               <p className="font-semibold text-sm text-sidebar-foreground">FleetFlow OS</p>
-              <p className="text-[10px] text-sidebar-foreground/50 -mt-0.5">Enterprise ERP</p>
+              <p className="text-[10px] text-muted-foreground -mt-0.5">Enterprise ERP</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -185,7 +199,7 @@ function Sidebar() {
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
           className={cn(
             "ml-auto h-7 w-7 rounded-lg flex items-center justify-center transition-colors shrink-0",
-            "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+            "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
           )}
         >
           {sidebarCollapsed ? <ChevronsRight className="h-3.5 w-3.5" /> : <ChevronsLeft className="h-3.5 w-3.5" />}
@@ -199,10 +213,12 @@ function Sidebar() {
           animate={{ opacity: 1, y: 0 }}
           className="mx-3 mt-1 mb-2"
         >
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sidebar-primary/15 border border-sidebar-primary/25">
-            <Eye className="h-3 w-3 text-sidebar-primary" />
-            <span className="text-[10px] font-bold text-sidebar-primary">DEMO</span>
-            <span className="text-[10px] text-sidebar-foreground/50">View Only</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border"
+            style={{ backgroundColor: `${activeColor}15`, borderColor: `${activeColor}25` }}
+          >
+            <Eye className="h-3 w-3" style={{ color: activeColor }} />
+            <span className="text-[10px] font-bold" style={{ color: activeColor }}>DEMO</span>
+            <span className="text-[10px] text-muted-foreground">View Only</span>
           </div>
         </motion.div>
       )}
@@ -210,7 +226,7 @@ function Sidebar() {
       {/* Collapsed Demo indicator */}
       {isDemo && sidebarCollapsed && (
         <div className="flex justify-center mb-2 mt-1">
-          <div className="w-2 h-2 rounded-full bg-sidebar-primary" />
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activeColor }} />
         </div>
       )}
 
@@ -219,28 +235,40 @@ function Sidebar() {
         <nav className="space-y-0.5 px-2">
           {navigationGroups.map((group, groupIdx) => {
             const isExpanded = expandedGroups.has(group.label)
+            const groupColor = group.color
             return (
               <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-2")}>
-                {/* Group Header — clickable to expand/collapse */}
+                {/* Group Header — clickable to expand/collapse with section color */}
                 {!sidebarCollapsed && (
                   <button
                     onClick={() => toggleGroup(group.label)}
                     className="w-full flex items-center gap-1.5 px-2 mb-0.5 group/gh"
                   >
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35 group-hover/gh:text-sidebar-foreground/55 transition-colors">
+                    <span
+                      className="w-1.5 h-1.5 rounded-full shrink-0"
+                      style={{ backgroundColor: groupColor }}
+                    />
+                    <span
+                      className="text-[10px] font-bold uppercase tracking-widest transition-colors"
+                      style={{ color: groupColor }}
+                    >
                       {group.label}
                     </span>
                     <motion.div
                       animate={{ rotate: isExpanded ? 0 : -90 }}
                       transition={{ duration: 0.15 }}
                     >
-                      <ChevronDown className="h-3 w-3 text-sidebar-foreground/25 group-hover/gh:text-sidebar-foreground/45 transition-colors" />
+                      <ChevronDown className="h-3 w-3 text-muted-foreground transition-colors" />
                     </motion.div>
                   </button>
                 )}
-                {/* Collapsed group divider */}
+                {/* Collapsed group divider with color accent */}
                 {sidebarCollapsed && groupIdx > 0 && (
-                  <div className="mx-2 my-1.5 border-t border-sidebar-border" />
+                  <div className="mx-2 my-1.5 flex items-center gap-1">
+                    <div className="flex-1 border-t border-sidebar-border" />
+                    <div className="w-1 h-1 rounded-full shrink-0" style={{ backgroundColor: groupColor }} />
+                    <div className="flex-1 border-t border-sidebar-border" />
+                  </div>
                 )}
 
                 {/* Group Items */}
@@ -260,17 +288,21 @@ function Sidebar() {
                               whileTap={{ scale: 0.97 }}
                               className={cn(
                                 "relative flex items-center gap-2.5 w-full rounded-lg px-2.5 py-[7px] text-[13px] transition-all duration-150",
-                                isActive
-                                  ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
-                                  : isHovered
-                                    ? "bg-sidebar-accent text-sidebar-foreground"
-                                    : "text-sidebar-foreground/55 hover:text-sidebar-foreground",
+                                isActive && "font-semibold",
+                                !isActive && !isHovered && "text-sidebar-foreground/60 hover:text-sidebar-foreground",
+                                !isActive && isHovered && "text-sidebar-foreground",
                                 sidebarCollapsed && "justify-center px-0 rounded-lg"
                               )}
+                              style={isActive ? {
+                                backgroundColor: groupColor,
+                                color: '#ffffff',
+                              } : isHovered ? {
+                                backgroundColor: `${groupColor}12`,
+                              } : undefined}
                             >
                               <Icon className={cn(
                                 "h-[18px] w-[18px] shrink-0 transition-colors",
-                                isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45"
+                                isActive ? "text-white" : "text-muted-foreground"
                               )} />
                               <AnimatePresence>
                                 {!sidebarCollapsed && (
@@ -285,12 +317,16 @@ function Sidebar() {
                                 )}
                               </AnimatePresence>
                               {!sidebarCollapsed && item.badge && (
-                                <span className={cn(
-                                  "ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-1",
-                                  isActive
-                                    ? "bg-sidebar-primary-foreground/20 text-sidebar-primary-foreground"
-                                    : "bg-sidebar-primary/15 text-sidebar-primary"
-                                )}>
+                                <span
+                                  className="ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-1"
+                                  style={isActive ? {
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: '#ffffff',
+                                  } : {
+                                    backgroundColor: `${groupColor}18`,
+                                    color: groupColor,
+                                  }}
+                                >
                                   {item.badge}
                                 </span>
                               )}
@@ -312,14 +348,17 @@ function Sidebar() {
         </nav>
       </div>
 
-      {/* User Section — Solid Dark Card */}
+      {/* User Section */}
       <div className="relative p-2 shrink-0 border-t border-sidebar-border">
         {user && (
           <div className={cn(
             "flex items-center gap-2.5 px-2.5 py-2 rounded-lg transition-all",
             "hover:bg-sidebar-accent"
           )}>
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold shrink-0">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold shrink-0 text-white"
+              style={{ backgroundColor: activeColor }}
+            >
               {user.name.charAt(0).toUpperCase()}
             </div>
             <AnimatePresence>
@@ -331,7 +370,7 @@ function Sidebar() {
                   className="flex flex-col min-w-0 overflow-hidden"
                 >
                   <span className="text-xs font-medium text-sidebar-foreground truncate">{user.name}</span>
-                  <span className="text-[10px] text-sidebar-foreground/45 truncate">
+                  <span className="text-[10px] text-muted-foreground truncate">
                     {isDemo ? 'Demo Account' : user.role.replace(/_/g, ' ')}
                   </span>
                 </motion.div>
@@ -365,6 +404,9 @@ function MobileSidebar() {
     })
   }
 
+  const activeGroup = navigationGroups.find(g => g.items.some(i => i.id === activePage))
+  const activeColor = activeGroup?.color || '#0d9488'
+
   return (
     <AnimatePresence>
       {sidebarOpen && (
@@ -386,7 +428,10 @@ function MobileSidebar() {
               {/* Header */}
               <div className="flex items-center justify-between px-4 h-14 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-sidebar-primary text-sidebar-primary-foreground font-bold text-sm tahoe-glow">
+                  <div
+                    className="flex items-center justify-center w-9 h-9 rounded-xl font-bold text-sm text-white"
+                    style={{ backgroundColor: activeColor }}
+                  >
                     FF
                   </div>
                   <span className="font-semibold text-sm text-sidebar-foreground">FleetFlow OS</span>
@@ -394,7 +439,7 @@ function MobileSidebar() {
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="h-7 w-7 rounded-lg flex items-center justify-center text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                  className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-sidebar-accent"
                   onClick={() => setSidebarOpen(false)}
                 >
                   <X className="h-4 w-4" />
@@ -403,10 +448,12 @@ function MobileSidebar() {
 
               {isDemo && (
                 <div className="mx-3 mb-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-sidebar-primary/15 border border-sidebar-primary/25">
-                    <Eye className="h-3 w-3 text-sidebar-primary" />
-                    <span className="text-[10px] font-bold text-sidebar-primary">DEMO</span>
-                    <span className="text-[10px] text-sidebar-foreground/50">View Only</span>
+                  <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border"
+                    style={{ backgroundColor: `${activeColor}15`, borderColor: `${activeColor}25` }}
+                  >
+                    <Eye className="h-3 w-3" style={{ color: activeColor }} />
+                    <span className="text-[10px] font-bold" style={{ color: activeColor }}>DEMO</span>
+                    <span className="text-[10px] text-muted-foreground">View Only</span>
                   </div>
                 </div>
               )}
@@ -415,20 +462,28 @@ function MobileSidebar() {
                 <nav className="space-y-0.5 px-2">
                   {navigationGroups.map((group, groupIdx) => {
                     const isExpanded = expandedGroups.has(group.label)
+                    const groupColor = group.color
                     return (
                       <div key={group.label} className={cn("mb-1", groupIdx > 0 && "mt-2")}>
                         <button
                           onClick={() => toggleGroup(group.label)}
                           className="w-full flex items-center gap-1.5 px-2 mb-0.5 group/gh"
                         >
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-sidebar-foreground/35 group-hover/gh:text-sidebar-foreground/55 transition-colors">
+                          <span
+                            className="w-1.5 h-1.5 rounded-full shrink-0"
+                            style={{ backgroundColor: groupColor }}
+                          />
+                          <span
+                            className="text-[10px] font-bold uppercase tracking-widest transition-colors"
+                            style={{ color: groupColor }}
+                          >
                             {group.label}
                           </span>
                           <motion.div
                             animate={{ rotate: isExpanded ? 0 : -90 }}
                             transition={{ duration: 0.15 }}
                           >
-                            <ChevronDown className="h-3 w-3 text-sidebar-foreground/25 group-hover/gh:text-sidebar-foreground/45 transition-colors" />
+                            <ChevronDown className="h-3 w-3 text-muted-foreground transition-colors" />
                           </motion.div>
                         </button>
                         <AnimatePresence initial={false}>
@@ -445,12 +500,15 @@ function MobileSidebar() {
                                 }}
                                 className={cn(
                                   "relative flex items-center gap-2.5 w-full rounded-lg px-2.5 py-[7px] text-[13px] transition-all",
-                                  isActive
-                                    ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
-                                    : "text-sidebar-foreground/55 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                                  isActive && "font-semibold",
+                                  !isActive && "text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                                 )}
+                                style={isActive ? {
+                                  backgroundColor: groupColor,
+                                  color: '#ffffff',
+                                } : undefined}
                               >
-                                <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-sidebar-primary-foreground" : "text-sidebar-foreground/45")} />
+                                <Icon className={cn("h-[18px] w-[18px] shrink-0", isActive ? "text-white" : "text-muted-foreground")} />
                                 <span className="truncate">{item.label}</span>
                               </motion.button>
                             )
@@ -464,13 +522,16 @@ function MobileSidebar() {
 
               {user && (
                 <div className="p-2 shrink-0 border-t border-sidebar-border">
-                  <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg bg-sidebar-accent">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+                  <div className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg hover:bg-sidebar-accent transition-colors">
+                    <div
+                      className="flex items-center justify-center w-8 h-8 rounded-full text-xs font-bold text-white"
+                      style={{ backgroundColor: activeColor }}
+                    >
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs font-medium text-sidebar-foreground truncate">{user.name}</span>
-                      <span className="text-[10px] text-sidebar-foreground/45 truncate">
+                      <span className="text-[10px] text-muted-foreground truncate">
                         {isDemo ? 'Demo Account' : user.role.replace(/_/g, ' ')}
                       </span>
                     </div>

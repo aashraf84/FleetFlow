@@ -181,6 +181,7 @@ export interface NavItem {
 
 export interface NavGroup {
   label: string
+  color: string
   items: NavItem[]
 }
 
@@ -196,12 +197,14 @@ export function usePageTitle(): string {
 export const navigationGroups: NavGroup[] = [
   {
     label: 'Overview',
+    color: '#0d9488',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
     ],
   },
   {
     label: 'Owner Management',
+    color: '#d97706',
     items: [
       { id: 'owner-clients', label: 'Clients', icon: 'Building2' },
       { id: 'owner-subscriptions', label: 'Subscriptions', icon: 'CreditCard' },
@@ -214,6 +217,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Fleet Management',
+    color: '#059669',
     items: [
       { id: 'fleet-vehicles', label: 'Vehicle Registry', icon: 'Car' },
       { id: 'fleet-tracking', label: 'Fleet Tracking', icon: 'BarChart3' },
@@ -222,6 +226,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Rental Management',
+    color: '#9333ea',
     items: [
       { id: 'rental-reservations', label: 'Reservations', icon: 'CalendarDays' },
       { id: 'rental-contracts', label: 'Contracts', icon: 'FileText' },
@@ -232,6 +237,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'People',
+    color: '#e11d48',
     items: [
       { id: 'customers', label: 'Customers', icon: 'Users' },
       { id: 'drivers', label: 'Drivers', icon: 'IdCard' },
@@ -239,6 +245,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Transport & GPS',
+    color: '#ea580c',
     items: [
       { id: 'transport-dispatch', label: 'Dispatch Center', icon: 'Radio' },
       { id: 'transport-trips', label: 'Trip Management', icon: 'Route' },
@@ -247,6 +254,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Fuel & Maintenance',
+    color: '#65a30d',
     items: [
       { id: 'fuel-management', label: 'Fuel Management', icon: 'Fuel' },
       { id: 'maintenance-preventive', label: 'Preventive Maint.', icon: 'Wrench' },
@@ -259,6 +267,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Finance',
+    color: '#ca8a04',
     items: [
       { id: 'finance-invoices', label: 'Invoices', icon: 'Receipt' },
       { id: 'finance-expenses', label: 'Expenses', icon: 'MinusCircle' },
@@ -268,6 +277,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Compliance',
+    color: '#dc2626',
     items: [
       { id: 'insurance', label: 'Insurance', icon: 'Shield' },
       { id: 'compliance', label: 'Compliance', icon: 'FileCheck' },
@@ -275,6 +285,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'HR & Documents',
+    color: '#c026d3',
     items: [
       { id: 'hr-employees', label: 'Employees', icon: 'UserCog' },
       { id: 'hr-attendance', label: 'Attendance', icon: 'Clock' },
@@ -286,6 +297,7 @@ export const navigationGroups: NavGroup[] = [
   },
   {
     label: 'Intelligence',
+    color: '#0891b2',
     items: [
       { id: 'reports', label: 'Reports & Analytics', icon: 'PieChart' },
       { id: 'ai-assistant', label: 'AI Assistant', icon: 'Bot' },
