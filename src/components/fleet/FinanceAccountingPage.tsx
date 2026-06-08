@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, Pencil, Trash2, MoreHorizontal, BookOpen, CheckCircle2, Ban
+  Plus, Pencil, Trash2, MoreHorizontal, BookOpen, CheckCircle2, Ban, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -36,6 +36,7 @@ export default function FinanceAccountingPage() {
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<any>(emptyForm)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -70,6 +71,7 @@ export default function FinanceAccountingPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editId) {
         const res = await fetch('/api/fleet/finance/accounting', {
@@ -88,7 +90,7 @@ export default function FinanceAccountingPage() {
         if (res.ok) { toast.success('Journal entry created'); fetchData(); setOpen(false); setForm(emptyForm) }
         else toast.error('Failed to create journal entry')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -216,8 +218,8 @@ export default function FinanceAccountingPage() {
       </CardContent></Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Journal Entry' : 'New Journal Entry'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the journal entry details below.' : 'Fill in the details to create a new journal entry.'}</DialogDescription>
@@ -279,7 +281,7 @@ export default function FinanceAccountingPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Create'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

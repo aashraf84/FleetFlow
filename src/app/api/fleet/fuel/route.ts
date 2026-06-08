@@ -37,10 +37,27 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const FUEL_RECORD_FIELDS = [
+  'vehicleId', 'driverId', 'date', 'fuelType', 'quantity', 'unitPrice',
+  'totalCost', 'odometer', 'station', 'receiptNumber', 'status', 'notes',
+  'tenantId', 'tripId',
+] as const
+
+function pickFuelFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of FUEL_RECORD_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const record = await db.fuelRecord.create({ data: body })
+    const data = pickFuelFields(body)
+    const record = await db.fuelRecord.create({ data })
     return NextResponse.json({ data: record }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create fuel record' }, { status: 500 })
@@ -50,7 +67,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickFuelFields(rest)
     const record = await db.fuelRecord.update({ where: { id }, data })
     return NextResponse.json({ data: record })
   } catch (error) {

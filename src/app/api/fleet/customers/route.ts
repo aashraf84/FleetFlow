@@ -24,12 +24,30 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const CUSTOMER_FIELDS = [
+  'firstName', 'lastName', 'email', 'phone', 'address', 'city', 'country',
+  'nationality', 'idNumber', 'drivingLicense', 'licenseExpiry', 'dateOfBirth',
+  'emergencyContact', 'emergencyPhone', 'status', 'notes', 'tenantId',
+] as const
+
+function pickCustomerFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of CUSTOMER_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const customer = await db.customer.create({ data: body })
+    const data = pickCustomerFields(body)
+    const customer = await db.customer.create({ data })
     return NextResponse.json({ data: customer }, { status: 201 })
   } catch (error) {
+    console.error('Customer POST error:', error)
     return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 })
   }
 }
@@ -37,10 +55,12 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickCustomerFields(rest)
     const customer = await db.customer.update({ where: { id }, data })
     return NextResponse.json({ data: customer })
   } catch (error) {
+    console.error('Customer PUT error:', error)
     return NextResponse.json({ error: 'Failed to update customer' }, { status: 500 })
   }
 }

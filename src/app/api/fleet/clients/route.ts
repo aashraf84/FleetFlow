@@ -62,6 +62,22 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const CLIENT_FIELDS = [
+  'companyName', 'slug', 'contactPerson', 'email', 'phone', 'country',
+  'industryType', 'subscriptionPlan', 'licenseStatus', 'notes', 'status',
+  'tenantId',
+] as const
+
+function pickClientFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of CLIENT_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -72,9 +88,9 @@ export async function POST(req: NextRequest) {
     // Map industry to industryType if needed
     if (body.industry && !body.industryType) {
       body.industryType = body.industry
-      delete body.industry
     }
-    const client = await db.client.create({ data: body })
+    const clientData = pickClientFields(body)
+    const client = await db.client.create({ data: clientData })
 
     // Create subscription if plan specified
     if (body.subscriptionPlan) {
@@ -122,7 +138,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickClientFields(rest)
     const client = await db.client.update({ where: { id }, data })
     return NextResponse.json({ data: client })
   } catch (error) {

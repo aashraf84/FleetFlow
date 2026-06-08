@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Banknote, Plus, ArrowRight } from 'lucide-react'
+import { Banknote, Plus, ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrPayrollPage() {
@@ -19,6 +19,7 @@ export default function HrPayrollPage() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -55,6 +56,7 @@ export default function HrPayrollPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/hr/payroll', {
         method: 'POST',
@@ -70,7 +72,7 @@ export default function HrPayrollPage() {
         const err = await res.json()
         toast.error(err.error || 'Failed')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -144,8 +146,8 @@ export default function HrPayrollPage() {
         </ScrollArea>
       </CardContent></Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Run Payroll</DialogTitle><DialogDescription>Create a new payroll record for an employee.</DialogDescription></DialogHeader>
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Run Payroll</DialogTitle><DialogDescription>Create a new payroll record for an employee.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
               <Select required value={form.employeeId || ''} onValueChange={handleEmployeeChange}>
@@ -164,7 +166,7 @@ export default function HrPayrollPage() {
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Net Pay (auto-calculated)</Label><div className="h-10 mt-1 flex items-center px-3 rounded-md border bg-muted text-sm font-medium">{fmt(getNetPay())}</div></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="min-h-[80px] mt-1" placeholder="Additional payroll notes or comments" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create Payroll</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create Payroll</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

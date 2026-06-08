@@ -318,7 +318,7 @@ export default function OwnerSubscriptionsPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Subscription' : 'Add Subscription'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify subscription plan and billing details' : 'Create a new subscription for a client'}</DialogDescription>

@@ -42,6 +42,23 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const RENTAL_CONTRACT_FIELDS = [
+  'contractNumber', 'reservationId', 'customerId', 'vehicleId', 'startDate',
+  'endDate', 'dailyRate', 'totalDays', 'totalAmount', 'depositAmount',
+  'mileageLimit', 'mileageOut', 'mileageIn', 'terms', 'status',
+  'signedDate', 'returnDate', 'notes', 'tenantId',
+] as const
+
+function pickRentalContractFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of RENTAL_CONTRACT_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -54,27 +71,13 @@ export async function POST(req: NextRequest) {
     const totalDays = body.totalDays || Math.max(1, Math.ceil(diffMs / (1000 * 60 * 60 * 24)))
     const totalAmount = body.totalAmount || (totalDays * (body.dailyRate || 0))
 
+    const filtered = pickRentalContractFields(body)
     const contract = await db.rentalContract.create({
       data: {
+        ...filtered,
         contractNumber: num,
-        reservationId: body.reservationId || null,
-        customerId: body.customerId,
-        vehicleId: body.vehicleId,
-        startDate: body.startDate,
-        endDate: body.endDate,
-        dailyRate: body.dailyRate || 0,
         totalDays,
         totalAmount,
-        depositAmount: body.depositAmount || 0,
-        mileageLimit: body.mileageLimit || null,
-        mileageOut: body.mileageOut || 0,
-        mileageIn: body.mileageIn || 0,
-        terms: body.terms || null,
-        status: body.status || 'draft',
-        signedDate: body.signedDate || null,
-        returnDate: body.returnDate || null,
-        notes: body.notes || null,
-        tenantId: body.tenantId || null,
       }
     })
 
@@ -146,7 +149,8 @@ export async function PUT(req: NextRequest) {
     }
 
     // Regular update
-    const contract = await db.rentalContract.update({ where: { id }, data })
+    const updateData = pickRentalContractFields(data)
+    const contract = await db.rentalContract.update({ where: { id }, data: updateData })
     return NextResponse.json({ data: contract })
   } catch (error) {
     console.error('Rentals PUT error:', error)

@@ -315,7 +315,7 @@ export default function OwnerUpdatesPage() {
 
       {/* Publish Update Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Update' : 'Publish New Update'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify update version, release notes, and settings' : 'Create a new platform update version with release notes'}</DialogDescription>

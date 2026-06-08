@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { FolderOpen, Plus, Upload } from 'lucide-react'
+import { FolderOpen, Plus, Upload, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function DocumentsPage() {
@@ -18,6 +18,7 @@ export default function DocumentsPage() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
@@ -26,10 +27,11 @@ export default function DocumentsPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/documents', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success('Document added'); fetchData(); setOpen(false); setForm({}) } else toast.error('Failed')
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -72,8 +74,8 @@ export default function DocumentsPage() {
           </TableBody></Table>
         </ScrollArea>
       </CardContent></Card>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Document</DialogTitle>
             <DialogDescription>Upload a new document to the system. Provide document details and category.</DialogDescription>
@@ -84,7 +86,7 @@ export default function DocumentsPage() {
             <div><Label className="text-xs">File Name</Label><Input value={form.fileName || ''} onChange={e => setForm({...form, fileName: e.target.value})} className="h-10 mt-1" placeholder="document.pdf" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Description</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="min-h-[80px] mt-1 text-sm" placeholder="Describe this document..." /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Add</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Add</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

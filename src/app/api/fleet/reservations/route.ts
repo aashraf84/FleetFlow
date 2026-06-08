@@ -37,11 +37,28 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const RESERVATION_FIELDS = [
+  'reservationCode', 'customerId', 'vehicleId', 'startDate', 'endDate',
+  'pickupLocation', 'returnLocation', 'totalAmount', 'depositAmount',
+  'status', 'notes', 'tenantId',
+] as const
+
+function pickReservationFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of RESERVATION_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const code = `RES-${Date.now().toString(36).toUpperCase()}`
-    const reservation = await db.reservation.create({ data: { ...body, reservationCode: code } })
+    const data = pickReservationFields(body)
+    const reservation = await db.reservation.create({ data: { ...data, reservationCode: code } })
     return NextResponse.json({ data: reservation }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create reservation' }, { status: 500 })
@@ -51,7 +68,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickReservationFields(rest)
     const reservation = await db.reservation.update({ where: { id }, data })
     return NextResponse.json({ data: reservation })
   } catch (error) {

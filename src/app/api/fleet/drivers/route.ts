@@ -34,10 +34,28 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const DRIVER_FIELDS = [
+  'firstName', 'lastName', 'email', 'phone', 'licenseNumber', 'licenseExpiry',
+  'licenseClass', 'address', 'city', 'nationality', 'dateOfBirth', 'hireDate',
+  'status', 'rating', 'totalTrips', 'totalDistance', 'emergencyContact',
+  'notes', 'tenantId',
+] as const
+
+function pickDriverFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of DRIVER_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const driver = await db.driver.create({ data: body })
+    const data = pickDriverFields(body)
+    const driver = await db.driver.create({ data })
     return NextResponse.json({ data: driver }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create driver' }, { status: 500 })
@@ -47,7 +65,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickDriverFields(rest)
     const driver = await db.driver.update({ where: { id }, data })
     return NextResponse.json({ data: driver })
   } catch (error) {

@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Radio, Plus } from 'lucide-react'
+import { Radio, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -24,6 +24,7 @@ export default function TransportDispatchPage() {
   const [open, setOpen] = useState(false)
   const [drivers, setDrivers] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -40,13 +41,14 @@ export default function TransportDispatchPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/dispatch', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Dispatch order created'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -107,8 +109,8 @@ export default function TransportDispatchPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Dispatch Order</DialogTitle>
             <DialogDescription>Create a new dispatch order for a vehicle and driver.</DialogDescription>
@@ -122,7 +124,7 @@ export default function TransportDispatchPage() {
             <div><Label className="text-xs">Scheduled Departure</Label><Input type="datetime-local" value={form.scheduledDeparture ? form.scheduledDeparture.slice(0, 16) : ''} onChange={e => setForm({...form, scheduledDeparture: e.target.value})} className="h-10 mt-1" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Additional dispatch notes..." /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -21,11 +21,27 @@ export async function GET() {
   }
 }
 
+const DISPATCH_ORDER_FIELDS = [
+  'orderNumber', 'driverId', 'priority', 'origin', 'destination',
+  'scheduledTime', 'completedTime', 'instructions', 'status', 'tenantId',
+] as const
+
+function pickDispatchFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of DISPATCH_ORDER_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
     const num = `DSP-${Date.now().toString(36).toUpperCase()}`
-    const order = await db.dispatchOrder.create({ data: { ...body, orderNumber: num } })
+    const data = pickDispatchFields(body)
+    const order = await db.dispatchOrder.create({ data: { ...data, orderNumber: num } })
     return NextResponse.json({ data: order }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create dispatch order' }, { status: 500 })
@@ -35,7 +51,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickDispatchFields(rest)
     const order = await db.dispatchOrder.update({ where: { id }, data })
     return NextResponse.json({ data: order })
   } catch (error) {

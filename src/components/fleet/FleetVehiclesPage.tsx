@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Car, Plus, Search, Filter, Edit, Trash2, Eye } from 'lucide-react'
+import { Car, Plus, Search, Filter, Edit, Trash2, Eye, Loader2 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -31,6 +32,7 @@ export default function FleetVehiclesPage() {
   const [editItem, setEditItem] = useState<any>(null)
   const [viewItem, setViewItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -48,6 +50,7 @@ export default function FleetVehiclesPage() {
   useEffect(() => { fetchData() }, [search, statusFilter])
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const url = '/api/fleet/vehicles'
       const res = editItem
@@ -55,7 +58,7 @@ export default function FleetVehiclesPage() {
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success(editItem ? 'Vehicle updated' : 'Vehicle created'); fetchData(); setOpen(false); setEditItem(null); setForm({}) }
       else { toast.error('Operation failed') }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -66,8 +69,30 @@ export default function FleetVehiclesPage() {
     } catch (e) { toast.error('Delete failed') }
   }
 
-  const openEdit = (item: any) => { setEditItem(item); setForm(item); setOpen(true) }
-  const openCreate = () => { setEditItem(null); setForm({ vehicleNumber: '', registrationNumber: '', make: '', model: '', year: new Date().getFullYear(), category: 'sedan', fuelType: 'petrol', transmission: 'automatic', seatingCapacity: 5, mileage: 0, status: 'available', dailyRate: 0, weeklyRate: 0, monthlyRate: 0, purchasePrice: 0, currentValue: 0 }); setOpen(true) }
+  const openEdit = (item: any) => {
+    setEditItem(item)
+    setForm({
+      vehicleNumber: item.vehicleNumber || '',
+      registrationNumber: item.registrationNumber || '',
+      vin: item.vin || '',
+      make: item.make || '',
+      model: item.model || '',
+      year: item.year || new Date().getFullYear(),
+      category: item.category || 'sedan',
+      fuelType: item.fuelType || 'petrol',
+      transmission: item.transmission || 'automatic',
+      seatingCapacity: item.seatingCapacity || 5,
+      dailyRate: item.dailyRate || 0,
+      weeklyRate: item.weeklyRate || 0,
+      monthlyRate: item.monthlyRate || 0,
+      purchasePrice: item.purchasePrice || 0,
+      mileage: item.mileage || 0,
+      status: item.status || 'available',
+      currentLocation: item.currentLocation || '',
+    })
+    setOpen(true)
+  }
+  const openCreate = () => { setEditItem(null); setForm({ vehicleNumber: '', registrationNumber: '', make: '', model: '', year: new Date().getFullYear(), category: 'sedan', fuelType: 'petrol', transmission: 'automatic', seatingCapacity: 5, mileage: 0, status: 'available', dailyRate: 0, weeklyRate: 0, monthlyRate: 0, purchasePrice: 0, currentValue: 0, color: '', engineNumber: '', registrationExpiry: '', insuranceExpiry: '', lastServiceDate: '', nextServiceDate: '', notes: '' }); setOpen(true) }
 
   const statCards = [
     { label: 'Total Vehicles', value: vehicles.length, icon: Car, color: 'text-emerald-600' },
@@ -163,8 +188,8 @@ export default function FleetVehiclesPage() {
       </Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editItem ? 'Edit Vehicle' : 'Add Vehicle'}</DialogTitle><DialogDescription>{editItem ? 'Update the vehicle details and specifications.' : 'Add a new vehicle to the fleet registry with all required details.'}</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div><Label>Vehicle Number *</Label><Input value={form.vehicleNumber || ''} onChange={e => setForm({...form, vehicleNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. V-001" required /></div>
@@ -204,10 +229,18 @@ export default function FleetVehiclesPage() {
               </Select>
             </div>
             <div className="col-span-1 md:col-span-2"><Label>Current Location</Label><Input value={form.currentLocation || ''} onChange={e => setForm({...form, currentLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office, Lot B" /></div>
+            <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2"><p className="text-sm font-semibold text-muted-foreground mb-3">Service & Registration</p></div>
+            <div><Label>Color</Label><Input value={form.color || ''} onChange={e => setForm({...form, color: e.target.value})} className="h-10 mt-1" placeholder="e.g. White, Black, Silver" /></div>
+            <div><Label>Engine Number</Label><Input value={form.engineNumber || ''} onChange={e => setForm({...form, engineNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. ENG-123456" /></div>
+            <div><Label>Registration Expiry</Label><Input type="date" value={form.registrationExpiry ? form.registrationExpiry.split('T')[0] : ''} onChange={e => setForm({...form, registrationExpiry: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label>Insurance Expiry</Label><Input type="date" value={form.insuranceExpiry ? form.insuranceExpiry.split('T')[0] : ''} onChange={e => setForm({...form, insuranceExpiry: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label>Last Service Date</Label><Input type="date" value={form.lastServiceDate ? form.lastServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, lastServiceDate: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label>Next Service Date</Label><Input type="date" value={form.nextServiceDate ? form.nextServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, nextServiceDate: e.target.value})} className="h-10 mt-1" /></div>
+            <div className="col-span-1 md:col-span-2"><Label>Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this vehicle..." /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editItem ? 'Update' : 'Create'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

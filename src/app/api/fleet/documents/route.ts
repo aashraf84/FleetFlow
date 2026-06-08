@@ -10,10 +10,27 @@ export async function GET() {
   }
 }
 
+const DOCUMENT_FIELDS = [
+  'title', 'type', 'category', 'fileName', 'fileUrl', 'fileSize',
+  'relatedEntity', 'relatedEntityId', 'uploadedBy', 'status', 'notes',
+  'tenantId',
+] as const
+
+function pickDocumentFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of DOCUMENT_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const doc = await db.document.create({ data: body })
+    const data = pickDocumentFields(body)
+    const doc = await db.document.create({ data })
     return NextResponse.json({ data: doc }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create document' }, { status: 500 })

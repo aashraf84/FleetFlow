@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, Pencil, MoreHorizontal, CheckCircle2, RotateCcw, Trash2, XCircle
+  Plus, Pencil, MoreHorizontal, CheckCircle2, RotateCcw, Trash2, XCircle, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -37,6 +37,7 @@ export default function FinancePaymentsPage() {
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<any>(emptyForm)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -73,6 +74,7 @@ export default function FinancePaymentsPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editId) {
         const res = await fetch('/api/fleet/finance/payments', {
@@ -91,7 +93,7 @@ export default function FinancePaymentsPage() {
         if (res.ok) { toast.success('Payment recorded'); fetchData(); setOpen(false); setForm(emptyForm) }
         else toast.error('Failed to record payment')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -219,8 +221,8 @@ export default function FinancePaymentsPage() {
       </CardContent></Card>
 
       {/* Record/Edit Payment Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Payment' : 'Record Payment'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the payment details below.' : 'Fill in the details to record a new payment.'}</DialogDescription>
@@ -290,7 +292,7 @@ export default function FinancePaymentsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editId ? 'Update' : 'Record Payment'}</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Record Payment'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

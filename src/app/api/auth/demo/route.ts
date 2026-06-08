@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       name: 'Demo User',
       role: 'demo',
       avatar: null,
-      tenant: { id: 'demo-tenant-001', name: 'FleetFlow Demo Corp' },
+      tenant: { id: 'demo-tenant-001', name: 'ApexFlow Cloud' },
     },
     sessionToken,
     permissions: ['view_all'],

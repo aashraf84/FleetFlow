@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Receipt, Plus, Pencil, Trash2, MoreHorizontal, Send, CheckCircle2, XCircle, Eye
+  Receipt, Plus, Pencil, Trash2, MoreHorizontal, Send, CheckCircle2, XCircle, Eye, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -42,6 +42,7 @@ export default function FinanceInvoicesPage() {
   const [editId, setEditId] = useState<string | null>(null)
   const [customers, setCustomers] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [viewInvoice, setViewInvoice] = useState<any>(null)
 
   useEffect(() => { fetchData() }, [])
@@ -86,6 +87,7 @@ export default function FinanceInvoicesPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const { amount, tax, ...rest } = form as any
       const payload = {
@@ -111,7 +113,7 @@ export default function FinanceInvoicesPage() {
         if (res.ok) { toast.success('Invoice created'); fetchData(); setOpen(false); setForm({}) }
         else toast.error('Failed to create invoice')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -257,8 +259,8 @@ export default function FinanceInvoicesPage() {
       </CardContent></Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the invoice details below.' : 'Fill in the details to create a new invoice.'}</DialogDescription>
@@ -366,7 +368,7 @@ export default function FinanceInvoicesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editId ? 'Update' : 'Create'}</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Create'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertTriangle, Plus, Search } from 'lucide-react'
+import { AlertTriangle, Plus, Search, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -24,6 +24,7 @@ export default function RentalDamagePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
 
@@ -42,13 +43,14 @@ export default function RentalDamagePage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/damage', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Damage report created'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -117,7 +119,7 @@ export default function RentalDamagePage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Damage Report</DialogTitle><DialogDescription>Report vehicle damage with details, repair estimates, and liability information.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -126,7 +128,7 @@ export default function RentalDamagePage() {
             <div><Label>Repair Estimate ($)</Label><Input type="number" value={form.repairEstimate || ''} onChange={e => setForm({...form, repairEstimate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div><Label>Customer Liability ($)</Label><Input type="number" value={form.customerLiability || ''} onChange={e => setForm({...form, customerLiability: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

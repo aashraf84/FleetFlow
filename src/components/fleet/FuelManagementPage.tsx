@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Fuel, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Fuel, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
 
@@ -23,6 +23,7 @@ export default function FuelManagementPage() {
   const [vehicles, setVehicles] = useState<any[]>([])
   const [drivers, setDrivers] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -43,6 +44,7 @@ export default function FuelManagementPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const payload = { ...form, totalCost: (form.quantity || 0) * (form.costPerUnit || 0) }
       if (editMode && form.id) {
@@ -60,7 +62,7 @@ export default function FuelManagementPage() {
         if (res.ok) { toast.success('Fuel record added'); fetchData(); setOpen(false); setForm({}) }
         else toast.error('Failed')
       }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleEdit = (record: any) => {
@@ -169,8 +171,8 @@ export default function FuelManagementPage() {
         </Card>
       </div>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Fuel Record' : 'Add Fuel Record'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the fuel record details below.' : 'Fill in the details to add a new fuel record.'}</DialogDescription>
@@ -184,7 +186,7 @@ export default function FuelManagementPage() {
             <div><Label className="text-xs">Station/Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-10 mt-1" placeholder="e.g. Shell Station" /></div>
             <div><Label className="text-xs">Date <span className="text-destructive">*</span></Label><Input type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} className="h-10 mt-1" required /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add Record'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add Record'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

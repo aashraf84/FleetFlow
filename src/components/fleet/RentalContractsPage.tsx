@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -36,6 +36,7 @@ export default function RentalContractsPage() {
   const [detailItem, setDetailItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
   const [editForm, setEditForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -109,6 +110,7 @@ export default function RentalContractsPage() {
       toast.error('Customer and Vehicle are required')
       return
     }
+    setSaving(true)
     try {
       const totals = calcTotals(form)
       const payload = {
@@ -122,10 +124,11 @@ export default function RentalContractsPage() {
       })
       if (res.ok) { toast.success('Contract created'); fetchData(); setCreateOpen(false); setForm({}) }
       else { const j = await res.json(); toast.error(j.error || 'Failed') }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleEdit = async () => {
+    setSaving(true)
     try {
       const totals = calcTotals(editForm)
       const payload = {
@@ -147,7 +150,7 @@ export default function RentalContractsPage() {
       })
       if (res.ok) { toast.success('Contract updated'); fetchData(); setEditOpen(false); setEditItem(null) }
       else { const j = await res.json(); toast.error(j.error || 'Failed') }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, statusChange: string) => {
@@ -293,8 +296,8 @@ export default function RentalContractsPage() {
       </Card>
 
       {/* Create Contract Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={createOpen} onOpenChange={(v) => { if (!saving) setCreateOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>New Rental Contract</DialogTitle>
             <DialogDescription>Create a new rental contract by selecting customer, vehicle, and setting terms.</DialogDescription>
@@ -404,14 +407,14 @@ export default function RentalContractsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate}>Create Contract</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCreate(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create Contract</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Contract Dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={editOpen} onOpenChange={(v) => { if (!saving) setEditOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Contract</DialogTitle>
             <DialogDescription>Update the rental contract details, rates, and terms.</DialogDescription>
@@ -493,7 +496,7 @@ export default function RentalContractsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Update Contract</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Update Contract</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Users, Plus, Search, Edit, Trash2 } from 'lucide-react'
+import { Users, Plus, Search, Edit, Trash2, Loader2 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
 export default function CustomersPage() {
@@ -20,6 +21,7 @@ export default function CustomersPage() {
   const [open, setOpen] = useState(false)
   const [editItem, setEditItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -34,6 +36,7 @@ export default function CustomersPage() {
   useEffect(() => { const t = setTimeout(fetchData, 300); return () => clearTimeout(t) }, [search])
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const url = '/api/fleet/customers'
       const res = editItem
@@ -41,7 +44,7 @@ export default function CustomersPage() {
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success(editItem ? 'Updated' : 'Created'); fetchData(); setOpen(false); setEditItem(null); setForm({}) }
       else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -49,8 +52,31 @@ export default function CustomersPage() {
     try { const res = await fetch(`/api/fleet/customers?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
-  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active', creditRating: 'good' }); setOpen(true) }
-  const openEdit = (item: any) => { setEditItem(item); setForm(item); setOpen(true) }
+  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', phone: '', status: 'active', creditRating: 'good', nationality: '', licenseExpiry: '', dateOfBirth: '', emergencyContact: '', emergencyPhone: '', notes: '' }); setOpen(true) }
+  const openEdit = (item: any) => {
+    setEditItem(item)
+    setForm({
+      firstName: item.firstName || '',
+      lastName: item.lastName || '',
+      email: item.email || '',
+      phone: item.phone || '',
+      companyName: item.companyName || '',
+      drivingLicense: item.drivingLicense || '',
+      address: item.address || '',
+      city: item.city || '',
+      country: item.country || '',
+      idNumber: item.idNumber || '',
+      creditRating: item.creditRating || 'good',
+      status: item.status || 'active',
+      nationality: item.nationality || '',
+      licenseExpiry: item.licenseExpiry || '',
+      dateOfBirth: item.dateOfBirth || '',
+      emergencyContact: item.emergencyContact || '',
+      emergencyPhone: item.emergencyPhone || '',
+      notes: item.notes || '',
+    })
+    setOpen(true)
+  }
 
   const stats = [
     { label: 'Total Customers', value: data.length },
@@ -99,8 +125,8 @@ export default function CustomersPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editItem ? 'Edit Customer' : 'Add Customer'}</DialogTitle>
             <DialogDescription>{editItem ? 'Update customer personal information and settings' : 'Register a new customer with personal and contact details'}</DialogDescription>
@@ -118,8 +144,15 @@ export default function CustomersPage() {
             <div><Label className="text-xs">ID Number</Label><Input value={form.idNumber || ''} onChange={e => setForm({...form, idNumber: e.target.value})} className="h-10 mt-1" placeholder="ID number" /></div>
             <div><Label className="text-xs">Credit Rating</Label><Select value={form.creditRating || 'good'} onValueChange={v => setForm({...form, creditRating: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select rating" /></SelectTrigger><SelectContent><SelectItem value="excellent">Excellent</SelectItem><SelectItem value="good">Good</SelectItem><SelectItem value="fair">Fair</SelectItem><SelectItem value="poor">Poor</SelectItem></SelectContent></Select></div>
             <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="blacklisted">Blacklisted</SelectItem></SelectContent></Select></div>
+            <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2"><p className="text-sm font-semibold text-muted-foreground mb-3">Personal & Emergency</p></div>
+            <div><Label className="text-xs">Nationality</Label><Input value={form.nationality || ''} onChange={e => setForm({...form, nationality: e.target.value})} className="h-10 mt-1" placeholder="e.g. US, UK, UAE" /></div>
+            <div><Label className="text-xs">License Expiry</Label><Input type="date" value={form.licenseExpiry ? form.licenseExpiry.split('T')[0] : ''} onChange={e => setForm({...form, licenseExpiry: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label className="text-xs">Date of Birth</Label><Input type="date" value={form.dateOfBirth ? form.dateOfBirth.split('T')[0] : ''} onChange={e => setForm({...form, dateOfBirth: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label className="text-xs">Emergency Contact</Label><Input value={form.emergencyContact || ''} onChange={e => setForm({...form, emergencyContact: e.target.value})} className="h-10 mt-1" placeholder="Emergency contact name" /></div>
+            <div><Label className="text-xs">Emergency Phone</Label><Input value={form.emergencyPhone || ''} onChange={e => setForm({...form, emergencyPhone: e.target.value})} className="h-10 mt-1" placeholder="+1 (555) 911-0000" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this customer..." /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

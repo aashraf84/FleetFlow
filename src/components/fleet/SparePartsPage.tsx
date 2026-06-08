@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Package, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle } from 'lucide-react'
+import { Package, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function SparePartsPage() {
@@ -20,6 +20,7 @@ export default function SparePartsPage() {
   const [open, setOpen] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [adjustOpen, setAdjustOpen] = useState(false)
@@ -33,6 +34,7 @@ export default function SparePartsPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editMode && form.id) {
         const res = await fetch('/api/fleet/parts', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -43,7 +45,7 @@ export default function SparePartsPage() {
         if (res.ok) { toast.success('Part added'); fetchData(); setOpen(false); setForm({}) }
         else toast.error('Failed')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleEdit = (part: any) => {
@@ -78,6 +80,7 @@ export default function SparePartsPage() {
       ? adjustPart.quantityInStock + adjustForm.quantity
       : adjustPart.quantityInStock - adjustForm.quantity
     if (qty < 0) { toast.error('Stock cannot be negative'); return }
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/parts', {
         method: 'PUT', headers: { 'Content-Type': 'application/json' },
@@ -90,7 +93,7 @@ export default function SparePartsPage() {
         setAdjustPart(null)
         setAdjustForm({ type: 'increase', quantity: 0, reason: '' })
       } else toast.error('Failed to adjust stock')
-    } catch (e) { toast.error('Adjustment failed') }
+    } catch (e) { toast.error('Adjustment failed') } finally { setSaving(false) }
   }
 
   return (
@@ -153,8 +156,8 @@ export default function SparePartsPage() {
       </CardContent></Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Spare Part' : 'Add Spare Part'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the spare part details below.' : 'Enter the details for the new spare part.'}</DialogDescription>
@@ -170,12 +173,12 @@ export default function SparePartsPage() {
             <div><Label className="text-xs">Selling Price ($)</Label><Input type="number" value={form.sellingPrice ?? ''} onChange={e => setForm({...form, sellingPrice: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Location</Label><Input value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A, Shelf 3" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Adjust Stock Dialog */}
-      <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
+      <Dialog open={adjustOpen} onOpenChange={(v) => { if (!saving) setAdjustOpen(v) }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Adjust Stock — {adjustPart?.name}</DialogTitle>
@@ -197,7 +200,7 @@ export default function SparePartsPage() {
               </div>
             )}
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setAdjustOpen(false)}>Cancel</Button><Button onClick={handleAdjustStock}>Apply Adjustment</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setAdjustOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAdjustStock(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Apply Adjustment</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

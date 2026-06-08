@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { IdCard, Plus, Search, Edit, Trash2 } from 'lucide-react'
+import { IdCard, Plus, Search, Edit, Trash2, Loader2 } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
 export default function DriversPage() {
@@ -20,6 +21,7 @@ export default function DriversPage() {
   const [open, setOpen] = useState(false)
   const [editItem, setEditItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -34,6 +36,7 @@ export default function DriversPage() {
   useEffect(() => { const t = setTimeout(fetchData, 300); return () => clearTimeout(t) }, [search])
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const url = '/api/fleet/drivers'
       const res = editItem
@@ -41,7 +44,7 @@ export default function DriversPage() {
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success(editItem ? 'Updated' : 'Created'); fetchData(); setOpen(false); setEditItem(null); setForm({}) }
       else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -49,8 +52,30 @@ export default function DriversPage() {
     try { const res = await fetch(`/api/fleet/drivers?id=${id}`, { method: 'DELETE' }); if (res.ok) { toast.success('Deleted'); fetchData() } } catch (e) { toast.error('Failed') }
   }
 
-  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', phone: '', licenseNumber: '', status: 'active', employmentType: 'full_time', rating: 5.0, baseSalary: 0 }); setOpen(true) }
-  const openEdit = (item: any) => { setEditItem(item); setForm(item); setOpen(true) }
+  const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', phone: '', licenseNumber: '', status: 'active', employmentType: 'full_time', rating: 5.0, baseSalary: 0, address: '', city: '', nationality: '', dateOfBirth: '', hireDate: '', emergencyContact: '', notes: '' }); setOpen(true) }
+  const openEdit = (item: any) => {
+    setEditItem(item)
+    setForm({
+      firstName: item.firstName || '',
+      lastName: item.lastName || '',
+      email: item.email || '',
+      phone: item.phone || '',
+      licenseNumber: item.licenseNumber || '',
+      licenseExpiry: item.licenseExpiry || '',
+      licenseClass: item.licenseClass || '',
+      employmentType: item.employmentType || 'full_time',
+      baseSalary: item.baseSalary || 0,
+      status: item.status || 'active',
+      address: item.address || '',
+      city: item.city || '',
+      nationality: item.nationality || '',
+      dateOfBirth: item.dateOfBirth || '',
+      hireDate: item.hireDate || '',
+      emergencyContact: item.emergencyContact || '',
+      notes: item.notes || '',
+    })
+    setOpen(true)
+  }
 
   const stats = [
     { label: 'Total Drivers', value: data.length },
@@ -100,8 +125,8 @@ export default function DriversPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editItem ? 'Edit Driver' : 'Add Driver'}</DialogTitle>
             <DialogDescription>{editItem ? 'Update driver information, license, and employment details' : 'Register a new driver with personal and license information'}</DialogDescription>
@@ -117,8 +142,16 @@ export default function DriversPage() {
             <div><Label className="text-xs">Employment Type</Label><Select value={form.employmentType || 'full_time'} onValueChange={v => setForm({...form, employmentType: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="full_time">Full Time</SelectItem><SelectItem value="part_time">Part Time</SelectItem><SelectItem value="contract">Contract</SelectItem></SelectContent></Select></div>
             <div><Label className="text-xs">Base Salary ($)</Label><Input type="number" value={form.baseSalary || ''} onChange={e => setForm({...form, baseSalary: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="on_leave">On Leave</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="terminated">Terminated</SelectItem></SelectContent></Select></div>
+            <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2"><p className="text-sm font-semibold text-muted-foreground mb-3">Personal & Emergency</p></div>
+            <div><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Street address" /></div>
+            <div><Label className="text-xs">City</Label><Input value={form.city || ''} onChange={e => setForm({...form, city: e.target.value})} className="h-10 mt-1" placeholder="City" /></div>
+            <div><Label className="text-xs">Nationality</Label><Input value={form.nationality || ''} onChange={e => setForm({...form, nationality: e.target.value})} className="h-10 mt-1" placeholder="e.g. US, UK, UAE" /></div>
+            <div><Label className="text-xs">Date of Birth</Label><Input type="date" value={form.dateOfBirth ? form.dateOfBirth.split('T')[0] : ''} onChange={e => setForm({...form, dateOfBirth: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label className="text-xs">Hire Date</Label><Input type="date" value={form.hireDate ? form.hireDate.split('T')[0] : ''} onChange={e => setForm({...form, hireDate: e.target.value})} className="h-10 mt-1" /></div>
+            <div><Label className="text-xs">Emergency Contact</Label><Input value={form.emergencyContact || ''} onChange={e => setForm({...form, emergencyContact: e.target.value})} className="h-10 mt-1" placeholder="Emergency contact name" /></div>
+            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this driver..." /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

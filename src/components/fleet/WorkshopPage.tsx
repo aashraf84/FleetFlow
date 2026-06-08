@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Cog, Plus, Pencil, Trash2, Play, CheckCircle, XCircle } from 'lucide-react'
+import { Cog, Plus, Pencil, Trash2, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -37,6 +37,7 @@ export default function WorkshopPage() {
   const [selectedCard, setSelectedCard] = useState<any>(null)
   const [createForm, setCreateForm] = useState<any>({ maintenanceId: '', technician: '', estimatedHours: '', notes: '' })
   const [editForm, setEditForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -64,6 +65,7 @@ export default function WorkshopPage() {
       toast.error('Please select a maintenance record')
       return
     }
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/workshop', {
         method: 'POST',
@@ -79,10 +81,11 @@ export default function WorkshopPage() {
         const err = await res.json()
         toast.error(err.error || 'Failed to create job card')
       }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleEdit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/workshop', {
         method: 'PUT',
@@ -98,7 +101,7 @@ export default function WorkshopPage() {
         const err = await res.json()
         toast.error(err.error || 'Failed to update')
       }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -270,8 +273,8 @@ export default function WorkshopPage() {
       </CardContent></Card>
 
       {/* Create Job Card Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={createOpen} onOpenChange={(v) => { if (!saving) setCreateOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Job Card</DialogTitle>
             <DialogDescription>Create a new job card from an existing maintenance record.</DialogDescription>
@@ -309,14 +312,14 @@ export default function WorkshopPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate}>Create</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCreate(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Edit Job Card Dialog */}
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={editOpen} onOpenChange={(v) => { if (!saving) setEditOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Job Card</DialogTitle>
             <DialogDescription>Update the job card details, hours, and costs.</DialogDescription>
@@ -354,7 +357,7 @@ export default function WorkshopPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Save Changes</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

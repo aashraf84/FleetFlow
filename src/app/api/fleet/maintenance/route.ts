@@ -48,10 +48,27 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const MAINTENANCE_RECORD_FIELDS = [
+  'vehicleId', 'type', 'category', 'description', 'scheduledDate',
+  'completedDate', 'cost', 'vendor', 'odometer', 'status', 'priority',
+  'notes', 'tenantId',
+] as const
+
+function pickMaintenanceFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of MAINTENANCE_RECORD_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const record = await db.maintenanceRecord.create({ data: body })
+    const data = pickMaintenanceFields(body)
+    const record = await db.maintenanceRecord.create({ data })
     return NextResponse.json({ data: record }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create maintenance record' }, { status: 500 })
@@ -61,7 +78,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickMaintenanceFields(rest)
     const record = await db.maintenanceRecord.update({ where: { id }, data })
     return NextResponse.json({ data: record })
   } catch (error) {

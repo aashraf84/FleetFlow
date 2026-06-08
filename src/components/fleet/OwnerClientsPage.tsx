@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Building2, Users, UserX, UserPlus, Search, Plus, Pencil, Trash2, Ban, CheckCircle2,
-  Phone, Mail, Globe, MoreHorizontal, Eye
+  Phone, Mail, Globe, MoreHorizontal, Eye, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
@@ -63,6 +63,7 @@ export default function OwnerClientsPage() {
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [formData, setFormData] = useState(emptyForm)
+  const [saving, setSaving] = useState(false)
   const [activityClient, setActivityClient] = useState<Client | null>(null)
   const { addNotification } = useAppStore()
 
@@ -73,7 +74,7 @@ export default function OwnerClientsPage() {
     try {
       const params = new URLSearchParams()
       if (search) params.set('search', search)
-      if (statusFilter) params.set('status', statusFilter)
+      if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter)
       const res = await fetch(`/api/fleet/clients?${params.toString()}`)
       if (res.ok) {
         const json = await res.json()
@@ -89,6 +90,7 @@ export default function OwnerClientsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setSaving(true)
     try {
       const url = editId
         ? `/api/fleet/clients`
@@ -108,7 +110,7 @@ export default function OwnerClientsPage() {
       }
     } catch (e) {
       toast.error('Operation failed')
-    }
+    } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -321,8 +323,8 @@ export default function OwnerClientsPage() {
       </Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Client' : 'Add New Client'}</DialogTitle>
             <DialogDescription>{editId ? 'Update client information and settings' : 'Enter details to register a new enterprise client'}</DialogDescription>
@@ -396,7 +398,7 @@ export default function OwnerClientsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" size="sm">{editId ? 'Update' : 'Create'}</Button>
+              <Button type="submit" size="sm" disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editId ? 'Update' : 'Create'}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -749,3 +749,244 @@ Fixed all 10 fleet component files to widen dialog forms, improve form layouts w
 ### Verification
 - Lint check passed with zero errors
 - Dev server running without compilation errors
+
+---
+Task ID: 2-c
+Agent: Dialog & Form Enhancement Agent
+Task: Widen all dialog components and add more detailed fields across module pages
+
+Work Log:
+- Task 1: Widened all DialogContent components from max-w-3xl to max-w-4xl across ALL fleet module pages
+  - Used sed to replace max-w-3xl → max-w-4xl in 34 fleet component files
+  - Also updated 3 additional owner pages (OwnerUpdatesPage, OwnerRevenuePage, OwnerTenantsPage) not in original list but found with max-w-3xl
+  - Verified zero remaining max-w-3xl instances in fleet components
+  - Left max-w-2xl view/detail dialogs and max-w-md confirmation dialogs unchanged
+
+- Task 2: Added 7 missing fields to Vehicle form in FleetVehiclesPage.tsx
+  - Added Textarea import from shadcn/ui
+  - Added "Service & Registration" section divider with border-t styling
+  - Added color (text input), engineNumber (text input)
+  - Added registrationExpiry (date input), insuranceExpiry (date input)
+  - Added lastServiceDate (date input), nextServiceDate (date input)
+  - Added notes (Textarea with min-h-[80px], full-width col-span-2)
+  - Updated openCreate defaults with all 7 new fields
+  - Date fields use .split('T')[0] for proper date input formatting
+
+- Task 3: Added 6 missing fields to Customer form in CustomersPage.tsx
+  - Added Textarea import from shadcn/ui
+  - Added "Personal & Emergency" section divider with border-t styling
+  - Added nationality (text input), licenseExpiry (date input), dateOfBirth (date input)
+  - Added emergencyContact (text input), emergencyPhone (text input)
+  - Added notes (Textarea with min-h-[80px], full-width col-span-2)
+  - Updated openCreate defaults with all 6 new fields
+  - Updated openEdit function to include all 6 new fields from item data
+
+- Task 4: Added 7 missing fields to Driver form in DriversPage.tsx
+  - Added Textarea import from shadcn/ui
+  - Added "Personal & Emergency" section divider with border-t styling
+  - Added address (text input), city (text input), nationality (text input)
+  - Added dateOfBirth (date input), hireDate (date input)
+  - Added emergencyContact (text input)
+  - Added notes (Textarea with min-h-[80px], full-width col-span-2)
+  - Updated openCreate defaults with all 7 new fields
+  - Updated openEdit function to include all 7 new fields from item data
+
+- Lint check passed with zero errors
+- Dev server running and verified
+
+Stage Summary:
+- ALL 37 fleet component dialogs widened from max-w-3xl to max-w-4xl for wider form experience
+- Vehicle form: +7 fields (color, engineNumber, registrationExpiry, insuranceExpiry, lastServiceDate, nextServiceDate, notes) with "Service & Registration" section
+- Customer form: +6 fields (nationality, licenseExpiry, dateOfBirth, emergencyContact, emergencyPhone, notes) with "Personal & Emergency" section
+- Driver form: +7 fields (address, city, nationality, dateOfBirth, hireDate, emergencyContact, notes) with "Personal & Emergency" section
+- All new fields follow existing patterns: Label + Input/Textarea in grid cells, h-10 input height, min-h-[80px] for textareas
+- All new date fields properly handle ISO date string formatting with .split('T')[0]
+
+## Task ID: 2-b — Add Edit/Delete CRUD to RentalReservationsPage and MaintenancePreventivePage
+
+### Summary
+Added missing edit and delete CRUD functionality to two module pages that only had create and status transitions.
+
+### Files Modified
+
+1. **RentalReservationsPage.tsx** (`/src/components/fleet/RentalReservationsPage.tsx`)
+   - Added `editId`, `saving`, `deleteId`, `deleting` state variables
+   - Added `openEdit(r)` function that pre-fills the form dialog with reservation data (customerId, vehicleId, startDate, endDate, dailyRate, totalAmount, depositAmount, pickupLocation, returnLocation, notes, status)
+   - Enhanced `handleSubmit` to support both create (POST) and edit (PUT) modes, with form data sanitization (strips id, createdAt, updatedAt, customer, vehicle, reservationCode, tenantId)
+   - Added `handleDelete` function with DELETE API call using query param `?id=`
+   - Added Edit button (Pencil icon) per table row alongside existing status action buttons
+   - Added Cancel Reservation button (Trash2 icon) for pending/confirmed reservations only
+   - Added delete confirmation dialog with "Keep" and "Cancel Reservation" buttons and Loader2 spinner
+   - Changed dialog title to show "Edit Reservation" vs "New Reservation" based on editId
+   - Changed submit button text to "Update" vs "Create" based on editId
+   - Added Loader2 spinner on submit button with `saving` state
+   - Added returnLocation and notes fields to the form dialog
+   - Vehicle selector in edit mode now includes currently assigned vehicle (even if not 'available')
+   - Dialog onOpenChange clears editId when closing
+   - Preserved all existing status transition buttons (Confirm, Activate, Complete)
+
+2. **MaintenancePreventivePage.tsx** (`/src/components/fleet/MaintenancePreventivePage.tsx`)
+   - Added `editId`, `saving`, `deleteId`, `deleting` state variables
+   - Added `openEdit(r)` function that pre-fills the form dialog with maintenance data (vehicleId, category, description, scheduledDate, cost, priority, vendor, notes, status)
+   - Enhanced `handleSubmit` to support both create (POST) and edit (PUT) modes, with form data sanitization (strips id, createdAt, updatedAt, vehicle, jobCard, spareParts, tenantId)
+   - Added `handleDelete` function with DELETE API call using query param `?id=`
+   - Added Edit button (Pencil icon) per table row alongside existing status action buttons
+   - Added Delete button (Trash2 icon) for scheduled records only (with confirmation dialog)
+   - Added delete confirmation dialog with "Cancel" and "Delete" buttons and Loader2 spinner
+   - Changed dialog title to show "Edit Maintenance" vs "Schedule Preventive Maintenance" based on editId
+   - Changed submit button text to "Update" vs "Schedule" based on editId
+   - Added Loader2 spinner on submit button with `saving` state
+   - Added Priority selector (low, normal, high, urgent) and Vendor and Notes fields to the form dialog
+   - Dialog onOpenChange clears editId when closing
+   - Preserved all existing status transition buttons (Start, Complete)
+
+### Verification
+- Lint check passed with zero errors
+- Dev server running without compilation errors
+
+---
+Task ID: 2-a
+Agent: CRUD Bug Fix Agent
+Task: Fix critical CRUD bugs across fleet module pages
+
+Work Log:
+- **Issue 1 Fix: openEdit form leak (CRITICAL)**
+  - CustomersPage.tsx: Changed `openEdit` from `setForm(item)` (which dumps entire DB record including id, createdAt, updatedAt, nested relations) to explicitly setting only form fields: firstName, lastName, email, phone, companyName, drivingLicense, address, city, country, idNumber, creditRating, status
+  - DriversPage.tsx: Same fix — openEdit now only sets: firstName, lastName, email, phone, licenseNumber, licenseExpiry, licenseClass, employmentType, baseSalary, status
+  - HrEmployeesPage.tsx: Same fix — openEdit now only sets: firstName, lastName, email, phone, department, position, baseSalary, status, address, notes
+  - FleetVehiclesPage.tsx: Same fix — openEdit now only sets: vehicleNumber, registrationNumber, vin, make, model, year, category, fuelType, transmission, seatingCapacity, dailyRate, weeklyRate, monthlyRate, purchasePrice, mileage, status, currentLocation
+  - Root cause: When `setForm(item)` was used, the entire database record (including id, createdAt, updatedAt, and nested relation objects like attendance, leaveRecords, etc.) was sent via PUT to the API, which passed it to Prisma's `db.X.update()`. Prisma errors on unknown/readonly fields.
+
+- **Issue 2 Fix: OwnerClientsPage status filter bug**
+  - Changed status filter condition from `if (statusFilter) params.set('status', statusFilter)` to `if (statusFilter && statusFilter !== 'all') params.set('status', statusFilter)`
+  - Root cause: When user selected "All" from the status dropdown, `statusFilter` became `"all"` which is truthy, causing the API to receive `?status=all` which tried to filter by `status='all'` in the database
+
+- **Issue 3 Fix: Added loading states to all submit buttons**
+  - Added `saving` state variable to all 7 modified pages
+  - Wrapped all `handleSubmit`/`handleCreate`/`handleEdit` functions with `setSaving(true)` at start and `finally { setSaving(false) }` at end
+  - Added `Loader2` icon import from lucide-react to all pages
+  - Updated submit buttons to show `disabled={saving}` and `{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}` spinner
+
+- **Issue 4: FinanceInvoicesPage.tsx** — Verified that `openEdit` was already properly sanitized (only maps customerId, subtotal, taxAmount, totalAmount, issueDate, dueDate, notes, status, and sanitized items array). Added saving state with Loader2 spinner.
+
+- **Issue 5: RentalContractsPage.tsx** — Verified that `openEdit` was already properly sanitized (explicitly maps only form fields). Added saving state with Loader2 spinner to both create and edit dialogs.
+
+### Files Modified
+1. **CustomersPage.tsx** — openEdit sanitization + saving state
+2. **DriversPage.tsx** — openEdit sanitization + saving state
+3. **HrEmployeesPage.tsx** — openEdit sanitization + saving state
+4. **FleetVehiclesPage.tsx** — openEdit sanitization + saving state
+5. **OwnerClientsPage.tsx** — status filter fix + saving state
+6. **FinanceInvoicesPage.tsx** — saving state
+7. **RentalContractsPage.tsx** — saving state (both create & edit dialogs)
+
+### Verification
+- Lint check passed with zero errors
+- Dev server running without compilation errors
+
+Stage Summary:
+- CRITICAL CRUD bug fixed: openEdit no longer leaks DB-only fields (id, createdAt, updatedAt, nested relations) into form submissions for 4 pages
+- Status filter bug fixed in OwnerClientsPage: "all" no longer sent as status value to API
+- Loading states with Loader2 spinners added to all 7 pages to prevent double submission
+- FinanceInvoicesPage and RentalContractsPage openEdit were already properly sanitized
+
+## Task 3-a: Add field allowlist filtering to all remaining API routes
+
+**Date:** 2025-03-04
+**Problem:** API routes were accepting raw form data that included fields NOT in the Prisma schema, causing PrismaClientValidationError. The vehicles and customers routes were already fixed with a field allowlist pattern.
+
+**Solution:** Applied the same field filtering pattern to all 17 remaining API routes:
+1. Define a constant array of valid field names (from Prisma schema, excluding `id`, `createdAt`, `updatedAt`, and relation array fields)
+2. Create a helper `pick*Fields()` function that picks only those fields from the request body
+3. Use filtered data for `db.X.create()` and `db.X.update()`
+
+**Files modified:**
+
+| # | Route | Model | Fields Constant |
+|---|-------|-------|-----------------|
+| 1 | `src/app/api/fleet/drivers/route.ts` | Driver | DRIVER_FIELDS (19 fields) |
+| 2 | `src/app/api/fleet/reservations/route.ts` | Reservation | RESERVATION_FIELDS (12 fields) |
+| 3 | `src/app/api/fleet/rentals/route.ts` | RentalContract | RENTAL_CONTRACT_FIELDS (19 fields) |
+| 4 | `src/app/api/fleet/maintenance/route.ts` | MaintenanceRecord | MAINTENANCE_RECORD_FIELDS (13 fields) |
+| 5 | `src/app/api/fleet/fuel/route.ts` | FuelRecord | FUEL_RECORD_FIELDS (14 fields) |
+| 6 | `src/app/api/fleet/hr/route.ts` | Employee | EMPLOYEE_FIELDS (14 fields) |
+| 7 | `src/app/api/fleet/finance/route.ts` | Invoice | INVOICE_FIELDS (12 fields) |
+| 8 | `src/app/api/fleet/clients/route.ts` | Client | CLIENT_FIELDS (12 fields) |
+| 9 | `src/app/api/fleet/damage/route.ts` | DamageReport | DAMAGE_REPORT_FIELDS (13 fields) |
+| 10 | `src/app/api/fleet/deposits/route.ts` | Deposit | DEPOSIT_FIELDS (10 fields) |
+| 11 | `src/app/api/fleet/dispatch/route.ts` | DispatchOrder | DISPATCH_ORDER_FIELDS (10 fields) |
+| 12 | `src/app/api/fleet/trips/route.ts` | Trip | TRIP_FIELDS (11 fields) |
+| 13 | `src/app/api/fleet/inspections/route.ts` | VehicleInspection | VEHICLE_INSPECTION_FIELDS (16 fields) |
+| 14 | `src/app/api/fleet/insurance/route.ts` | InsurancePolicy | INSURANCE_POLICY_FIELDS (12 fields) |
+| 15 | `src/app/api/fleet/compliance/route.ts` | ComplianceRecord | COMPLIANCE_RECORD_FIELDS (9 fields) |
+| 16 | `src/app/api/fleet/parts/route.ts` | SparePart | SPARE_PART_FIELDS (10 fields) |
+| 17 | `src/app/api/fleet/documents/route.ts` | Document | DOCUMENT_FIELDS (12 fields) |
+
+**Special handling preserved:**
+- **Reservations POST**: Auto-generates `reservationCode`, merged with filtered data
+- **Rentals POST**: Calculates `totalDays`/`totalAmount`, merged with filtered data; PUT has status transition logic with filtered mileage/notes updates
+- **Dispatch POST**: Auto-generates `orderNumber`, merged with filtered data
+- **Finance POST/PUT**: Handles `items` array separately for invoice line items, filters invoice body fields
+- **Clients POST**: Auto-generates slug and maps `industry` → `industryType`, then filters before DB create
+- **Inspections POST/PUT**: Validates `vehicleId`, preserves date conversion logic in PUT
+- **Deposits/Documents**: Only have POST (no PUT), filtered appropriately
+
+**Lint:** Clean — no errors
+**Dev server:** Running without issues
+
+---
+Task ID: 3-b
+Agent: Dialog Race Condition Fix Agent
+Task: Fix Dialog submit button race condition across all 26 fleet module page components
+
+### Summary
+Fixed a race condition in Dialog components where clicking "Create" or "Update" could close the dialog before the async API operation completes, causing the form submission to never fire. Applied the fix pattern to all 26 fleet module page components.
+
+### Root Cause
+In shadcn/ui Dialog components, when a button's onClick starts an async operation (like fetch), the Dialog's onOpenChange(false) could be triggered by focus changes or animations, unmounting the component before the async operation completes.
+
+### Fix Pattern Applied
+1. **Submit Button**: Changed to `type="button"` with `onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }}` to prevent event bubbling
+2. **Dialog onOpenChange**: Added `if (!saving)` guard to prevent closing during save: `onOpenChange={(v) => { if (!saving) setOpen(v) }}`
+3. **handleSubmit**: Wrapped with `setSaving(true)` in try, `setSaving(false)` in finally, only `setOpen(false)` on success
+4. **Saving State**: Added `saving` state and `Loader2` spinner to files that were missing them
+
+### Files Modified (26 total)
+
+**Files with existing `saving` state (9 files):**
+1. FleetVehiclesPage.tsx - onOpenChange guard + button fix
+2. CustomersPage.tsx - onOpenChange guard + button fix
+3. DriversPage.tsx - onOpenChange guard + button fix
+4. RentalReservationsPage.tsx - onOpenChange guard + button fix (also guards setEditId)
+5. RentalContractsPage.tsx - onOpenChange guard + button fix (both create and edit dialogs)
+6. OwnerClientsPage.tsx - onOpenChange guard (already uses form onSubmit)
+7. FinanceInvoicesPage.tsx - onOpenChange guard + button fix
+8. HrEmployeesPage.tsx - onOpenChange guard + button fix
+9. MaintenancePreventivePage.tsx - onOpenChange guard + button fix (also guards setEditId)
+
+**Files needing `saving` state added (17 files):**
+10. RentalDepositsPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+11. RentalDamagePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+12. FinanceExpensesPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+13. FinancePaymentsPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+14. FinanceAccountingPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+15. HrAttendancePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+16. HrLeavePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+17. HrPayrollPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+18. HrPerformancePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+19. MaintenanceCorrectivePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+20. WorkshopPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix (both create and edit dialogs)
+21. SparePartsPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix (both add/edit and adjust stock dialogs)
+22. FuelManagementPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+23. InsurancePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+24. CompliancePage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+25. DocumentsPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+26. TransportDispatchPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+27. TransportTripsPage.tsx - Added saving state, Loader2 import, setSaving in try/finally, onOpenChange guard, button fix
+
+### Bug Fix
+- Fixed syntax error in RentalDamagePage.tsx line 28: `useState<any[]>([]>` → `useState<any[]>([])`
+
+### Verification
+- `bun run lint` passed with zero errors
+- All 26 fleet module pages now have the race condition fix applied consistently

@@ -10,13 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Wallet, Plus } from 'lucide-react'
+import { Wallet, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function RentalDepositsPage() {
   const [deposits, setDeposits] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [contracts, setContracts] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
 
@@ -35,13 +36,14 @@ export default function RentalDepositsPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/deposits', {
         method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
       })
       if (res.ok) { toast.success('Deposit recorded'); fetchData(); setOpen(false); setForm({}) }
       else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
@@ -96,7 +98,7 @@ export default function RentalDepositsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Deposit</DialogTitle><DialogDescription>Record a deposit collection, refund, or deduction for a rental contract.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -106,7 +108,7 @@ export default function RentalDepositsPage() {
             <div><Label>Amount ($) *</Label><Input type="number" value={form.amount || ''} onChange={e => setForm({...form, amount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" required /></div>
             <div><Label>Reason</Label><Input value={form.reason || ''} onChange={e => setForm({...form, reason: e.target.value})} className="h-10 mt-1" placeholder="Reason for deposit or deduction" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Record</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Record</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -10,10 +10,26 @@ export async function GET() {
   }
 }
 
+const INSURANCE_POLICY_FIELDS = [
+  'vehicleId', 'policyNumber', 'provider', 'type', 'premium', 'startDate',
+  'endDate', 'coverage', 'deductible', 'status', 'notes', 'tenantId',
+] as const
+
+function pickInsuranceFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of INSURANCE_POLICY_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const policy = await db.insurancePolicy.create({ data: body })
+    const data = pickInsuranceFields(body)
+    const policy = await db.insurancePolicy.create({ data })
     return NextResponse.json({ data: policy }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create insurance policy' }, { status: 500 })
@@ -23,7 +39,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickInsuranceFields(rest)
     const policy = await db.insurancePolicy.update({ where: { id }, data })
     return NextResponse.json({ data: policy })
   } catch (error) {

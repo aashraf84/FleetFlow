@@ -23,10 +23,26 @@ export async function GET() {
   }
 }
 
+const TRIP_FIELDS = [
+  'dispatchOrderId', 'driverId', 'vehicleId', 'origin', 'destination',
+  'startTime', 'endTime', 'distance', 'status', 'notes', 'tenantId',
+] as const
+
+function pickTripFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of TRIP_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const trip = await db.trip.create({ data: body })
+    const data = pickTripFields(body)
+    const trip = await db.trip.create({ data })
     return NextResponse.json({ data: trip }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create trip' }, { status: 500 })
@@ -36,7 +52,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickTripFields(rest)
     const trip = await db.trip.update({ where: { id }, data })
     return NextResponse.json({ data: trip })
   } catch (error) {

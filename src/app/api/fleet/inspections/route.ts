@@ -16,31 +16,31 @@ export async function GET() {
   }
 }
 
+const VEHICLE_INSPECTION_FIELDS = [
+  'vehicleId', 'inspectionDate', 'inspector', 'type', 'overallCondition',
+  'exteriorCondition', 'interiorCondition', 'engineCondition', 'tireCondition',
+  'brakesCondition', 'notes', 'issues', 'photos', 'status',
+  'nextInspectionDate', 'tenantId',
+] as const
+
+function pickInspectionFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of VEHICLE_INSPECTION_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { vehicleId, inspectionDate, inspector, type, overallCondition, exteriorCondition, interiorCondition, engineCondition, tireCondition, brakesCondition, notes, issues, status, nextInspectionDate } = body
-    if (!vehicleId) {
+    if (!body.vehicleId) {
       return NextResponse.json({ error: 'vehicleId is required' }, { status: 400 })
     }
-    const inspection = await db.vehicleInspection.create({
-      data: {
-        vehicleId,
-        inspectionDate: inspectionDate ? new Date(inspectionDate) : new Date(),
-        inspector: inspector || null,
-        type: type || 'routine',
-        overallCondition: overallCondition || 'good',
-        exteriorCondition: exteriorCondition || null,
-        interiorCondition: interiorCondition || null,
-        engineCondition: engineCondition || null,
-        tireCondition: tireCondition || null,
-        brakesCondition: brakesCondition || null,
-        notes: notes || null,
-        issues: issues || null,
-        status: status || 'passed',
-        nextInspectionDate: nextInspectionDate ? new Date(nextInspectionDate) : null,
-      }
-    })
+    const data = pickInspectionFields(body)
+    const inspection = await db.vehicleInspection.create({ data })
     return NextResponse.json({ data: inspection }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create inspection' }, { status: 500 })
@@ -50,10 +50,11 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
     if (!id) {
       return NextResponse.json({ error: 'ID is required' }, { status: 400 })
     }
+    const data = pickInspectionFields(rest)
     // Convert date fields if present
     if (data.inspectionDate) data.inspectionDate = new Date(data.inspectionDate)
     if (data.nextInspectionDate) data.nextInspectionDate = new Date(data.nextInspectionDate)

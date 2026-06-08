@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Shield, Plus, Pencil, Trash2, AlertTriangle } from 'lucide-react'
+import { Shield, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function InsurancePage() {
@@ -19,6 +19,7 @@ export default function InsurancePage() {
   const [editMode, setEditMode] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -33,6 +34,7 @@ export default function InsurancePage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editMode && form.id) {
         const res = await fetch('/api/fleet/insurance', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -42,7 +44,7 @@ export default function InsurancePage() {
         const res = await fetch('/api/fleet/insurance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
         if (res.ok) { toast.success('Policy created'); fetchData(); setOpen(false); setForm({}) } else toast.error('Failed')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleEdit = (policy: any) => {
@@ -169,8 +171,8 @@ export default function InsurancePage() {
       </CardContent></Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Insurance Policy' : 'Add Insurance Policy'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the insurance policy details below.' : 'Fill in the details to add a new insurance policy.'}</DialogDescription>
@@ -186,7 +188,7 @@ export default function InsurancePage() {
             <div><Label className="text-xs">Deductible ($)</Label><Input type="number" value={form.deductible || ''} onChange={e => setForm({...form, deductible: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Coverage</Label><Input value={form.coverage || ''} onChange={e => setForm({...form, coverage: e.target.value})} className="h-10 mt-1" placeholder="e.g. Full coverage, Third party only" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

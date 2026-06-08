@@ -17,11 +17,28 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const INVOICE_FIELDS = [
+  'invoiceNumber', 'customerId', 'issueDate', 'dueDate', 'subtotal',
+  'taxAmount', 'totalAmount', 'paidAmount', 'status', 'paidDate', 'notes',
+  'tenantId',
+] as const
+
+function pickInvoiceFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of INVOICE_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { items, ...invoiceData } = body
+    const { items, ...rest } = body
     const num = `INV-${Date.now().toString(36).toUpperCase()}`
+    const invoiceData = pickInvoiceFields(rest)
     const invoice = await db.invoice.create({
       data: {
         ...invoiceData,
@@ -39,8 +56,10 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, items, ...data } = body
+    const { id, items, ...rest } = body
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+
+    const data = pickInvoiceFields(rest)
 
     // If items are provided, replace them
     if (items) {

@@ -244,7 +244,7 @@ export default function FleetInspectionsPage() {
 
       {/* Create Inspection Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Inspection</DialogTitle><DialogDescription>Create a new vehicle inspection record with condition assessments.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="col-span-1 md:col-span-2">
@@ -382,7 +382,7 @@ export default function FleetInspectionsPage() {
 
       {/* Edit Inspection Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Inspection</DialogTitle><DialogDescription>Update the inspection record details and condition assessments.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div>

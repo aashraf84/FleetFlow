@@ -19,10 +19,27 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const EMPLOYEE_FIELDS = [
+  'employeeId', 'firstName', 'lastName', 'email', 'phone', 'department',
+  'position', 'hireDate', 'salary', 'status', 'address', 'emergencyContact',
+  'notes', 'tenantId',
+] as const
+
+function pickEmployeeFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of EMPLOYEE_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const employee = await db.employee.create({ data: body })
+    const data = pickEmployeeFields(body)
+    const employee = await db.employee.create({ data })
     return NextResponse.json({ data: employee }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create employee' }, { status: 500 })
@@ -32,7 +49,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickEmployeeFields(rest)
     const employee = await db.employee.update({ where: { id }, data })
     return NextResponse.json({ data: employee })
   } catch (error) {

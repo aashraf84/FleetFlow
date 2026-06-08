@@ -50,11 +50,11 @@ export async function POST() {
     const demoTenant = await db.tenant.create({
       data: {
         id: TENANT_ID,
-        name: 'FleetFlow Demo Corp',
-        slug: 'demo',
-        dbName: 'ff_demo',
+        name: 'ApexFlow Cloud',
+        slug: 'apexflow',
+        dbName: 'ff_apexflow',
         dbReady: true,
-        domain: 'demo.fleetflow.os',
+        domain: 'apexflow.cloud',
         status: 'active',
         storageLimit: 5120,
         userLimit: 50,
@@ -67,13 +67,13 @@ export async function POST() {
     const demoClient = await db.client.create({
       data: {
         id: CLIENT_ID,
-        companyName: 'FleetFlow Demo Corp',
-        slug: 'demo',
-        contactPerson: 'Demo User',
-        email: 'demo@fleetflow.os',
-        phone: '+1-555-0100',
+        companyName: 'ApexFlow Cloud',
+        slug: 'apexflow',
+        contactPerson: 'System Administrator',
+        email: 'admin@apexflow.cloud',
+        phone: '+1-800-APEXFLOW',
         country: 'United States',
-        industryType: 'Fleet Management',
+        industryType: 'Fleet Management SaaS',
         subscriptionPlan: 'enterprise',
         licenseStatus: 'active',
         status: 'active',
@@ -88,7 +88,7 @@ export async function POST() {
     console.log('[SEED] ✓ Users (2)')
 
     // 4. LICENSE
-    await db.license.create({ data: { licenseKey: 'FFOS-DEMO-2024-ACTIVE', clientId: demoClient.id, status: 'active', maxDevices: 100, activationDate: new Date(), expiryDate: daysFromNow(365) } })
+    await db.license.create({ data: { licenseKey: 'FFOS-OWNER-2024-MASTER', clientId: demoClient.id, status: 'active', maxDevices: 100, activationDate: new Date(), expiryDate: daysFromNow(365) } })
     console.log('[SEED] ✓ License')
 
     // 5. VEHICLES (15)
@@ -505,7 +505,7 @@ export async function POST() {
 
     // 36. TENANT SETTINGS (9 categories)
     const tenantSettingsData = [
-      { tenantId: TENANT_ID, category: 'general', data: { companyName: 'FleetFlow Demo Corp', logo: '/logo.svg', timezone: 'Asia/Dubai', dateFormat: 'DD/MM/YYYY', timeFormat: '24h', currency: 'AED', language: 'en', phone: '+971-4-XXX-XXXX', email: 'info@fleetflow.os', address: 'Business Bay, Dubai, UAE', taxId: 'TAX-FF-001', website: 'https://fleetflow.os' } },
+      { tenantId: TENANT_ID, category: 'general', data: { companyName: 'ApexFlow Cloud', logo: '/logo.svg', timezone: 'Asia/Dubai', dateFormat: 'DD/MM/YYYY', timeFormat: '24h', currency: 'AED', language: 'en', phone: '+971-4-XXX-XXXX', email: 'info@apexflow.cloud', address: 'Business Bay, Dubai, UAE', taxId: 'TAX-FF-001', website: 'https://apexflow.cloud' } },
       { tenantId: TENANT_ID, category: 'receipt', data: { header: 'FleetFlow OS - Rental Receipt', footer: 'Thank you for choosing FleetFlow OS!', showLogo: true, showCompanyInfo: true, showTaxBreakdown: true, receiptPrefix: 'RCP', nextReceiptNumber: 1001, paperSize: 'A4', includeQRCode: true } },
       { tenantId: TENANT_ID, category: 'invoice', data: { header: 'FleetFlow OS - Invoice', footer: 'Payment due within 30 days. Late payments subject to 2% monthly interest.', showLogo: true, showCompanyInfo: true, showTaxBreakdown: true, invoicePrefix: 'INV', nextInvoiceNumber: 500006, paperSize: 'A4', paymentTerms: 'net_30', includeQRCode: true, includeBankDetails: true } },
       { tenantId: TENANT_ID, category: 'payment', data: { defaultPaymentMethod: 'bank_transfer', acceptedMethods: ['cash', 'card', 'bank_transfer', 'cheque', 'online'], autoReceipt: true, latePaymentFee: 2, latePaymentFeeType: 'percentage', partialPaymentAllowed: true, minimumPaymentPercentage: 30 } },

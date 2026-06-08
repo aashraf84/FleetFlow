@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Award, Plus, Star, Send, CheckCircle } from 'lucide-react'
+import { Award, Plus, Star, Send, CheckCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrPerformancePage() {
@@ -19,6 +19,7 @@ export default function HrPerformancePage() {
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   const fetchData = async () => {
     setLoading(true)
@@ -50,6 +51,7 @@ export default function HrPerformancePage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const res = await fetch('/api/fleet/hr/performance', {
         method: 'POST',
@@ -65,7 +67,7 @@ export default function HrPerformancePage() {
         const err = await res.json()
         toast.error(err.error || 'Failed')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -150,8 +152,8 @@ export default function HrPerformancePage() {
         </ScrollArea>
       </CardContent></Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>New Performance Review</DialogTitle><DialogDescription>Create a performance review for an employee.</DialogDescription></DialogHeader>
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>New Performance Review</DialogTitle><DialogDescription>Create a performance review for an employee.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
               <Select required value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })}>
@@ -181,7 +183,7 @@ export default function HrPerformancePage() {
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Strengths</Label><Textarea value={form.strengths || ''} onChange={e => setForm({ ...form, strengths: e.target.value })} className="min-h-[80px] mt-1" placeholder="Key strengths demonstrated" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Areas for Improvement</Label><Textarea value={form.improvements || ''} onChange={e => setForm({ ...form, improvements: e.target.value })} className="min-h-[80px] mt-1" placeholder="Areas where improvement is needed" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create Review</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create Review</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

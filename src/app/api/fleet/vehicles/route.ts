@@ -41,10 +41,29 @@ export async function GET(req: NextRequest) {
   }
 }
 
+const VEHICLE_FIELDS = [
+  'vehicleNumber', 'registrationNumber', 'make', 'model', 'year',
+  'category', 'color', 'vin', 'engineNumber', 'transmission', 'fuelType',
+  'mileage', 'status', 'dailyRate', 'weeklyRate', 'monthlyRate',
+  'currentLocation', 'lastServiceDate', 'nextServiceDate',
+  'insuranceExpiry', 'registrationExpiry', 'notes', 'tenantId',
+] as const
+
+function pickVehicleFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of VEHICLE_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const vehicle = await db.vehicle.create({ data: body })
+    const data = pickVehicleFields(body)
+    const vehicle = await db.vehicle.create({ data })
     return NextResponse.json({ data: vehicle }, { status: 201 })
   } catch (error) {
     console.error('Vehicle POST error:', error)
@@ -55,7 +74,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickVehicleFields(rest)
     const vehicle = await db.vehicle.update({ where: { id }, data })
     return NextResponse.json({ data: vehicle })
   } catch (error) {

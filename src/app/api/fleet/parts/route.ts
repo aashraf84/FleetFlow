@@ -23,10 +23,26 @@ export async function GET() {
   }
 }
 
+const SPARE_PART_FIELDS = [
+  'name', 'partNumber', 'category', 'quantityInStock', 'reorderLevel',
+  'unitCost', 'sellingPrice', 'supplier', 'location', 'tenantId',
+] as const
+
+function pickSparePartFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of SPARE_PART_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const part = await db.sparePart.create({ data: body })
+    const data = pickSparePartFields(body)
+    const part = await db.sparePart.create({ data })
     return NextResponse.json({ data: part }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create spare part' }, { status: 500 })
@@ -36,7 +52,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickSparePartFields(rest)
     const part = await db.sparePart.update({ where: { id }, data })
     return NextResponse.json({ data: part })
   } catch (error) {

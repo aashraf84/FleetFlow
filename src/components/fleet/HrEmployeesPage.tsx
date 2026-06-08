@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { UserCog, Plus, Search, Edit, Trash2 } from 'lucide-react'
+import { UserCog, Plus, Search, Edit, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrEmployeesPage() {
@@ -20,6 +20,7 @@ export default function HrEmployeesPage() {
   const [open, setOpen] = useState(false)
   const [editItem, setEditItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
@@ -28,13 +29,14 @@ export default function HrEmployeesPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       const url = '/api/fleet/hr'
       const res = editItem
         ? await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editItem.id, ...form }) })
         : await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
       if (res.ok) { toast.success(editItem ? 'Updated' : 'Created'); fetchData(); setOpen(false); setEditItem(null); setForm({}) }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleDelete = async (id: string) => {
@@ -43,7 +45,22 @@ export default function HrEmployeesPage() {
   }
 
   const openCreate = () => { setEditItem(null); setForm({ firstName: '', lastName: '', email: '', phone: '', department: '', position: '', baseSalary: 0, status: 'active', address: '', notes: '' }); setOpen(true) }
-  const openEdit = (item: any) => { setEditItem(item); setForm(item); setOpen(true) }
+  const openEdit = (item: any) => {
+    setEditItem(item)
+    setForm({
+      firstName: item.firstName || '',
+      lastName: item.lastName || '',
+      email: item.email || '',
+      phone: item.phone || '',
+      department: item.department || '',
+      position: item.position || '',
+      baseSalary: item.baseSalary || 0,
+      status: item.status || 'active',
+      address: item.address || '',
+      notes: item.notes || '',
+    })
+    setOpen(true)
+  }
 
   return (
     <div className="space-y-6">
@@ -82,8 +99,8 @@ export default function HrEmployeesPage() {
           </TableBody></Table>
         </ScrollArea>
       </CardContent></Card>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Employee' : 'Add Employee'}</DialogTitle><DialogDescription>{editItem ? 'Update employee information and details.' : 'Fill in the details to add a new employee.'}</DialogDescription></DialogHeader>
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Employee' : 'Add Employee'}</DialogTitle><DialogDescription>{editItem ? 'Update employee information and details.' : 'Fill in the details to add a new employee.'}</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div><Label className="text-xs">First Name <span className="text-destructive">*</span></Label><Input required value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-10 mt-1" placeholder="Enter first name" /></div>
             <div><Label className="text-xs">Last Name <span className="text-destructive">*</span></Label><Input required value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-10 mt-1" placeholder="Enter last name" /></div>
@@ -96,7 +113,7 @@ export default function HrEmployeesPage() {
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Employee address" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="min-h-[80px] mt-1" placeholder="Additional notes about the employee" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

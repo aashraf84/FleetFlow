@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CalendarDays, Plus, Search } from 'lucide-react'
+import { CalendarDays, Plus, Search, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -23,6 +23,10 @@ export default function RentalReservationsPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [open, setOpen] = useState(false)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [customers, setCustomers] = useState<any[]>([])
   const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
@@ -43,14 +47,53 @@ export default function RentalReservationsPage() {
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
+  const openEdit = (r: any) => {
+    setEditId(r.id)
+    setForm({
+      customerId: r.customerId,
+      vehicleId: r.vehicleId,
+      startDate: r.startDate ? new Date(r.startDate).toISOString().split('T')[0] : '',
+      endDate: r.endDate ? new Date(r.endDate).toISOString().split('T')[0] : '',
+      dailyRate: r.dailyRate || 0,
+      totalAmount: r.totalAmount || 0,
+      depositAmount: r.depositAmount || 0,
+      pickupLocation: r.pickupLocation || '',
+      returnLocation: r.returnLocation || '',
+      notes: r.notes || '',
+      status: r.status,
+    })
+    setOpen(true)
+  }
+
   const handleSubmit = async () => {
+    setSaving(true)
     try {
-      const res = await fetch('/api/fleet/reservations', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form)
-      })
-      if (res.ok) { toast.success('Reservation created'); fetchData(); setOpen(false); setForm({}) }
-      else toast.error('Failed')
-    } catch (e) { toast.error('Request failed') }
+      // Sanitize form data — remove fields that should not be sent
+      const { id, createdAt, updatedAt, customer, vehicle, reservationCode, tenantId, ...sanitized } = form as any
+      if (editId) {
+        const res = await fetch('/api/fleet/reservations', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: editId, ...sanitized })
+        })
+        if (res.ok) { toast.success('Reservation updated'); fetchData(); setOpen(false); setEditId(null); setForm({}) }
+        else toast.error('Failed to update')
+      } else {
+        const res = await fetch('/api/fleet/reservations', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(sanitized)
+        })
+        if (res.ok) { toast.success('Reservation created'); fetchData(); setOpen(false); setForm({}) }
+        else toast.error('Failed')
+      }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteId) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/fleet/reservations?id=${deleteId}`, { method: 'DELETE' })
+      if (res.ok) { toast.success('Reservation cancelled'); fetchData(); setDeleteId(null) }
+      else toast.error('Failed to cancel')
+    } catch (e) { toast.error('Delete failed') } finally { setDeleting(false) }
   }
 
   const updateStatus = async (id: string, status: string) => {
@@ -76,7 +119,7 @@ export default function RentalReservationsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h2 className="text-2xl font-bold">Reservations</h2><p className="text-sm text-muted-foreground">Manage rental reservations and bookings</p></div>
-        <Button onClick={() => { setForm({ startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], status: 'pending', dailyRate: 0, totalAmount: 0, depositAmount: 0 }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Reservation</Button>
+        <Button onClick={() => { setEditId(null); setForm({ startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], status: 'pending', dailyRate: 0, totalAmount: 0, depositAmount: 0 }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Reservation</Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
@@ -120,9 +163,13 @@ export default function RentalReservationsPage() {
                     <TableCell className="text-xs font-medium">{fmt(r.totalAmount)}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${statusColors[r.status] || ''}`}>{r.status?.replace('_', ' ')}</Badge></TableCell>
                     <TableCell>
-                      {r.status === 'pending' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'confirmed')}>Confirm</Button>}
-                      {r.status === 'confirmed' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'active')}>Activate</Button>}
-                      {r.status === 'active' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'completed')}>Complete</Button>}
+                      <div className="flex items-center gap-1 flex-wrap">
+                        {r.status === 'pending' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'confirmed')}>Confirm</Button>}
+                        {r.status === 'confirmed' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'active')}>Activate</Button>}
+                        {r.status === 'active' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'completed')}>Complete</Button>}
+                        <Button size="sm" variant="ghost" className="h-6 w-6 p-0" onClick={() => openEdit(r)} title="Edit"><Pencil className="h-3 w-3" /></Button>
+                        {(r.status === 'pending' || r.status === 'confirmed') && <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-destructive hover:text-destructive" onClick={() => setDeleteId(r.id)} title="Cancel Reservation"><Trash2 className="h-3 w-3" /></Button>}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -132,20 +179,29 @@ export default function RentalReservationsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>New Reservation</DialogTitle><DialogDescription>Create a new rental reservation by selecting customer, vehicle, and rental dates.</DialogDescription></DialogHeader>
+      <Dialog open={open} onOpenChange={v => { if (!saving) { setOpen(v); if (!v) setEditId(null) } }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>{editId ? 'Edit Reservation' : 'New Reservation'}</DialogTitle><DialogDescription>{editId ? 'Update reservation details including dates, amounts, and locations.' : 'Create a new rental reservation by selecting customer, vehicle, and rental dates.'}</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div><Label>Customer *</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available').map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
+            <div><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available' || v.id === form.vehicleId).map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
             <div><Label>Start Date *</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
             <div><Label>End Date *</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
             <div><Label>Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div><Label>Total Amount ($)</Label><Input type="number" value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div><Label>Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({...form, depositAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
             <div><Label>Pickup Location</Label><Input value={form.pickupLocation || ''} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office" /></div>
+            <div><Label>Return Location</Label><Input value={form.returnLocation || ''} onChange={e => setForm({...form, returnLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Airport Branch" /></div>
+            <div><Label>Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Any special instructions" /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>Create</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => { setOpen(false); setEditId(null) }} disabled={saving}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Create'}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteId} onOpenChange={v => { if (!v) setDeleteId(null) }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Cancel Reservation</DialogTitle><DialogDescription>Are you sure you want to cancel this reservation? This action cannot be undone.</DialogDescription></DialogHeader>
+          <DialogFooter><Button variant="outline" onClick={() => setDeleteId(null)} disabled={deleting}>Keep</Button><Button variant="destructive" onClick={handleDelete} disabled={deleting}>{deleting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Cancel Reservation</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

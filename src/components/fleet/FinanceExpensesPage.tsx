@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, Pencil, Trash2, MoreHorizontal, CheckCircle2, XCircle
+  Plus, Pencil, Trash2, MoreHorizontal, CheckCircle2, XCircle, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -37,6 +37,7 @@ export default function FinanceExpensesPage() {
   const [open, setOpen] = useState(false)
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<any>(emptyForm)
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -70,6 +71,7 @@ export default function FinanceExpensesPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editId) {
         const res = await fetch('/api/fleet/finance/expenses', {
@@ -88,7 +90,7 @@ export default function FinanceExpensesPage() {
         if (res.ok) { toast.success('Expense recorded'); fetchData(); setOpen(false); setForm(emptyForm) }
         else toast.error('Failed to record expense')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleStatusChange = async (id: string, status: string) => {
@@ -211,8 +213,8 @@ export default function FinanceExpensesPage() {
       </CardContent></Card>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Expense' : 'Record Expense'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the expense details below.' : 'Fill in the details to record a new expense.'}</DialogDescription>
@@ -288,7 +290,7 @@ export default function FinanceExpensesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button onClick={handleSubmit}>{editId ? 'Update' : 'Record'}</Button>
+            <Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Record'}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

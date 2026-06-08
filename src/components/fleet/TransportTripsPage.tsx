@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Route, Plus, Pencil, Trash2 } from 'lucide-react'
+import { Route, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function TransportTripsPage() {
@@ -22,6 +22,7 @@ export default function TransportTripsPage() {
   const [drivers, setDrivers] = useState<any[]>([])
   const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -42,6 +43,7 @@ export default function TransportTripsPage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editMode && form.id) {
         const res = await fetch('/api/fleet/trips', {
@@ -58,7 +60,7 @@ export default function TransportTripsPage() {
         if (res.ok) { toast.success('Trip created'); fetchData(); setOpen(false); setForm({}) }
         else toast.error('Failed to create trip')
       }
-    } catch (e) { toast.error('Request failed') }
+    } catch (e) { toast.error('Request failed') } finally { setSaving(false) }
   }
 
   const handleEdit = (trip: any) => {
@@ -185,8 +187,8 @@ export default function TransportTripsPage() {
       </Card>
 
       {/* Create/Edit Trip Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Trip' : 'New Trip'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the trip details below.' : 'Fill in the details to create a new trip.'}</DialogDescription>
@@ -200,7 +202,7 @@ export default function TransportTripsPage() {
             <div><Label className="text-xs">Est. Distance (km)</Label><Input type="number" value={form.distance || ''} onChange={e => setForm({...form, distance: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" /></div>
             <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Trip notes..." /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update Trip' : 'Create Trip'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update Trip' : 'Create Trip'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

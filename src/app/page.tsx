@@ -628,11 +628,14 @@ function Header() {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
-  // Fetch client info on mount
+  // Fetch client info on mount (user-context-aware)
   useEffect(() => {
     const fetchClientInfo = async () => {
       try {
-        const res = await fetch('/api/fleet/client-info')
+        const params = new URLSearchParams()
+        if (user?.email) params.set('email', user.email)
+        if (user?.role) params.set('role', user.role)
+        const res = await fetch(`/api/fleet/client-info?${params.toString()}`)
         if (res.ok) {
           const json = await res.json()
           setClientInfo(json.data)
@@ -642,7 +645,7 @@ function Header() {
     fetchClientInfo()
     const interval = setInterval(fetchClientInfo, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user?.email, user?.role])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {

@@ -10,10 +10,26 @@ export async function GET() {
   }
 }
 
+const COMPLIANCE_RECORD_FIELDS = [
+  'vehicleId', 'type', 'documentNumber', 'issueDate', 'expiryDate',
+  'issuingAuthority', 'status', 'notes', 'tenantId',
+] as const
+
+function pickComplianceFields(body: Record<string, any>) {
+  const data: Record<string, any> = {}
+  for (const key of COMPLIANCE_RECORD_FIELDS) {
+    if (body[key] !== undefined && body[key] !== '') {
+      data[key] = body[key]
+    }
+  }
+  return data
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const record = await db.complianceRecord.create({ data: body })
+    const data = pickComplianceFields(body)
+    const record = await db.complianceRecord.create({ data })
     return NextResponse.json({ data: record }, { status: 201 })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create compliance record' }, { status: 500 })
@@ -23,7 +39,8 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
+    const { id, ...rest } = body
+    const data = pickComplianceFields(rest)
     const record = await db.complianceRecord.update({ where: { id }, data })
     return NextResponse.json({ data: record })
   } catch (error) {

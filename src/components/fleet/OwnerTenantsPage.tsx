@@ -292,7 +292,7 @@ export default function OwnerTenantsPage() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Tenant' : 'Create Tenant'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify tenant configuration and resource limits' : 'Set up a new tenant on the platform with custom settings'}</DialogDescription>

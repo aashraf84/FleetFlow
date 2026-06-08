@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { FileCheck, Plus, Pencil, Trash2 } from 'lucide-react'
+import { FileCheck, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function CompliancePage() {
@@ -19,6 +19,7 @@ export default function CompliancePage() {
   const [editMode, setEditMode] = useState(false)
   const [vehicles, setVehicles] = useState<any[]>([])
   const [form, setForm] = useState<any>({})
+  const [saving, setSaving] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
@@ -33,6 +34,7 @@ export default function CompliancePage() {
   }
 
   const handleSubmit = async () => {
+    setSaving(true)
     try {
       if (editMode && form.id) {
         const res = await fetch('/api/fleet/compliance', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
@@ -42,7 +44,7 @@ export default function CompliancePage() {
         const res = await fetch('/api/fleet/compliance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
         if (res.ok) { toast.success('Compliance record created'); fetchData(); setOpen(false); setForm({}) } else toast.error('Failed')
       }
-    } catch (e) { toast.error('Failed') }
+    } catch (e) { toast.error('Failed') } finally { setSaving(false) }
   }
 
   const handleEdit = (record: any) => {
@@ -159,8 +161,8 @@ export default function CompliancePage() {
       </CardContent></Card>
 
       {/* Add/Edit Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Compliance Record' : 'Add Compliance Record'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the compliance record details below.' : 'Fill in the details to add a new compliance record.'}</DialogDescription>
@@ -173,7 +175,7 @@ export default function CompliancePage() {
             <div><Label className="text-xs">Issue Date</Label><Input type="date" value={form.issueDate || ''} onChange={e => setForm({...form, issueDate: e.target.value})} className="h-10 mt-1" /></div>
             <div><Label className="text-xs">Expiry Date <span className="text-destructive">*</span></Label><Input type="date" value={form.expiryDate || ''} onChange={e => setForm({...form, expiryDate: e.target.value})} className="h-10 mt-1" required /></div>
           </div>
-          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
