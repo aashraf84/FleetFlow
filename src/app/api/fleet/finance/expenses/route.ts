@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sql } from '@/lib/sql'
 import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
@@ -8,24 +7,14 @@ export async function GET(req: NextRequest) {
     const category = searchParams.get('category')
     const status = searchParams.get('status')
 
-    const conditions: string[] = []
-    const params: any[] = []
-    let idx = 1
+    const where: any = {}
+    if (category) where.category = category
+    if (status) where.status = status
 
-    if (category) {
-      conditions.push(`category = $${idx++}`)
-      params.push(category)
-    }
-    if (status) {
-      conditions.push(`status = $${idx++}`)
-      params.push(status)
-    }
-    const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
-
-    const expenses = await sql.query(
-      `SELECT * FROM "Expense" ${whereClause} ORDER BY date DESC`,
-      params
-    )
+    const expenses = await db.expense.findMany({
+      where,
+      orderBy: { date: 'desc' },
+    })
 
     return NextResponse.json({ data: expenses })
   } catch (error) {
@@ -47,9 +36,22 @@ export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
     const { id, ...data } = body
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
     const expense = await db.expense.update({ where: { id }, data })
     return NextResponse.json({ data: expense })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update expense' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+    await db.expense.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete expense' }, { status: 500 })
   }
 }

@@ -30,3 +30,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to create payment' }, { status: 500 })
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { id, ...data } = body
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+    const payment = await db.payment.update({ where: { id }, data })
+    return NextResponse.json({ data: payment })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to update payment' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+    await db.payment.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete payment' }, { status: 500 })
+  }
+}

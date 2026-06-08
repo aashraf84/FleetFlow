@@ -1,66 +1,161 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Clock, Plus } from 'lucide-react'
+import { Clock, Plus, Edit } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrAttendancePage() {
+  const [records, setRecords] = useState<any[]>([])
   const [employees, setEmployees] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [open, setOpen] = useState(false)
+  const [editItem, setEditItem] = useState<any>(null)
   const [form, setForm] = useState<any>({})
 
-  useEffect(() => { fetchData() }, [])
   const fetchData = async () => {
     setLoading(true)
-    try { const res = await fetch('/api/fleet/hr'); if (res.ok) { const j = await res.json(); setEmployees(j.data || []) } } catch (e) { console.error(e) } finally { setLoading(false) }
+    try {
+      const [attRes, empRes] = await Promise.all([
+        fetch('/api/fleet/hr/attendance'),
+        fetch('/api/fleet/hr'),
+      ])
+      if (attRes.ok) { const j = await attRes.json(); setRecords(j.data || []) }
+      if (empRes.ok) { const j = await empRes.json(); setEmployees(j.data || []) }
+    } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
-  const today = new Date().toLocaleDateString()
-  const attendanceRecords = employees.flatMap(e => (e.attendance || []).map((a: any) => ({ ...a, employee: e })))
+  useEffect(() => { fetchData() }, [])
+
+  const openCreate = () => {
+    setEditItem(null)
+    setForm({ employeeId: '', date: new Date().toISOString().split('T')[0], checkIn: '', checkOut: '', status: 'present', notes: '' })
+    setOpen(true)
+  }
+
+  const openEdit = (item: any) => {
+    setEditItem(item)
+    setForm({
+      id: item.id,
+      employeeId: item.employeeId,
+      date: new Date(item.date).toISOString().split('T')[0],
+      checkIn: item.checkIn ? new Date(item.checkIn).toISOString().slice(0, 16) : '',
+      checkOut: item.checkOut ? new Date(item.checkOut).toISOString().slice(0, 16) : '',
+      status: item.status,
+      notes: item.notes || '',
+    })
+    setOpen(true)
+  }
+
+  const handleSubmit = async () => {
+    try {
+      const payload = { ...form }
+      if (payload.checkIn) payload.checkIn = new Date(payload.checkIn).toISOString()
+      if (payload.checkOut) payload.checkOut = new Date(payload.checkOut).toISOString()
+
+      const res = editItem
+        ? await fetch('/api/fleet/hr/attendance', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        : await fetch('/api/fleet/hr/attendance', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+
+      if (res.ok) {
+        toast.success(editItem ? 'Attendance updated' : 'Attendance recorded')
+        fetchData()
+        setOpen(false)
+        setEditItem(null)
+        setForm({})
+      } else {
+        const err = await res.json()
+        toast.error(err.error || 'Failed')
+      }
+    } catch (e) { toast.error('Failed') }
+  }
+
+  const statusColor = (s: string) => {
+    switch (s) {
+      case 'present': return 'bg-emerald-100 text-emerald-800'
+      case 'late': return 'bg-amber-100 text-amber-800'
+      case 'absent': return 'bg-red-100 text-red-800'
+      case 'half_day': return 'bg-sky-100 text-sky-800'
+      case 'leave': return 'bg-purple-100 text-purple-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h2 className="text-2xl font-bold">Attendance</h2><p className="text-sm text-muted-foreground">Track employee attendance and hours</p></div>
+        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Record Attendance</Button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Total Employees', value: employees.length },
-          { label: 'Present Today', value: attendanceRecords.filter(a => a.status === 'present').length },
-          { label: 'Late Today', value: attendanceRecords.filter(a => a.status === 'late').length },
-          { label: 'Absent Today', value: attendanceRecords.filter(a => a.status === 'absent').length },
+          { label: 'Total Records', value: records.length },
+          { label: 'Present', value: records.filter(a => a.status === 'present').length },
+          { label: 'Late', value: records.filter(a => a.status === 'late').length },
+          { label: 'Absent', value: records.filter(a => a.status === 'absent').length },
         ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
       </div>
       <Card><CardContent className="p-0">
         <ScrollArea className="max-h-[500px]">
           <Table><TableHeader><TableRow>
             <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Date</TableHead><TableHead className="text-xs">Check In</TableHead>
-            <TableHead className="text-xs">Check Out</TableHead><TableHead className="text-xs">Hours</TableHead><TableHead className="text-xs">Status</TableHead>
+            <TableHead className="text-xs">Check Out</TableHead><TableHead className="text-xs">Hours</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
-            {loading ? <TableRow><TableCell colSpan={6} className="text-center py-8">Loading...</TableCell></TableRow> :
-            attendanceRecords.length === 0 ? <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No attendance records. Attendance is tracked per employee.</TableCell></TableRow> :
-            attendanceRecords.map((a: any) => (
+            {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow> :
+            records.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No attendance records</TableCell></TableRow> :
+            records.map((a: any) => (
               <TableRow key={a.id}>
                 <TableCell className="text-xs font-medium">{a.employee?.firstName} {a.employee?.lastName}</TableCell>
                 <TableCell className="text-xs">{new Date(a.date).toLocaleDateString()}</TableCell>
                 <TableCell className="text-xs">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : 'N/A'}</TableCell>
                 <TableCell className="text-xs">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : 'N/A'}</TableCell>
                 <TableCell className="text-xs">{a.hoursWorked}h</TableCell>
-                <TableCell><Badge className={`text-[10px] ${a.status === 'present' ? 'bg-emerald-100 text-emerald-800' : a.status === 'late' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'}`}>{a.status}</Badge></TableCell>
+                <TableCell><Badge className={`text-[10px] ${statusColor(a.status)}`}>{a.status?.replace('_', ' ')}</Badge></TableCell>
+                <TableCell><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(a)}><Edit className="h-3.5 w-3.5" /></Button></TableCell>
               </TableRow>
             ))}
           </TableBody></Table>
         </ScrollArea>
       </CardContent></Card>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg"><DialogHeader><DialogTitle>{editItem ? 'Edit Attendance' : 'Record Attendance'}</DialogTitle></DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <div className="col-span-2"><Label className="text-xs">Employee</Label>
+              <Select value={form.employeeId || ''} onValueChange={v => setForm({ ...form, employeeId: v })} disabled={!!editItem}>
+                <SelectTrigger className="h-9 mt-1"><SelectValue placeholder="Select employee" /></SelectTrigger>
+                <SelectContent>
+                  {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label className="text-xs">Date</Label><Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-9 mt-1" /></div>
+            <div><Label className="text-xs">Status</Label>
+              <Select value={form.status || 'present'} onValueChange={v => setForm({ ...form, status: v })}>
+                <SelectTrigger className="h-9 mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="present">Present</SelectItem>
+                  <SelectItem value="late">Late</SelectItem>
+                  <SelectItem value="absent">Absent</SelectItem>
+                  <SelectItem value="half_day">Half Day</SelectItem>
+                  <SelectItem value="leave">Leave</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label className="text-xs">Check In</Label><Input type="datetime-local" value={form.checkIn || ''} onChange={e => setForm({ ...form, checkIn: e.target.value })} className="h-9 mt-1" /></div>
+            <div><Label className="text-xs">Check Out</Label><Input type="datetime-local" value={form.checkOut || ''} onChange={e => setForm({ ...form, checkOut: e.target.value })} className="h-9 mt-1" /></div>
+            <div className="col-span-2"><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="h-9 mt-1" /></div>
+          </div>
+          <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button onClick={handleSubmit}>{editItem ? 'Update' : 'Record'}</Button></DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

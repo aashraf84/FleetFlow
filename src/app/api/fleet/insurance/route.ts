@@ -30,3 +30,15 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update insurance policy' }, { status: 500 })
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+    await db.insurancePolicy.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete insurance policy' }, { status: 500 })
+  }
+}

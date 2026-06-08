@@ -39,8 +39,24 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
-    const { id, ...data } = body
-    const invoice = await db.invoice.update({ where: { id }, data })
+    const { id, items, ...data } = body
+    if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+
+    // If items are provided, replace them
+    if (items) {
+      await db.invoiceItem.deleteMany({ where: { invoiceId: id } })
+      await db.invoice.update({
+        where: { id },
+        data: {
+          ...data,
+          items: { create: items },
+        },
+      })
+      const updated = await db.invoice.findUnique({ where: { id }, include: { items: true, customer: true } })
+      return NextResponse.json({ data: updated })
+    }
+
+    const invoice = await db.invoice.update({ where: { id }, data, include: { items: true, customer: true } })
     return NextResponse.json({ data: invoice })
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update invoice' }, { status: 500 })
@@ -52,6 +68,7 @@ export async function DELETE(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'ID required' }, { status: 400 })
+    await db.invoiceItem.deleteMany({ where: { invoiceId: id } })
     await db.invoice.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
