@@ -112,6 +112,8 @@ export async function POST(req: NextRequest) {
     const subscriptionPlan = body.subscriptionPlan || 'trial'
     const discount = body.discount || 0
     const discountType = body.discountType || 'percentage'
+    const currency = body.currency || 'USD'
+    const exchangeRate = body.exchangeRate || 1
     
     // ============================================
     // Step 1: Create Client Record
@@ -150,6 +152,7 @@ export async function POST(req: NextRequest) {
           userLimit: subscriptionPlan === 'enterprise' ? 50 : subscriptionPlan === 'annual' ? 25 : subscriptionPlan === 'monthly' ? 10 : 5,
           storageLimit: subscriptionPlan === 'enterprise' ? 10240 : subscriptionPlan === 'annual' ? 5120 : subscriptionPlan === 'monthly' ? 2048 : 512,
           status: 'active',
+          currency: currency,
         }
       })
     }
