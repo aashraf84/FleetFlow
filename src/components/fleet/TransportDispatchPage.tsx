@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Radio, Plus, Loader2 } from 'lucide-react'
+import { Users, MapPin, Clock, Plus, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -66,7 +66,7 @@ export default function TransportDispatchPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h2 className="text-2xl font-bold">Dispatch Center</h2><p className="text-sm text-muted-foreground">Vehicle and driver dispatch management</p></div>
-        <Button onClick={() => { setForm({ origin: '', destination: '', status: 'pending', priority: 'normal', scheduledDeparture: new Date().toISOString() }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Dispatch</Button>
+        <Button onClick={() => { setForm({ origin: '', destination: '', driverId: '', priority: 'normal', status: 'pending', scheduledDeparture: new Date().toISOString(), completedTime: '', instructions: '' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Dispatch</Button>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {[
@@ -115,14 +115,42 @@ export default function TransportDispatchPage() {
             <DialogTitle>New Dispatch Order</DialogTitle>
             <DialogDescription>Create a new dispatch order for a vehicle and driver.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
-            <div><Label className="text-xs">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
-            <div><Label className="text-xs">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.filter(d => d.status === 'active').map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Priority <span className="text-destructive">*</span></Label><Select value={form.priority || 'normal'} onValueChange={v => setForm({...form, priority: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select priority" /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="urgent">Urgent</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Route Name</Label><Input value={form.routeName || ''} onChange={e => setForm({...form, routeName: e.target.value})} className="h-10 mt-1" placeholder="e.g. Route 42 - North" /></div>
-            <div><Label className="text-xs">Scheduled Departure</Label><Input type="datetime-local" value={form.scheduledDeparture ? form.scheduledDeparture.slice(0, 16) : ''} onChange={e => setForm({...form, scheduledDeparture: e.target.value})} className="h-10 mt-1" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Additional dispatch notes..." /></div>
+          <div className="space-y-6 py-2">
+            {/* Assignment Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Users className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.filter(d => d.status === 'active').map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Priority <span className="text-destructive">*</span></Label><Select value={form.priority || 'normal'} onValueChange={v => setForm({...form, priority: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select priority" /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="normal">Normal</SelectItem><SelectItem value="high">High</SelectItem><SelectItem value="urgent">Urgent</SelectItem></SelectContent></Select></div>
+              </div>
+            </div>
+            {/* Route Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <MapPin className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Route</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
+              </div>
+            </div>
+            {/* Schedule Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Clock className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Scheduled Time</Label><Input type="datetime-local" value={form.scheduledDeparture ? form.scheduledDeparture.slice(0, 16) : ''} onChange={e => setForm({...form, scheduledDeparture: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Completed Time</Label><Input type="datetime-local" value={form.completedTime ? form.completedTime.slice(0, 16) : ''} onChange={e => setForm({...form, completedTime: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Status</Label><Select value={form.status || 'pending'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="pending">Pending</SelectItem><SelectItem value="dispatched">Dispatched</SelectItem><SelectItem value="in_transit">In Transit</SelectItem><SelectItem value="completed">Completed</SelectItem><SelectItem value="cancelled">Cancelled</SelectItem></SelectContent></Select></div>
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Instructions</Label><Input value={form.instructions || ''} onChange={e => setForm({...form, instructions: e.target.value})} className="h-10 mt-1" placeholder="e.g. Deliver to loading dock B, call on arrival" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create</Button></DialogFooter>
         </DialogContent>

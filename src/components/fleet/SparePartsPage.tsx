@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Package, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle, Loader2 } from 'lucide-react'
+import { Package, Layers, FileText, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function SparePartsPage() {
@@ -162,16 +162,44 @@ export default function SparePartsPage() {
             <DialogTitle>{editMode ? 'Edit Spare Part' : 'Add Spare Part'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the spare part details below.' : 'Enter the details for the new spare part.'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Part Number <span className="text-destructive">*</span></Label><Input value={form.partNumber || ''} onChange={e => setForm({...form, partNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. BRK-001" required /></div>
-            <div><Label className="text-xs">Name <span className="text-destructive">*</span></Label><Input value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} className="h-10 mt-1" placeholder="e.g. Brake Pad Set" required /></div>
-            <div><Label className="text-xs">Category</Label><Input value={form.category || ''} onChange={e => setForm({...form, category: e.target.value})} className="h-10 mt-1" placeholder="e.g. Brakes, Engine, Electrical" /></div>
-            <div><Label className="text-xs">Supplier</Label><Input value={form.supplier || ''} onChange={e => setForm({...form, supplier: e.target.value})} className="h-10 mt-1" placeholder="e.g. AutoParts Co." /></div>
-            <div><Label className="text-xs">Quantity <span className="text-destructive">*</span></Label><Input type="number" value={form.quantityInStock ?? ''} onChange={e => setForm({...form, quantityInStock: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" required /></div>
-            <div><Label className="text-xs">Reorder Level</Label><Input type="number" value={form.reorderLevel ?? ''} onChange={e => setForm({...form, reorderLevel: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="5" /></div>
-            <div><Label className="text-xs">Unit Cost ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.unitCost ?? ''} onChange={e => setForm({...form, unitCost: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0.00" required /></div>
-            <div><Label className="text-xs">Selling Price ($)</Label><Input type="number" value={form.sellingPrice ?? ''} onChange={e => setForm({...form, sellingPrice: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Location</Label><Input value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A, Shelf 3" /></div>
+          <div className="space-y-6 py-2">
+            {/* Section: Part Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Package className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Part Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Name <span className="text-destructive">*</span></Label><Input value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} className="h-10 mt-1" placeholder="e.g. Brake Pad Set" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Part Number <span className="text-destructive">*</span></Label><Input value={form.partNumber || ''} onChange={e => setForm({...form, partNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. BRK-001" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Category</Label><Input value={form.category || ''} onChange={e => setForm({...form, category: e.target.value})} className="h-10 mt-1" placeholder="e.g. Brakes, Engine, Electrical" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Supplier</Label><Input value={form.supplier || ''} onChange={e => setForm({...form, supplier: e.target.value})} className="h-10 mt-1" placeholder="e.g. AutoParts Co." /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Location</Label><Input value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A, Shelf 3" /></div>
+              </div>
+            </div>
+            {/* Section: Inventory */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Layers className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Inventory</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Quantity <span className="text-destructive">*</span></Label><Input type="number" value={form.quantityInStock ?? ''} onChange={e => setForm({...form, quantityInStock: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Reorder Level</Label><Input type="number" value={form.reorderLevel ?? ''} onChange={e => setForm({...form, reorderLevel: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="5" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Unit Cost ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.unitCost ?? ''} onChange={e => setForm({...form, unitCost: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0.00" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Selling Price ($)</Label><Input type="number" value={form.sellingPrice ?? ''} onChange={e => setForm({...form, sellingPrice: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0.00" /></div>
+              </div>
+            </div>
+            {/* Section: Additional */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="min-h-[80px] mt-1" placeholder="Additional notes about this part" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>
@@ -179,7 +207,7 @@ export default function SparePartsPage() {
 
       {/* Adjust Stock Dialog */}
       <Dialog open={adjustOpen} onOpenChange={(v) => { if (!saving) setAdjustOpen(v) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Adjust Stock — {adjustPart?.name}</DialogTitle>
             <DialogDescription>Increase or decrease the stock level for this part.</DialogDescription>

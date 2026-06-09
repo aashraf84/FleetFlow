@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Cog, Plus, Pencil, Trash2, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Cog, Wrench, Clock, DollarSign, Plus, Pencil, Trash2, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -279,35 +279,64 @@ export default function WorkshopPage() {
             <DialogTitle>Create Job Card</DialogTitle>
             <DialogDescription>Create a new job card from an existing maintenance record.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Maintenance Record <span className="text-destructive">*</span></Label>
-              <Select value={createForm.maintenanceId || ''} onValueChange={v => setCreateForm({ ...createForm, maintenanceId: v })} required>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select maintenance record" /></SelectTrigger>
-                <SelectContent>
-                  {availableMaintenance.length === 0 ? (
-                    <SelectItem value="_none" disabled>No available maintenance records</SelectItem>
-                  ) : (
-                    availableMaintenance.map((m: any) => (
-                      <SelectItem key={m.id} value={m.id}>
-                        {m.vehicle ? `${m.vehicle.make} ${m.vehicle.model}` : 'Unknown'} — {m.type?.replace('_', ' ')} — {m.description?.substring(0, 40)}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-6 py-2">
+            {/* Assignment */}
             <div>
-              <Label className="text-xs">Technician Name <span className="text-destructive">*</span></Label>
-              <Input value={createForm.technician || ''} onChange={e => setCreateForm({ ...createForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Wrench className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Maintenance Record <span className="text-destructive">*</span></Label>
+                  <Select value={createForm.maintenanceId || ''} onValueChange={v => setCreateForm({ ...createForm, maintenanceId: v })} required>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select maintenance record" /></SelectTrigger>
+                    <SelectContent>
+                      {availableMaintenance.length === 0 ? (
+                        <SelectItem value="_none" disabled>No available maintenance records</SelectItem>
+                      ) : (
+                        availableMaintenance.map((m: any) => (
+                          <SelectItem key={m.id} value={m.id}>
+                            {m.vehicle ? `${m.vehicle.make} ${m.vehicle.model}` : 'Unknown'} — {m.type?.replace('_', ' ')} — {m.description?.substring(0, 40)}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Technician <span className="text-destructive">*</span></Label>
+                  <Input value={createForm.technician || ''} onChange={e => setCreateForm({ ...createForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" required />
+                </div>
+              </div>
             </div>
+
+            {/* Estimates */}
             <div>
-              <Label className="text-xs">Estimated Hours</Label>
-              <Input type="number" step="0.5" value={createForm.estimatedHours || ''} onChange={e => setCreateForm({ ...createForm, estimatedHours: e.target.value })} className="h-10 mt-1" placeholder="0" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Clock className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Estimates</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Estimated Hours</Label>
+                  <Input type="number" step="0.5" value={createForm.estimatedHours || ''} onChange={e => setCreateForm({ ...createForm, estimatedHours: e.target.value })} className="h-10 mt-1" placeholder="0" />
+                </div>
+              </div>
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Optional notes about the job" />
+
+            {/* Costs */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Costs</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-2">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Optional notes about the job" />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -324,35 +353,65 @@ export default function WorkshopPage() {
             <DialogTitle>Edit Job Card</DialogTitle>
             <DialogDescription>Update the job card details, hours, and costs.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="space-y-6 py-2">
+            {/* Assignment */}
             <div>
-              <Label className="text-xs">Technician</Label>
-              <Input value={editForm.technician || ''} onChange={e => setEditForm({ ...editForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Wrench className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Technician</Label>
+                  <Input value={editForm.technician || ''} onChange={e => setEditForm({ ...editForm, technician: e.target.value })} className="h-10 mt-1" placeholder="Enter technician name" />
+                </div>
+              </div>
             </div>
-            <div className="col-span-1 md:col-span-2"></div>
+
+            {/* Estimates */}
             <div>
-              <Label className="text-xs">Estimated Hours</Label>
-              <Input type="number" step="0.5" value={editForm.estimatedHours || 0} onChange={e => setEditForm({ ...editForm, estimatedHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Clock className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Estimates</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Estimated Hours</Label>
+                  <Input type="number" step="0.5" value={editForm.estimatedHours || 0} onChange={e => setEditForm({ ...editForm, estimatedHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Actual Hours</Label>
+                  <Input type="number" step="0.5" value={editForm.actualHours || 0} onChange={e => setEditForm({ ...editForm, actualHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+                </div>
+              </div>
             </div>
+
+            {/* Costs */}
             <div>
-              <Label className="text-xs">Actual Hours</Label>
-              <Input type="number" step="0.5" value={editForm.actualHours || 0} onChange={e => setEditForm({ ...editForm, actualHours: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
-            </div>
-            <div>
-              <Label className="text-xs">Labor Cost ($)</Label>
-              <Input type="number" step="0.01" value={editForm.laborCost || 0} onChange={e => setEditForm({ ...editForm, laborCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
-            </div>
-            <div>
-              <Label className="text-xs">Parts Cost ($)</Label>
-              <Input type="number" step="0.01" value={editForm.partsCost || 0} onChange={e => setEditForm({ ...editForm, partsCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
-            </div>
-            <div className="col-span-1 md:col-span-2 p-3 bg-muted rounded-md">
-              <span className="text-xs text-muted-foreground">Total Cost: </span>
-              <span className="font-bold">${((editForm.laborCost || 0) + (editForm.partsCost || 0)).toLocaleString()}</span>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes..." />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Costs</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Labor Cost ($)</Label>
+                  <Input type="number" step="0.01" value={editForm.laborCost || 0} onChange={e => setEditForm({ ...editForm, laborCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Parts Cost ($)</Label>
+                  <Input type="number" step="0.01" value={editForm.partsCost || 0} onChange={e => setEditForm({ ...editForm, partsCost: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" />
+                </div>
+                <div className="flex items-end">
+                  <div className="w-full p-3 bg-muted rounded-md">
+                    <span className="text-xs font-medium text-muted-foreground">Total Cost: </span>
+                    <span className="font-bold">${((editForm.laborCost || 0) + (editForm.partsCost || 0)).toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="col-span-1 md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes..." />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Route, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Route, Users, MapPin, Clock, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function TransportTripsPage() {
@@ -68,10 +68,13 @@ export default function TransportTripsPage() {
       id: trip.id,
       driverId: trip.driverId,
       vehicleId: trip.vehicleId || '',
+      dispatchOrderId: trip.dispatchOrderId || '',
       origin: trip.origin,
       destination: trip.destination,
       startTime: trip.startTime ? new Date(trip.startTime).toISOString().slice(0, 16) : '',
+      endTime: trip.endTime ? new Date(trip.endTime).toISOString().slice(0, 16) : '',
       distance: trip.distance || 0,
+      status: trip.status || 'planned',
       notes: trip.notes || '',
     })
     setEditMode(true)
@@ -124,7 +127,7 @@ export default function TransportTripsPage() {
       <div className="flex items-center justify-between">
         <div><h2 className="text-2xl font-bold">Trip Management</h2><p className="text-sm text-muted-foreground">Track trip distances, ETAs, and performance</p></div>
         <Button onClick={() => {
-          setForm({ driverId: '', vehicleId: '', origin: '', destination: '', startTime: new Date().toISOString().slice(0, 16), distance: 0, notes: '' })
+          setForm({ driverId: '', vehicleId: '', dispatchOrderId: '', origin: '', destination: '', startTime: new Date().toISOString().slice(0, 16), endTime: '', distance: 0, status: 'planned', notes: '' })
           setEditMode(false)
           setOpen(true)
         }}><Plus className="h-4 w-4 mr-2" />New Trip</Button>
@@ -193,14 +196,44 @@ export default function TransportTripsPage() {
             <DialogTitle>{editMode ? 'Edit Trip' : 'New Trip'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the trip details below.' : 'Fill in the details to create a new trip.'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
-            <div><Label className="text-xs">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
-            <div><Label className="text-xs">Start Time <span className="text-destructive">*</span></Label><Input type="datetime-local" value={form.startTime || ''} onChange={e => setForm({...form, startTime: e.target.value})} className="h-10 mt-1" required /></div>
-            <div><Label className="text-xs">Est. Distance (km)</Label><Input type="number" value={form.distance || ''} onChange={e => setForm({...form, distance: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Trip notes..." /></div>
+          <div className="space-y-6 py-2">
+            {/* Assignment Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Users className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Driver <span className="text-destructive">*</span></Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Dispatch Order</Label><Input value={form.dispatchOrderId || ''} onChange={e => setForm({...form, dispatchOrderId: e.target.value})} className="h-10 mt-1" placeholder="e.g. ORD-001" /></div>
+              </div>
+            </div>
+            {/* Route Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <MapPin className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Route</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Origin <span className="text-destructive">*</span></Label><Input value={form.origin || ''} onChange={e => setForm({...form, origin: e.target.value})} className="h-10 mt-1" placeholder="e.g. Warehouse A" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Destination <span className="text-destructive">*</span></Label><Input value={form.destination || ''} onChange={e => setForm({...form, destination: e.target.value})} className="h-10 mt-1" placeholder="e.g. Client Site B" required /></div>
+              </div>
+            </div>
+            {/* Schedule Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Clock className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Start Time <span className="text-destructive">*</span></Label><Input type="datetime-local" value={form.startTime || ''} onChange={e => setForm({...form, startTime: e.target.value})} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">End Time</Label><Input type="datetime-local" value={form.endTime || ''} onChange={e => setForm({...form, endTime: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Est. Distance (km)</Label><Input type="number" value={form.distance || ''} onChange={e => setForm({...form, distance: parseFloat(e.target.value) || 0})} className="h-10 mt-1" placeholder="0" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Status</Label><Select value={form.status || 'planned'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="planned">Planned</SelectItem><SelectItem value="in_progress">In Progress</SelectItem><SelectItem value="completed">Completed</SelectItem><SelectItem value="cancelled">Cancelled</SelectItem></SelectContent></Select></div>
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Trip notes..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update Trip' : 'Create Trip'}</Button></DialogFooter>
         </DialogContent>

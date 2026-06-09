@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, Pencil, MoreHorizontal, CheckCircle2, RotateCcw, Trash2, XCircle, Loader2
+  Plus, Pencil, MoreHorizontal, DollarSign, FileText, CheckCircle2, RotateCcw, Trash2, XCircle, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -227,67 +227,78 @@ export default function FinancePaymentsPage() {
             <DialogTitle>{editId ? 'Edit Payment' : 'Record Payment'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the payment details below.' : 'Fill in the details to record a new payment.'}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Invoice (optional)</Label>
-                <Select value={form.invoiceId || '_none'} onValueChange={v => setForm({ ...form, invoiceId: v === '_none' ? '' : v })}>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an invoice" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">No invoice</SelectItem>
-                  {eligibleInvoices.map(inv => (
-                    <SelectItem key={inv.id} value={inv.id}>
-                      {inv.invoiceNumber} - {fmt(inv.totalAmount)} ({inv.status})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-6 py-2">
+            {/* Payment Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Payment Details</h3>
               </div>
-              <div>
-                <Label className="text-xs">Amount ($) <span className="text-destructive">*</span></Label>
-                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Method <span className="text-destructive">*</span></Label>
-                <Select value={form.method || 'cash'} onValueChange={v => setForm({ ...form, method: v })}>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
-                    <SelectItem value="online">Online</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Reference</Label>
-                <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-10 mt-1" placeholder="Transaction reference number" />
-              </div>
-              <div>
-                <Label className="text-xs">Payment Date <span className="text-destructive">*</span></Label>
-                <Input type="date" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} className="h-10 mt-1" required />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Invoice (optional)</Label>
+                  <Select value={form.invoiceId || '_none'} onValueChange={v => setForm({ ...form, invoiceId: v === '_none' ? '' : v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an invoice" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">No invoice</SelectItem>
+                      {eligibleInvoices.map(inv => (
+                        <SelectItem key={inv.id} value={inv.id}>
+                          {inv.invoiceNumber} - {fmt(inv.totalAmount)} ({inv.status})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Amount ($) <span className="text-destructive">*</span></Label>
+                  <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Method <span className="text-destructive">*</span></Label>
+                  <Select value={form.method || 'cash'} onValueChange={v => setForm({ ...form, method: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cheque">Cheque</SelectItem>
+                      <SelectItem value="online">Online</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Status</Label>
-                <Select value={form.status || 'completed'} onValueChange={v => setForm({ ...form, status: v })}>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
+
+            {/* Reference */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Reference</h3>
               </div>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Reference</Label>
+                  <Input value={form.reference || ''} onChange={e => setForm({ ...form, reference: e.target.value })} className="h-10 mt-1" placeholder="Transaction reference number" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Payment Date <span className="text-destructive">*</span></Label>
+                  <Input type="date" value={form.paidDate || ''} onChange={e => setForm({ ...form, paidDate: e.target.value })} className="h-10 mt-1" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                  <Select value={form.status || 'completed'} onValueChange={v => setForm({ ...form, status: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>

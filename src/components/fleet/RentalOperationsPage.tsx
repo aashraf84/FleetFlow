@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ArrowLeftRight, LogIn, LogOut, Clock, AlertTriangle, Search } from 'lucide-react'
+import { FileText, ArrowLeftRight, LogIn, LogOut, Clock, AlertTriangle, Search } from 'lucide-react'
 import { toast } from 'sonner'
 
 const opStatusColors: Record<string, string> = {
@@ -297,41 +297,65 @@ export default function RentalOperationsPage() {
 
       {/* Record Pickup Dialog */}
       <Dialog open={pickupOpen} onOpenChange={setPickupOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Pickup</DialogTitle>
             <DialogDescription>Record vehicle pickup details and activate the rental contract.</DialogDescription>
           </DialogHeader>
           {selectedContract && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="col-span-1 md:col-span-2 bg-muted p-3 rounded-md text-sm space-y-1">
-                <p><span className="font-medium">Contract:</span> {selectedContract.contractNumber}</p>
-                <p><span className="font-medium">Customer:</span> {selectedContract.customer ? `${selectedContract.customer.firstName} ${selectedContract.customer.lastName}` : 'N/A'}</p>
-                <p><span className="font-medium">Vehicle:</span> {selectedContract.vehicle ? `${selectedContract.vehicle.make} ${selectedContract.vehicle.model}` : 'N/A'}</p>
+            <div className="space-y-6 py-2">
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contract Details</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-3 bg-muted p-3 rounded-md text-sm space-y-1">
+                    <p><span className="font-medium">Contract:</span> {selectedContract.contractNumber}</p>
+                    <p><span className="font-medium">Customer:</span> {selectedContract.customer ? `${selectedContract.customer.firstName} ${selectedContract.customer.lastName}` : 'N/A'}</p>
+                    <p><span className="font-medium">Vehicle:</span> {selectedContract.vehicle ? `${selectedContract.vehicle.make} ${selectedContract.vehicle.model}` : 'N/A'}</p>
+                  </div>
+                </div>
               </div>
               <div>
-                <Label>Mileage Out (km) *</Label>
-                <Input
-                  type="number"
-                  value={pickupForm.mileageOut}
-                  onChange={e => setPickupForm({ ...pickupForm, mileageOut: e.target.value })}
-                  className="h-10 mt-1"
-                  placeholder="Current odometer reading"
-                  required
-                />
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <LogIn className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Pickup Information</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Mileage Out (km) *</Label>
+                    <Input
+                      type="number"
+                      value={pickupForm.mileageOut}
+                      onChange={e => setPickupForm({ ...pickupForm, mileageOut: e.target.value })}
+                      className="h-10 mt-1"
+                      placeholder="Current odometer reading"
+                      required
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="col-span-1 md:col-span-2">
-                <Label>Condition Notes</Label>
-                <Textarea
-                  value={pickupForm.conditionNotes}
-                  onChange={e => setPickupForm({ ...pickupForm, conditionNotes: e.target.value })}
-                  className="mt-1 min-h-[80px]"
-                  rows={3}
-                  placeholder="Note any pre-existing damage or conditions..."
-                />
-              </div>
-              <div className="col-span-1 md:col-span-2 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 p-3 rounded-md text-xs">
-                Recording pickup will activate the contract and mark the vehicle as rented.
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-3">
+                    <Label className="text-xs font-medium text-muted-foreground">Condition Notes</Label>
+                    <Textarea
+                      value={pickupForm.conditionNotes}
+                      onChange={e => setPickupForm({ ...pickupForm, conditionNotes: e.target.value })}
+                      className="mt-1 min-h-[80px]"
+                      rows={3}
+                      placeholder="Note any pre-existing damage or conditions..."
+                    />
+                  </div>
+                  <div className="col-span-1 md:col-span-3 bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 p-3 rounded-md text-xs">
+                    Recording pickup will activate the contract and mark the vehicle as rented.
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -346,70 +370,94 @@ export default function RentalOperationsPage() {
 
       {/* Record Return Dialog */}
       <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Return</DialogTitle>
             <DialogDescription>Record vehicle return details including mileage, fuel level, and condition.</DialogDescription>
           </DialogHeader>
           {selectedContract && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-              <div className="col-span-1 md:col-span-2 bg-muted p-3 rounded-md text-sm space-y-1">
-                <p><span className="font-medium">Contract:</span> {selectedContract.contractNumber}</p>
-                <p><span className="font-medium">Customer:</span> {selectedContract.customer ? `${selectedContract.customer.firstName} ${selectedContract.customer.lastName}` : 'N/A'}</p>
-                <p><span className="font-medium">Vehicle:</span> {selectedContract.vehicle ? `${selectedContract.vehicle.make} ${selectedContract.vehicle.model}` : 'N/A'}</p>
-                <p><span className="font-medium">Mileage Out:</span> {selectedContract.mileageOut?.toLocaleString() || 0} km</p>
-              </div>
+            <div className="space-y-6 py-2">
               <div>
-                <Label>Mileage In (km) *</Label>
-                <Input
-                  type="number"
-                  value={returnForm.mileageIn}
-                  onChange={e => setReturnForm({ ...returnForm, mileageIn: e.target.value })}
-                  className="h-10 mt-1"
-                  placeholder="Current odometer reading"
-                  required
-                />
-              </div>
-              <div>
-                <Label>Fuel Level</Label>
-                <div className="flex gap-2 mt-2">
-                  {['empty', 'quarter', 'half', 'three_quarter', 'full'].map(level => (
-                    <Button
-                      key={level}
-                      variant={returnForm.fuelLevel === level ? 'default' : 'outline'}
-                      size="sm"
-                      className="h-8 text-[10px] capitalize"
-                      onClick={() => setReturnForm({ ...returnForm, fuelLevel: level })}
-                    >
-                      {level.replace('_', ' ')}
-                    </Button>
-                  ))}
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contract Details</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-3 bg-muted p-3 rounded-md text-sm space-y-1">
+                    <p><span className="font-medium">Contract:</span> {selectedContract.contractNumber}</p>
+                    <p><span className="font-medium">Customer:</span> {selectedContract.customer ? `${selectedContract.customer.firstName} ${selectedContract.customer.lastName}` : 'N/A'}</p>
+                    <p><span className="font-medium">Vehicle:</span> {selectedContract.vehicle ? `${selectedContract.vehicle.make} ${selectedContract.vehicle.model}` : 'N/A'}</p>
+                    <p><span className="font-medium">Mileage Out:</span> {selectedContract.mileageOut?.toLocaleString() || 0} km</p>
+                  </div>
                 </div>
               </div>
-              <div className="col-span-1 md:col-span-2">
-                <Label>Condition Notes</Label>
-                <Textarea
-                  value={returnForm.conditionNotes}
-                  onChange={e => setReturnForm({ ...returnForm, conditionNotes: e.target.value })}
-                  className="mt-1 min-h-[80px]"
-                  rows={3}
-                  placeholder="Note any damage, issues, or observations..."
-                />
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <LogOut className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Return Information</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Mileage In (km) *</Label>
+                    <Input
+                      type="number"
+                      value={returnForm.mileageIn}
+                      onChange={e => setReturnForm({ ...returnForm, mileageIn: e.target.value })}
+                      className="h-10 mt-1"
+                      placeholder="Current odometer reading"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Fuel Level</Label>
+                    <div className="flex gap-2 mt-2">
+                      {['empty', 'quarter', 'half', 'three_quarter', 'full'].map(level => (
+                        <Button
+                          key={level}
+                          variant={returnForm.fuelLevel === level ? 'default' : 'outline'}
+                          size="sm"
+                          className="h-8 text-[10px] capitalize"
+                          onClick={() => setReturnForm({ ...returnForm, fuelLevel: level })}
+                        >
+                          {level.replace('_', ' ')}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
-              {returnForm.mileageIn && selectedContract.mileageOut && (
-                <div className="col-span-1 md:col-span-2 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 p-3 rounded-md text-xs space-y-1">
-                  <p><span className="font-medium">Distance Used:</span> {Math.max(0, parseFloat(returnForm.mileageIn) - selectedContract.mileageOut).toLocaleString()} km</p>
-                  {selectedContract.mileageLimit && (
-                    <p><span className="font-medium">Mileage Limit:</span> {Number(selectedContract.mileageLimit).toLocaleString()} km
-                      {parseFloat(returnForm.mileageIn) - selectedContract.mileageOut > selectedContract.mileageLimit && (
-                        <span className="text-red-600 font-bold ml-2">OVER LIMIT!</span>
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-3">
+                    <Label className="text-xs font-medium text-muted-foreground">Condition Notes</Label>
+                    <Textarea
+                      value={returnForm.conditionNotes}
+                      onChange={e => setReturnForm({ ...returnForm, conditionNotes: e.target.value })}
+                      className="mt-1 min-h-[80px]"
+                      rows={3}
+                      placeholder="Note any damage, issues, or observations..."
+                    />
+                  </div>
+                  {returnForm.mileageIn && selectedContract.mileageOut && (
+                    <div className="col-span-1 md:col-span-3 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 p-3 rounded-md text-xs space-y-1">
+                      <p><span className="font-medium">Distance Used:</span> {Math.max(0, parseFloat(returnForm.mileageIn) - selectedContract.mileageOut).toLocaleString()} km</p>
+                      {selectedContract.mileageLimit && (
+                        <p><span className="font-medium">Mileage Limit:</span> {Number(selectedContract.mileageLimit).toLocaleString()} km
+                          {parseFloat(returnForm.mileageIn) - selectedContract.mileageOut > selectedContract.mileageLimit && (
+                            <span className="text-red-600 font-bold ml-2">OVER LIMIT!</span>
+                          )}
+                        </p>
                       )}
-                    </p>
+                    </div>
                   )}
+                  <div className="col-span-1 md:col-span-3 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 p-3 rounded-md text-xs">
+                    Recording return will complete the contract and mark the vehicle as available.
+                  </div>
                 </div>
-              )}
-              <div className="col-span-1 md:col-span-2 bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 p-3 rounded-md text-xs">
-                Recording return will complete the contract and mark the vehicle as available.
               </div>
             </div>
           )}
@@ -424,20 +472,32 @@ export default function RentalOperationsPage() {
 
       {/* Timeline Dialog */}
       <Dialog open={timelineOpen} onOpenChange={setTimelineOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Operations Timeline — {timelineContract?.contractNumber}</DialogTitle>
             <DialogDescription>View the full timeline of pickup, return, and status change events.</DialogDescription>
           </DialogHeader>
           {timelineContract && (
-            <div className="py-4">
-              <div className="bg-muted p-3 rounded-md text-sm mb-4 space-y-1">
-                <p><span className="font-medium">Customer:</span> {timelineContract.customer ? `${timelineContract.customer.firstName} ${timelineContract.customer.lastName}` : 'N/A'}</p>
-                <p><span className="font-medium">Vehicle:</span> {timelineContract.vehicle ? `${timelineContract.vehicle.make} ${timelineContract.vehicle.model}` : 'N/A'}</p>
-                <p><span className="font-medium">Period:</span> {fmtDate(timelineContract.startDate)} - {fmtDate(timelineContract.endDate)}</p>
+            <div className="space-y-6 py-2">
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contract Summary</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="col-span-1 md:col-span-3 bg-muted p-3 rounded-md text-sm space-y-1">
+                    <p><span className="font-medium">Customer:</span> {timelineContract.customer ? `${timelineContract.customer.firstName} ${timelineContract.customer.lastName}` : 'N/A'}</p>
+                    <p><span className="font-medium">Vehicle:</span> {timelineContract.vehicle ? `${timelineContract.vehicle.make} ${timelineContract.vehicle.model}` : 'N/A'}</p>
+                    <p><span className="font-medium">Period:</span> {fmtDate(timelineContract.startDate)} - {fmtDate(timelineContract.endDate)}</p>
+                  </div>
+                </div>
               </div>
-
-              <div className="space-y-0">
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Timeline Events</h3>
+                </div>
+                <div className="space-y-0">
                 {buildTimeline(timelineContract).map((event, idx) => {
                   const typeStyles: Record<string, string> = {
                     created: 'border-gray-300 bg-gray-50',
@@ -471,6 +531,7 @@ export default function RentalOperationsPage() {
                     </div>
                   )
                 })}
+                </div>
               </div>
             </div>
           )}

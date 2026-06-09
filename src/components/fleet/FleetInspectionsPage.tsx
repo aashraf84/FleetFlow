@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ClipboardCheck, Plus, Pencil, Trash2, Eye } from 'lucide-react'
+import { Car, ClipboardCheck, FileText, Plus, Pencil, Trash2, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -246,131 +246,160 @@ export default function FleetInspectionsPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Inspection</DialogTitle><DialogDescription>Create a new vehicle inspection record with condition assessments.</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2">
-              <Label>Vehicle *</Label>
-              <Select value={createForm.vehicleId || ''} onValueChange={v => setCreateForm({ ...createForm, vehicleId: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle for inspection" /></SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.vehicleNumber})</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-6 py-2">
+            {/* Vehicle & Type */}
             <div>
-              <Label>Inspector Name *</Label>
-              <Input value={createForm.inspector || ''} onChange={e => setCreateForm({ ...createForm, inspector: e.target.value })} className="h-10 mt-1" placeholder="Enter inspector name" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Car className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Vehicle & Type</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Vehicle <span className="text-destructive">*</span></Label>
+                  <Select value={createForm.vehicleId || ''} onValueChange={v => setCreateForm({ ...createForm, vehicleId: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle for inspection" /></SelectTrigger>
+                    <SelectContent>
+                      {vehicles.map((v: any) => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.vehicleNumber})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Inspector <span className="text-destructive">*</span></Label>
+                  <Input value={createForm.inspector || ''} onChange={e => setCreateForm({ ...createForm, inspector: e.target.value })} className="h-10 mt-1" placeholder="Enter inspector name" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Inspection Date</Label>
+                  <Input type="date" value={createForm.inspectionDate || ''} onChange={e => setCreateForm({ ...createForm, inspectionDate: e.target.value })} className="h-10 mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Type</Label>
+                  <Select value={createForm.type || 'routine'} onValueChange={v => setCreateForm({ ...createForm, type: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select inspection type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="routine">Routine</SelectItem>
+                      <SelectItem value="safety">Safety</SelectItem>
+                      <SelectItem value="pre_rental">Pre-Rental</SelectItem>
+                      <SelectItem value="post_rental">Post-Rental</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+
+            {/* Condition Assessment */}
             <div>
-              <Label>Inspection Date</Label>
-              <Input type="date" value={createForm.inspectionDate || ''} onChange={e => setCreateForm({ ...createForm, inspectionDate: e.target.value })} className="h-10 mt-1" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Condition Assessment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Overall Condition</Label>
+                  <Select value={createForm.overallCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, overallCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Exterior Condition</Label>
+                  <Select value={createForm.exteriorCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, exteriorCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Interior Condition</Label>
+                  <Select value={createForm.interiorCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, interiorCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Engine Condition</Label>
+                  <Select value={createForm.engineCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, engineCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Tire Condition</Label>
+                  <Select value={createForm.tireCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, tireCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Brakes Condition</Label>
+                  <Select value={createForm.brakesCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, brakesCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+
+            {/* Additional */}
             <div>
-              <Label>Type</Label>
-              <Select value={createForm.type || 'routine'} onValueChange={v => setCreateForm({ ...createForm, type: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select inspection type" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="routine">Routine</SelectItem>
-                  <SelectItem value="safety">Safety</SelectItem>
-                  <SelectItem value="pre_rental">Pre-Rental</SelectItem>
-                  <SelectItem value="post_rental">Post-Rental</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Overall Condition</Label>
-              <Select value={createForm.overallCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, overallCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Exterior Condition</Label>
-              <Select value={createForm.exteriorCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, exteriorCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Interior Condition</Label>
-              <Select value={createForm.interiorCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, interiorCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Engine Condition</Label>
-              <Select value={createForm.engineCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, engineCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Tire Condition</Label>
-              <Select value={createForm.tireCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, tireCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Brake Condition</Label>
-              <Select value={createForm.brakesCondition || 'good'} onValueChange={v => setCreateForm({ ...createForm, brakesCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Issues Found</Label>
-              <Textarea value={createForm.issues || ''} onChange={e => setCreateForm({ ...createForm, issues: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe any issues found during inspection" />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes or observations" />
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={createForm.status || 'pending'} onValueChange={v => setCreateForm({ ...createForm, status: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="passed">Passed</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                  <SelectItem value="conditional">Conditional</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Next Inspection Date</Label>
-              <Input type="date" value={createForm.nextInspectionDate || ''} onChange={e => setCreateForm({ ...createForm, nextInspectionDate: e.target.value })} className="h-10 mt-1" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Issues Found</Label>
+                  <Textarea value={createForm.issues || ''} onChange={e => setCreateForm({ ...createForm, issues: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe any issues found during inspection" />
+                </div>
+                <div className="col-span-1 md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={createForm.notes || ''} onChange={e => setCreateForm({ ...createForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes or observations" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                  <Select value={createForm.status || 'pending'} onValueChange={v => setCreateForm({ ...createForm, status: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="passed">Passed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="conditional">Conditional</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Next Inspection Date</Label>
+                  <Input type="date" value={createForm.nextInspectionDate || ''} onChange={e => setCreateForm({ ...createForm, nextInspectionDate: e.target.value })} className="h-10 mt-1" />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -384,118 +413,147 @@ export default function FleetInspectionsPage() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Edit Inspection</DialogTitle><DialogDescription>Update the inspection record details and condition assessments.</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="space-y-6 py-2">
+            {/* Vehicle & Type */}
             <div>
-              <Label>Inspector Name *</Label>
-              <Input value={editForm.inspector || ''} onChange={e => setEditForm({ ...editForm, inspector: e.target.value })} className="h-10 mt-1" placeholder="Enter inspector name" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Car className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Vehicle & Type</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Inspector <span className="text-destructive">*</span></Label>
+                  <Input value={editForm.inspector || ''} onChange={e => setEditForm({ ...editForm, inspector: e.target.value })} className="h-10 mt-1" placeholder="Enter inspector name" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Type</Label>
+                  <Select value={editForm.type || 'routine'} onValueChange={v => setEditForm({ ...editForm, type: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select inspection type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="routine">Routine</SelectItem>
+                      <SelectItem value="safety">Safety</SelectItem>
+                      <SelectItem value="pre_rental">Pre-Rental</SelectItem>
+                      <SelectItem value="post_rental">Post-Rental</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+
+            {/* Condition Assessment */}
             <div>
-              <Label>Type</Label>
-              <Select value={editForm.type || 'routine'} onValueChange={v => setEditForm({ ...editForm, type: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select inspection type" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="routine">Routine</SelectItem>
-                  <SelectItem value="safety">Safety</SelectItem>
-                  <SelectItem value="pre_rental">Pre-Rental</SelectItem>
-                  <SelectItem value="post_rental">Post-Rental</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <ClipboardCheck className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Condition Assessment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Overall Condition</Label>
+                  <Select value={editForm.overallCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, overallCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Exterior Condition</Label>
+                  <Select value={editForm.exteriorCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, exteriorCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Interior Condition</Label>
+                  <Select value={editForm.interiorCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, interiorCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Engine Condition</Label>
+                  <Select value={editForm.engineCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, engineCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Tire Condition</Label>
+                  <Select value={editForm.tireCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, tireCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Brakes Condition</Label>
+                  <Select value={editForm.brakesCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, brakesCondition: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="excellent">Excellent</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
             </div>
+
+            {/* Additional */}
             <div>
-              <Label>Overall Condition</Label>
-              <Select value={editForm.overallCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, overallCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Exterior Condition</Label>
-              <Select value={editForm.exteriorCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, exteriorCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Interior Condition</Label>
-              <Select value={editForm.interiorCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, interiorCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Engine Condition</Label>
-              <Select value={editForm.engineCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, engineCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Tire Condition</Label>
-              <Select value={editForm.tireCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, tireCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Brake Condition</Label>
-              <Select value={editForm.brakesCondition || 'good'} onValueChange={v => setEditForm({ ...editForm, brakesCondition: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select condition" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="excellent">Excellent</SelectItem>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={editForm.status || 'pending'} onValueChange={v => setEditForm({ ...editForm, status: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="passed">Passed</SelectItem>
-                  <SelectItem value="failed">Failed</SelectItem>
-                  <SelectItem value="conditional">Conditional</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Issues Found</Label>
-              <Textarea value={editForm.issues || ''} onChange={e => setEditForm({ ...editForm, issues: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe any issues found during inspection" />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes or observations" />
-            </div>
-            <div>
-              <Label>Next Inspection Date</Label>
-              <Input type="date" value={editForm.nextInspectionDate || ''} onChange={e => setEditForm({ ...editForm, nextInspectionDate: e.target.value })} className="h-10 mt-1" />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Issues Found</Label>
+                  <Textarea value={editForm.issues || ''} onChange={e => setEditForm({ ...editForm, issues: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe any issues found during inspection" />
+                </div>
+                <div className="col-span-1 md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Additional notes or observations" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                  <Select value={editForm.status || 'pending'} onValueChange={v => setEditForm({ ...editForm, status: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="passed">Passed</SelectItem>
+                      <SelectItem value="failed">Failed</SelectItem>
+                      <SelectItem value="conditional">Conditional</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Next Inspection Date</Label>
+                  <Input type="date" value={editForm.nextInspectionDate || ''} onChange={e => setEditForm({ ...editForm, nextInspectionDate: e.target.value })} className="h-10 mt-1" />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -507,32 +565,43 @@ export default function FleetInspectionsPage() {
 
       {/* View Details Dialog */}
       <Dialog open={viewOpen} onOpenChange={setViewOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Inspection Details</DialogTitle><DialogDescription>View the full inspection record and condition assessments.</DialogDescription></DialogHeader>
           {selectedInspection && (
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-muted-foreground">Vehicle</p>
-                  <p className="text-sm font-medium">{selectedInspection.vehicle ? `${selectedInspection.vehicle.make} ${selectedInspection.vehicle.model} (${selectedInspection.vehicle.vehicleNumber})` : 'N/A'}</p>
+            <div className="space-y-6 py-2">
+              {/* Vehicle & Type */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <Car className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Vehicle & Type</h3>
                 </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Inspector</p>
-                  <p className="text-sm font-medium">{selectedInspection.inspector || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Type</p>
-                  <p className="text-sm font-medium capitalize">{selectedInspection.type?.replace('_', ' ')}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Date</p>
-                  <p className="text-sm font-medium">{selectedInspection.inspectionDate ? new Date(selectedInspection.inspectionDate).toLocaleDateString() : 'N/A'}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Vehicle</p>
+                    <p className="text-sm font-medium">{selectedInspection.vehicle ? `${selectedInspection.vehicle.make} ${selectedInspection.vehicle.model} (${selectedInspection.vehicle.vehicleNumber})` : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Inspector</p>
+                    <p className="text-sm font-medium">{selectedInspection.inspector || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Date</p>
+                    <p className="text-sm font-medium">{selectedInspection.inspectionDate ? new Date(selectedInspection.inspectionDate).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Type</p>
+                    <p className="text-sm font-medium capitalize">{selectedInspection.type?.replace('_', ' ')}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <p className="text-xs font-semibold mb-2">Condition Assessment</p>
-                <div className="grid grid-cols-3 gap-3">
+              {/* Condition Assessment */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <ClipboardCheck className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Condition Assessment</h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[
                     { label: 'Overall', value: selectedInspection.overallCondition },
                     { label: 'Exterior', value: selectedInspection.exteriorCondition },
@@ -549,35 +618,39 @@ export default function FleetInspectionsPage() {
                 </div>
               </div>
 
-              <div className="border-t pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <p className="text-xs font-semibold">Status:</p>
-                  <Badge variant={selectedInspection.status === 'passed' ? 'default' : selectedInspection.status === 'failed' ? 'destructive' : 'outline'} className={`text-[10px] ${statusColors[selectedInspection.status] || ''}`}>
-                    {selectedInspection.status}
-                  </Badge>
+              {/* Additional */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">Status</p>
+                    <Badge variant={selectedInspection.status === 'passed' ? 'default' : selectedInspection.status === 'failed' ? 'destructive' : 'outline'} className={`text-[10px] ${statusColors[selectedInspection.status] || ''}`}>
+                      {selectedInspection.status}
+                    </Badge>
+                  </div>
+                  {selectedInspection.nextInspectionDate && (
+                    <div>
+                      <p className="text-xs font-medium text-muted-foreground">Next Inspection Due</p>
+                      <p className="text-sm font-medium">{new Date(selectedInspection.nextInspectionDate).toLocaleDateString()}</p>
+                    </div>
+                  )}
+                  {selectedInspection.issues && (
+                    <div className="col-span-1 md:col-span-3">
+                      <p className="text-xs font-medium text-muted-foreground">Issues Found</p>
+                      <p className="text-sm text-muted-foreground">{selectedInspection.issues}</p>
+                    </div>
+                  )}
+                  {selectedInspection.notes && (
+                    <div className="col-span-1 md:col-span-3">
+                      <p className="text-xs font-medium text-muted-foreground">Notes</p>
+                      <p className="text-sm text-muted-foreground">{selectedInspection.notes}</p>
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {selectedInspection.issues && (
-                <div className="border-t pt-4">
-                  <p className="text-xs font-semibold mb-1">Issues Found</p>
-                  <p className="text-sm text-muted-foreground">{selectedInspection.issues}</p>
-                </div>
-              )}
-
-              {selectedInspection.notes && (
-                <div className="border-t pt-4">
-                  <p className="text-xs font-semibold mb-1">Notes</p>
-                  <p className="text-sm text-muted-foreground">{selectedInspection.notes}</p>
-                </div>
-              )}
-
-              {selectedInspection.nextInspectionDate && (
-                <div className="border-t pt-4">
-                  <p className="text-xs text-muted-foreground">Next Inspection Due</p>
-                  <p className="text-sm font-medium">{new Date(selectedInspection.nextInspectionDate).toLocaleDateString()}</p>
-                </div>
-              )}
             </div>
           )}
           <DialogFooter>

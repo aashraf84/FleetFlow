@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CalendarDays, Plus, Search, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { CalendarDays, Plus, Search, Pencil, Trash2, Loader2, Users, DollarSign, MapPin } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -182,17 +182,56 @@ export default function RentalReservationsPage() {
       <Dialog open={open} onOpenChange={v => { if (!saving) { setOpen(v); if (!v) setEditId(null) } }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editId ? 'Edit Reservation' : 'New Reservation'}</DialogTitle><DialogDescription>{editId ? 'Update reservation details including dates, amounts, and locations.' : 'Create a new rental reservation by selecting customer, vehicle, and rental dates.'}</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label>Customer *</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available' || v.id === form.vehicleId).map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
-            <div><Label>Start Date *</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
-            <div><Label>End Date *</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
-            <div><Label>Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Total Amount ($)</Label><Input type="number" value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({...form, depositAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Pickup Location</Label><Input value={form.pickupLocation || ''} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office" /></div>
-            <div><Label>Return Location</Label><Input value={form.returnLocation || ''} onChange={e => setForm({...form, returnLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Airport Branch" /></div>
-            <div><Label>Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Any special instructions" /></div>
+          <div className="space-y-6 py-2">
+            {/* Assignment Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Users className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Customer *</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({...form, vehicleId: v, dailyRate: veh?.dailyRate || 0}) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available' || v.id === form.vehicleId).map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model} (${v.dailyRate}/day)</SelectItem>)}</SelectContent></Select></div>
+              </div>
+            </div>
+
+            {/* Schedule Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Start Date *</Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">End Date *</Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
+              </div>
+            </div>
+
+            {/* Financial Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Total Amount ($)</Label><Input type="number" value={form.totalAmount || ''} onChange={e => setForm({...form, totalAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({...form, depositAmount: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+              </div>
+            </div>
+
+            {/* Locations & Notes Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <MapPin className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Locations & Notes</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Pickup Location</Label><Input value={form.pickupLocation || ''} onChange={e => setForm({...form, pickupLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Return Location</Label><Input value={form.returnLocation || ''} onChange={e => setForm({...form, returnLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Airport Branch" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Input value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1" placeholder="Any special instructions" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => { setOpen(false); setEditId(null) }} disabled={saving}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editId ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>

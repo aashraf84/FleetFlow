@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Shield, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
+import { Shield, DollarSign, CalendarDays, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function InsurancePage() {
@@ -177,16 +177,43 @@ export default function InsurancePage() {
             <DialogTitle>{editMode ? 'Edit Insurance Policy' : 'Add Insurance Policy'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the insurance policy details below.' : 'Fill in the details to add a new insurance policy.'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Policy Number <span className="text-destructive">*</span></Label><Input value={form.policyNumber || ''} onChange={e => setForm({...form, policyNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. POL-2024-001" required /></div>
-            <div><Label className="text-xs">Provider <span className="text-destructive">*</span></Label><Input value={form.provider || ''} onChange={e => setForm({...form, provider: e.target.value})} className="h-10 mt-1" placeholder="e.g. Allianz, AIG" required /></div>
-            <div><Label className="text-xs">Type <span className="text-destructive">*</span></Label><Select value={form.type || 'comprehensive'} onValueChange={v => setForm({...form, type: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="liability">Liability</SelectItem><SelectItem value="comprehensive">Comprehensive</SelectItem><SelectItem value="collision">Collision</SelectItem><SelectItem value="personal_injury">Personal Injury</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Start Date <span className="text-destructive">*</span></Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
-            <div><Label className="text-xs">End Date <span className="text-destructive">*</span></Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
-            <div><Label className="text-xs">Premium ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.premium || ''} onChange={e => setForm({...form, premium: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" required /></div>
-            <div><Label className="text-xs">Deductible ($)</Label><Input type="number" value={form.deductible || ''} onChange={e => setForm({...form, deductible: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Coverage</Label><Input value={form.coverage || ''} onChange={e => setForm({...form, coverage: e.target.value})} className="h-10 mt-1" placeholder="e.g. Full coverage, Third party only" /></div>
+          <div className="space-y-6 py-2">
+            {/* Section: Policy Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Shield className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Policy Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Policy Number <span className="text-destructive">*</span></Label><Input value={form.policyNumber || ''} onChange={e => setForm({...form, policyNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. POL-2024-001" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Provider <span className="text-destructive">*</span></Label><Input value={form.provider || ''} onChange={e => setForm({...form, provider: e.target.value})} className="h-10 mt-1" placeholder="e.g. Allianz, AIG" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Type <span className="text-destructive">*</span></Label><Select value={form.type || 'comprehensive'} onValueChange={v => setForm({...form, type: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="liability">Liability</SelectItem><SelectItem value="comprehensive">Comprehensive</SelectItem><SelectItem value="collision">Collision</SelectItem><SelectItem value="personal_injury">Personal Injury</SelectItem></SelectContent></Select></div>
+              </div>
+            </div>
+            {/* Section: Coverage */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Coverage</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Premium ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.premium || ''} onChange={e => setForm({...form, premium: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Deductible ($)</Label><Input type="number" value={form.deductible || ''} onChange={e => setForm({...form, deductible: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Coverage</Label><Input value={form.coverage || ''} onChange={e => setForm({...form, coverage: e.target.value})} className="h-10 mt-1" placeholder="e.g. Full coverage, Third party only" /></div>
+              </div>
+            </div>
+            {/* Section: Dates */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Dates</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Start Date <span className="text-destructive">*</span></Label><Input type="date" value={form.startDate || ''} onChange={e => setForm({...form, startDate: e.target.value})} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">End Date <span className="text-destructive">*</span></Label><Input type="date" value={form.endDate || ''} onChange={e => setForm({...form, endDate: e.target.value})} className="h-10 mt-1" required /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>

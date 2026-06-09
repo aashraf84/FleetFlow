@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Fuel, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Fuel, Droplets, FileText, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
 
@@ -177,14 +177,43 @@ export default function FuelManagementPage() {
             <DialogTitle>{editMode ? 'Edit Fuel Record' : 'Add Fuel Record'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the fuel record details below.' : 'Fill in the details to add a new fuel record.'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Fuel Type <span className="text-destructive">*</span></Label><Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select fuel type" /></SelectTrigger><SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Quantity (L) <span className="text-destructive">*</span></Label><Input type="number" value={form.quantity || ''} onChange={e => setForm({...form, quantity: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 50" required /></div>
-            <div><Label className="text-xs">Cost Per Unit ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.costPerUnit || ''} onChange={e => setForm({...form, costPerUnit: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 1.50" required /></div>
-            <div><Label className="text-xs">Station/Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-10 mt-1" placeholder="e.g. Shell Station" /></div>
-            <div><Label className="text-xs">Date <span className="text-destructive">*</span></Label><Input type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} className="h-10 mt-1" required /></div>
+          <div className="space-y-6 py-2">
+            {/* Refuel Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Fuel className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Refuel Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Driver</Label><Select value={form.driverId || ''} onValueChange={v => setForm({...form, driverId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select driver" /></SelectTrigger><SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.firstName} {d.lastName}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Date <span className="text-destructive">*</span></Label><Input type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} className="h-10 mt-1" required /></div>
+              </div>
+            </div>
+
+            {/* Fuel Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Droplets className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Fuel Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Fuel Type <span className="text-destructive">*</span></Label><Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select fuel type" /></SelectTrigger><SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Quantity (L) <span className="text-destructive">*</span></Label><Input type="number" value={form.quantity || ''} onChange={e => setForm({...form, quantity: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 50" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Unit Price ($) <span className="text-destructive">*</span></Label><Input type="number" value={form.costPerUnit || ''} onChange={e => setForm({...form, costPerUnit: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 1.50" required /></div>
+              </div>
+            </div>
+
+            {/* Additional */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Station/Vendor</Label><Input value={form.vendor || ''} onChange={e => setForm({...form, vendor: e.target.value})} className="h-10 mt-1" placeholder="e.g. Shell Station" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add Record'}</Button></DialogFooter>
         </DialogContent>

@@ -13,7 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Key, CheckCircle, XCircle, Clock, Search, Plus, Copy, ShieldCheck, ShieldOff,
-  ShieldAlert, MoreHorizontal, RefreshCw
+  ShieldAlert, MoreHorizontal, RefreshCw, Building2, Settings2
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
@@ -284,39 +284,49 @@ export default function OwnerLicensesPage() {
 
       {/* Generate Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Generate New License</DialogTitle>
             <DialogDescription>Generate a new license key for a client. The key will be auto-generated in FF-XXXX-XXXX-XXXX format.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Client *</Label>
-              <Select value={formData.clientId} onValueChange={(v) => setFormData({ ...formData, clientId: v })} required>
-                <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select client" /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Max Devices</Label>
-                <Input type="number" className="h-10 text-sm" value={formData.maxDevices} onChange={(e) => setFormData({ ...formData, maxDevices: Number(e.target.value) })} min={1} max={100} placeholder="3" />
+          <form onSubmit={handleSubmit} className="space-y-6 py-2">
+            {/* Client Assignment */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Building2 className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Client Assignment</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Initial Status</Label>
-                <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="trial">Trial</SelectItem>
-                    <SelectItem value="active">Active</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Client *</Label>
+                  <Select value={formData.clientId} onValueChange={(v) => setFormData({ ...formData, clientId: v })} required>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select client" /></SelectTrigger>
+                    <SelectContent>
+                      {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.companyName}</SelectItem>)}
+                    </SelectContent>
+                  </Select></div>
               </div>
             </div>
-            <div className="p-3 rounded-md bg-muted text-xs text-muted-foreground">
-              License key will be auto-generated in format: FF-XXXX-XXXX-XXXX
+            {/* License Configuration */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Settings2 className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">License Configuration</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Max Devices</Label>
+                  <Input type="number" className="h-10 text-sm mt-1" value={formData.maxDevices} onChange={(e) => setFormData({ ...formData, maxDevices: Number(e.target.value) })} min={1} max={100} placeholder="3" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Initial Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => setFormData({ ...formData, status: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="trial">Trial</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                    </SelectContent>
+                  </Select></div>
+              </div>
+              <div className="p-3 rounded-md bg-muted text-xs text-muted-foreground mt-4">
+                License key will be auto-generated in format: FF-XXXX-XXXX-XXXX
+              </div>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>

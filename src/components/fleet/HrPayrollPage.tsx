@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Banknote, Plus, ArrowRight, Loader2 } from 'lucide-react'
+import { DollarSign, Wallet, FileText, Banknote, Plus, ArrowRight, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrPayrollPage() {
@@ -148,23 +148,46 @@ export default function HrPayrollPage() {
 
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Run Payroll</DialogTitle><DialogDescription>Create a new payroll record for an employee.</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Employee <span className="text-destructive">*</span></Label>
-              <Select required value={form.employeeId || ''} onValueChange={handleEmployeeChange}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an employee" /></SelectTrigger>
-                <SelectContent>
-                  {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName} ({fmt(e.salary || 0)})</SelectItem>)}
-                </SelectContent>
-              </Select>
+          <div className="space-y-6 py-2">
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Payroll Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Employee <span className="text-destructive">*</span></Label>
+                  <Select required value={form.employeeId || ''} onValueChange={handleEmployeeChange}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select an employee" /></SelectTrigger>
+                    <SelectContent>
+                      {employees.map((e: any) => <SelectItem key={e.id} value={e.id}>{e.firstName} {e.lastName} ({fmt(e.salary || 0)})</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Period <span className="text-destructive">*</span></Label><Input required type="month" value={form.period || ''} onChange={e => setForm({ ...form, period: e.target.value })} className="h-10 mt-1" placeholder="e.g. 2024-01" /></div>
+              </div>
             </div>
-            <div><Label className="text-xs">Period <span className="text-destructive">*</span></Label><Input required type="month" value={form.period || ''} onChange={e => setForm({ ...form, period: e.target.value })} className="h-10 mt-1" placeholder="e.g. 2024-01" /></div>
-            <div></div>
-            <div><Label className="text-xs">Base Salary ($)</Label><Input type="number" value={form.baseSalary || '0'} onChange={e => setForm({ ...form, baseSalary: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label className="text-xs">Overtime ($)</Label><Input type="number" value={form.overtime || '0'} onChange={e => setForm({ ...form, overtime: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label className="text-xs">Bonuses ($)</Label><Input type="number" value={form.bonuses || '0'} onChange={e => setForm({ ...form, bonuses: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label className="text-xs">Deductions ($)</Label><Input type="number" value={form.deductions || '0'} onChange={e => setForm({ ...form, deductions: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Net Pay (auto-calculated)</Label><div className="h-10 mt-1 flex items-center px-3 rounded-md border bg-muted text-sm font-medium">{fmt(getNetPay())}</div></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="min-h-[80px] mt-1" placeholder="Additional payroll notes or comments" /></div>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Wallet className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Compensation</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Base Salary ($)</Label><Input type="number" value={form.baseSalary || '0'} onChange={e => setForm({ ...form, baseSalary: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Overtime ($)</Label><Input type="number" value={form.overtime || '0'} onChange={e => setForm({ ...form, overtime: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Bonuses ($)</Label><Input type="number" value={form.bonuses || '0'} onChange={e => setForm({ ...form, bonuses: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Deductions ($)</Label><Input type="number" value={form.deductions || '0'} onChange={e => setForm({ ...form, deductions: e.target.value })} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Net Pay (auto-calculated)</Label><div className="h-10 mt-1 flex items-center px-3 rounded-md border bg-muted text-sm font-medium">{fmt(getNetPay())}</div></div>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="min-h-[80px] mt-1" placeholder="Additional payroll notes or comments" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create Payroll</Button></DialogFooter>
         </DialogContent>

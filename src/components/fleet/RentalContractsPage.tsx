@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle, Loader2, Users, CalendarDays, DollarSign, FileText, StickyNote } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -302,107 +302,67 @@ export default function RentalContractsPage() {
             <DialogTitle>New Rental Contract</DialogTitle>
             <DialogDescription>Create a new rental contract by selecting customer, vehicle, and setting terms.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="space-y-6 py-2">
+            {/* Assignment Section */}
             <div>
-              <Label>Customer *</Label>
-              <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Users className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Customer *</Label><Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => (<SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setForm({ ...form, vehicleId: v, dailyRate: veh?.dailyRate || form.dailyRate }) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.filter(v => v.status === 'available' || v.status === 'rented').map(v => (<SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>))}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Reservation (Optional)</Label><Select value={form.reservationId || '_none'} onValueChange={v => { if (v === '_none') { setForm({ ...form, reservationId: '' }) } else { const res = reservations.find(r => r.id === v); setForm({ ...form, reservationId: v, customerId: res?.customerId || form.customerId, vehicleId: res?.vehicleId || form.vehicleId, startDate: res?.startDate ? new Date(res.startDate).toISOString().split('T')[0] : form.startDate, endDate: res?.endDate ? new Date(res.endDate).toISOString().split('T')[0] : form.endDate }) } }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select reservation" /></SelectTrigger><SelectContent><SelectItem value="_none">None</SelectItem>{reservations.filter(r => r.status === 'confirmed' || r.status === 'active').map(r => (<SelectItem key={r.id} value={r.id}>{r.reservationCode} - {r.customer ? `${r.customer.firstName} ${r.customer.lastName}` : 'Unknown'}</SelectItem>))}</SelectContent></Select></div>
+              </div>
             </div>
+
+            {/* Schedule Section */}
             <div>
-              <Label>Vehicle *</Label>
-              <Select value={form.vehicleId || ''} onValueChange={v => {
-                const veh = vehicles.find(x => x.id === v)
-                setForm({ ...form, vehicleId: v, dailyRate: veh?.dailyRate || form.dailyRate })
-              }}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
-                <SelectContent>
-                  {vehicles.filter(v => v.status === 'available' || v.status === 'rented').map(v => (
-                    <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Start Date *</Label><Input type="date" value={form.startDate || ''} onChange={e => { const updated = { ...form, startDate: e.target.value }; const totals = calcTotals(updated); setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">End Date *</Label><Input type="date" value={form.endDate || ''} onChange={e => { const updated = { ...form, endDate: e.target.value }; const totals = calcTotals(updated); setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" required /></div>
+              </div>
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Reservation (Optional)</Label>
-              <Select value={form.reservationId || '_none'} onValueChange={v => {
-                if (v === '_none') {
-                  setForm({ ...form, reservationId: '' })
-                } else {
-                  const res = reservations.find(r => r.id === v)
-                  setForm({
-                    ...form,
-                    reservationId: v,
-                    customerId: res?.customerId || form.customerId,
-                    vehicleId: res?.vehicleId || form.vehicleId,
-                    startDate: res?.startDate ? new Date(res.startDate).toISOString().split('T')[0] : form.startDate,
-                    endDate: res?.endDate ? new Date(res.endDate).toISOString().split('T')[0] : form.endDate,
-                  })
-                }
-              }}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select reservation (optional)" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">None</SelectItem>
-                  {reservations.filter(r => r.status === 'confirmed' || r.status === 'active').map(r => (
-                    <SelectItem key={r.id} value={r.id}>
-                      {r.reservationCode} - {r.customer ? `${r.customer.firstName} ${r.customer.lastName}` : 'Unknown'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+
+            {/* Financial Section */}
             <div>
-              <Label>Start Date *</Label>
-              <Input type="date" value={form.startDate || ''} onChange={e => {
-                const updated = { ...form, startDate: e.target.value }
-                const totals = calcTotals(updated)
-                setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => { const updated = { ...form, dailyRate: parseFloat(e.target.value) || 0 }; const totals = calcTotals(updated); setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Total Days (auto)</Label><Input type="number" value={calcTotals(form).totalDays} disabled className="h-10 mt-1 bg-muted" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Total Amount ($) (auto)</Label><Input type="number" value={calcTotals(form).totalAmount} disabled className="h-10 mt-1 bg-muted" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Deposit Amount ($)</Label><Input type="number" value={form.depositAmount || ''} onChange={e => setForm({ ...form, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" /></div>
+              </div>
             </div>
+
+            {/* Terms Section */}
             <div>
-              <Label>End Date *</Label>
-              <Input type="date" value={form.endDate || ''} onChange={e => {
-                const updated = { ...form, endDate: e.target.value }
-                const totals = calcTotals(updated)
-                setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Terms</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Mileage Limit (km)</Label><Input type="number" value={form.mileageLimit || ''} onChange={e => setForm({ ...form, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" /></div>
+                <div className="col-span-1 md:col-span-2"><Label className="text-xs font-medium text-muted-foreground">Terms & Conditions</Label><Textarea value={form.terms || ''} onChange={e => setForm({ ...form, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." /></div>
+              </div>
             </div>
+
+            {/* Notes Section */}
             <div>
-              <Label>Daily Rate ($)</Label>
-              <Input type="number" value={form.dailyRate || ''} onChange={e => {
-                const updated = { ...form, dailyRate: parseFloat(e.target.value) || 0 }
-                const totals = calcTotals(updated)
-                setForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" placeholder="0.00" />
-            </div>
-            <div>
-              <Label>Total Days (auto)</Label>
-              <Input type="number" value={calcTotals(form).totalDays} disabled className="h-10 mt-1 bg-muted" />
-            </div>
-            <div>
-              <Label>Total Amount ($) (auto)</Label>
-              <Input type="number" value={calcTotals(form).totalAmount} disabled className="h-10 mt-1 bg-muted" />
-            </div>
-            <div>
-              <Label>Deposit Amount ($)</Label>
-              <Input type="number" value={form.depositAmount || ''} onChange={e => setForm({ ...form, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" />
-            </div>
-            <div>
-              <Label>Mileage Limit (km)</Label>
-              <Input type="number" value={form.mileageLimit || ''} onChange={e => setForm({ ...form, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Terms & Conditions</Label>
-              <Textarea value={form.terms || ''} onChange={e => setForm({ ...form, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <StickyNote className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Notes</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." /></div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -419,79 +379,66 @@ export default function RentalContractsPage() {
             <DialogTitle>Edit Contract</DialogTitle>
             <DialogDescription>Update the rental contract details, rates, and terms.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="space-y-6 py-2">
+            {/* Assignment Section */}
             <div>
-              <Label>Customer *</Label>
-              <Select value={editForm.customerId || ''} onValueChange={v => setEditForm({ ...editForm, customerId: v })}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger>
-                <SelectContent>
-                  {customers.map(c => (
-                    <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Users className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Customer *</Label><Select value={editForm.customerId || ''} onValueChange={v => setEditForm({ ...editForm, customerId: v })}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent>{customers.map(c => (<SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle *</Label><Select value={editForm.vehicleId || ''} onValueChange={v => { const veh = vehicles.find(x => x.id === v); setEditForm({ ...editForm, vehicleId: v, dailyRate: veh?.dailyRate || editForm.dailyRate }) }}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => (<SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>))}</SelectContent></Select></div>
+              </div>
             </div>
+
+            {/* Schedule Section */}
             <div>
-              <Label>Vehicle *</Label>
-              <Select value={editForm.vehicleId || ''} onValueChange={v => {
-                const veh = vehicles.find(x => x.id === v)
-                setEditForm({ ...editForm, vehicleId: v, dailyRate: veh?.dailyRate || editForm.dailyRate })
-              }}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger>
-                <SelectContent>
-                  {vehicles.map(v => (
-                    <SelectItem key={v.id} value={v.id}>{v.make} {v.model} ({v.registrationNumber})</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Start Date *</Label><Input type="date" value={editForm.startDate || ''} onChange={e => { const updated = { ...editForm, startDate: e.target.value }; const totals = calcTotals(updated); setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">End Date *</Label><Input type="date" value={editForm.endDate || ''} onChange={e => { const updated = { ...editForm, endDate: e.target.value }; const totals = calcTotals(updated); setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" required /></div>
+              </div>
             </div>
+
+            {/* Financial Section */}
             <div>
-              <Label>Start Date *</Label>
-              <Input type="date" value={editForm.startDate || ''} onChange={e => {
-                const updated = { ...editForm, startDate: e.target.value }
-                const totals = calcTotals(updated)
-                setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Daily Rate ($)</Label><Input type="number" value={editForm.dailyRate || ''} onChange={e => { const updated = { ...editForm, dailyRate: parseFloat(e.target.value) || 0 }; const totals = calcTotals(updated); setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount }) }} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Total Days (auto)</Label><Input type="number" value={calcTotals(editForm).totalDays} disabled className="h-10 mt-1 bg-muted" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Total Amount ($) (auto)</Label><Input type="number" value={calcTotals(editForm).totalAmount} disabled className="h-10 mt-1 bg-muted" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Deposit Amount ($)</Label><Input type="number" value={editForm.depositAmount || ''} onChange={e => setEditForm({ ...editForm, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" /></div>
+              </div>
             </div>
+
+            {/* Terms Section */}
             <div>
-              <Label>End Date *</Label>
-              <Input type="date" value={editForm.endDate || ''} onChange={e => {
-                const updated = { ...editForm, endDate: e.target.value }
-                const totals = calcTotals(updated)
-                setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" required />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Terms</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Mileage Limit (km)</Label><Input type="number" value={editForm.mileageLimit || ''} onChange={e => setEditForm({ ...editForm, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" /></div>
+                <div className="col-span-1 md:col-span-2"><Label className="text-xs font-medium text-muted-foreground">Terms & Conditions</Label><Textarea value={editForm.terms || ''} onChange={e => setEditForm({ ...editForm, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." /></div>
+              </div>
             </div>
+
+            {/* Notes Section */}
             <div>
-              <Label>Daily Rate ($)</Label>
-              <Input type="number" value={editForm.dailyRate || ''} onChange={e => {
-                const updated = { ...editForm, dailyRate: parseFloat(e.target.value) || 0 }
-                const totals = calcTotals(updated)
-                setEditForm({ ...updated, totalDays: totals.totalDays, totalAmount: totals.totalAmount })
-              }} className="h-10 mt-1" placeholder="0.00" />
-            </div>
-            <div>
-              <Label>Total Days (auto)</Label>
-              <Input type="number" value={calcTotals(editForm).totalDays} disabled className="h-10 mt-1 bg-muted" />
-            </div>
-            <div>
-              <Label>Total Amount ($) (auto)</Label>
-              <Input type="number" value={calcTotals(editForm).totalAmount} disabled className="h-10 mt-1 bg-muted" />
-            </div>
-            <div>
-              <Label>Deposit Amount ($)</Label>
-              <Input type="number" value={editForm.depositAmount || ''} onChange={e => setEditForm({ ...editForm, depositAmount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" />
-            </div>
-            <div>
-              <Label>Mileage Limit (km)</Label>
-              <Input type="number" value={editForm.mileageLimit || ''} onChange={e => setEditForm({ ...editForm, mileageLimit: e.target.value })} className="h-10 mt-1" placeholder="e.g. 500" />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Terms & Conditions</Label>
-              <Textarea value={editForm.terms || ''} onChange={e => setEditForm({ ...editForm, terms: e.target.value })} className="mt-1 min-h-[80px]" rows={3} placeholder="Enter contract terms and conditions..." />
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." />
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <StickyNote className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Notes</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={editForm.notes || ''} onChange={e => setEditForm({ ...editForm, notes: e.target.value })} className="mt-1 min-h-[80px]" rows={2} placeholder="Additional notes..." /></div>
+              </div>
             </div>
           </div>
           <DialogFooter>
@@ -503,13 +450,13 @@ export default function RentalContractsPage() {
 
       {/* Contract Detail Dialog */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Contract Details — {detailItem?.contractNumber}</DialogTitle>
             <DialogDescription>View full contract details, customer and vehicle information, and rental timeline.</DialogDescription>
           </DialogHeader>
           {detailItem && (
-            <div className="space-y-6 py-4">
+            <div className="space-y-6 py-2">
               {/* Status Badge */}
               <div className="flex items-center gap-3">
                 <Badge className={`${statusColors[detailItem.status] || ''} text-sm px-3 py-1`}>
@@ -522,80 +469,121 @@ export default function RentalContractsPage() {
                 )}
               </div>
 
-              {/* Customer & Vehicle Info */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Customer</h4>
-                  {detailItem.customer ? (
-                    <div className="text-sm space-y-1">
-                      <p><span className="font-medium">Name:</span> {detailItem.customer.firstName} {detailItem.customer.lastName}</p>
-                      <p><span className="font-medium">Email:</span> {detailItem.customer.email}</p>
-                      <p><span className="font-medium">Phone:</span> {detailItem.customer.phone || 'N/A'}</p>
-                      <p><span className="font-medium">License:</span> {detailItem.customer.drivingLicense || 'N/A'}</p>
-                    </div>
-                  ) : <p className="text-sm text-muted-foreground">N/A</p>}
+              {/* Assignment Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <Users className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Assignment</h3>
                 </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Vehicle</h4>
-                  {detailItem.vehicle ? (
-                    <div className="text-sm space-y-1">
-                      <p><span className="font-medium">Vehicle:</span> {detailItem.vehicle.make} {detailItem.vehicle.model} ({detailItem.vehicle.year})</p>
-                      <p><span className="font-medium">Registration:</span> {detailItem.vehicle.registrationNumber}</p>
-                      <p><span className="font-medium">Category:</span> {detailItem.vehicle.category}</p>
-                      <p><span className="font-medium">Color:</span> {detailItem.vehicle.color || 'N/A'}</p>
-                    </div>
-                  ) : <p className="text-sm text-muted-foreground">N/A</p>}
-                </div>
-              </div>
-
-              {/* Dates */}
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Rental Period</h4>
-                  <div className="text-sm space-y-1">
-                    <p><span className="font-medium">Start:</span> {fmtDate(detailItem.startDate)}</p>
-                    <p><span className="font-medium">End:</span> {fmtDate(detailItem.endDate)}</p>
-                    <p><span className="font-medium">Duration:</span> {detailItem.totalDays} days</p>
-                    {detailItem.signedDate && <p><span className="font-medium">Signed:</span> {fmtDate(detailItem.signedDate)}</p>}
-                    {detailItem.returnDate && <p><span className="font-medium">Returned:</span> {fmtDate(detailItem.returnDate)}</p>}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    {detailItem.customer ? (
+                      <div className="text-sm space-y-1">
+                        <p><span className="font-medium">Customer:</span> {detailItem.customer.firstName} {detailItem.customer.lastName}</p>
+                        <p><span className="font-medium">Email:</span> {detailItem.customer.email}</p>
+                        <p><span className="font-medium">Phone:</span> {detailItem.customer.phone || 'N/A'}</p>
+                        <p><span className="font-medium">License:</span> {detailItem.customer.drivingLicense || 'N/A'}</p>
+                      </div>
+                    ) : <p className="text-sm text-muted-foreground">N/A</p>}
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Financials</h4>
-                  <div className="text-sm space-y-1">
-                    <p><span className="font-medium">Daily Rate:</span> {fmt(detailItem.dailyRate)}</p>
-                    <p><span className="font-medium">Total Amount:</span> <span className="font-bold">{fmt(detailItem.totalAmount)}</span></p>
-                    <p><span className="font-medium">Deposit:</span> {fmt(detailItem.depositAmount)}</p>
-                    {detailItem.mileageLimit && <p><span className="font-medium">Mileage Limit:</span> {Number(detailItem.mileageLimit).toLocaleString()} km</p>}
+                  <div className="space-y-2">
+                    {detailItem.vehicle ? (
+                      <div className="text-sm space-y-1">
+                        <p><span className="font-medium">Vehicle:</span> {detailItem.vehicle.make} {detailItem.vehicle.model} ({detailItem.vehicle.year})</p>
+                        <p><span className="font-medium">Registration:</span> {detailItem.vehicle.registrationNumber}</p>
+                        <p><span className="font-medium">Category:</span> {detailItem.vehicle.category}</p>
+                        <p><span className="font-medium">Color:</span> {detailItem.vehicle.color || 'N/A'}</p>
+                      </div>
+                    ) : <p className="text-sm text-muted-foreground">N/A</p>}
                   </div>
-                </div>
-              </div>
-
-              {/* Mileage */}
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold text-muted-foreground">Mileage</h4>
-                <div className="text-sm flex gap-6">
-                  <p><span className="font-medium">Out:</span> {detailItem.mileageOut?.toLocaleString() || 0} km</p>
-                  <p><span className="font-medium">In:</span> {detailItem.mileageIn?.toLocaleString() || 0} km</p>
-                  {(detailItem.mileageIn > 0 && detailItem.mileageOut > 0) && (
-                    <p><span className="font-medium">Used:</span> {(detailItem.mileageIn - detailItem.mileageOut).toLocaleString()} km</p>
+                  {detailItem.reservation && (
+                    <div className="space-y-1">
+                      <p className="text-sm"><span className="font-medium">Reservation:</span> {detailItem.reservation.reservationCode}</p>
+                    </div>
                   )}
                 </div>
               </div>
 
-              {/* Terms & Notes */}
-              {detailItem.terms && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Terms & Conditions</h4>
-                  <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{detailItem.terms}</p>
+              {/* Schedule Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <CalendarDays className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Schedule</h3>
                 </div>
-              )}
-              {detailItem.notes && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-muted-foreground">Notes</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-sm space-y-1">
+                    <p><span className="font-medium">Start:</span> {fmtDate(detailItem.startDate)}</p>
+                    <p><span className="font-medium">End:</span> {fmtDate(detailItem.endDate)}</p>
+                  </div>
+                  <div className="text-sm space-y-1">
+                    {detailItem.signedDate && <p><span className="font-medium">Signed:</span> {fmtDate(detailItem.signedDate)}</p>}
+                    {detailItem.returnDate && <p><span className="font-medium">Returned:</span> {fmtDate(detailItem.returnDate)}</p>}
+                  </div>
+                  <div className="text-sm space-y-1">
+                    <p><span className="font-medium">Duration:</span> {detailItem.totalDays} days</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <DollarSign className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-sm space-y-1">
+                    <p><span className="font-medium">Daily Rate:</span> {fmt(detailItem.dailyRate)}</p>
+                    <p><span className="font-medium">Total Amount:</span> <span className="font-bold">{fmt(detailItem.totalAmount)}</span></p>
+                  </div>
+                  <div className="text-sm space-y-1">
+                    <p><span className="font-medium">Deposit:</span> {fmt(detailItem.depositAmount)}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Terms</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {detailItem.mileageLimit && (
+                    <div className="text-sm space-y-1">
+                      <p><span className="font-medium">Mileage Limit:</span> {Number(detailItem.mileageLimit).toLocaleString()} km</p>
+                      <p><span className="font-medium">Out:</span> {detailItem.mileageOut?.toLocaleString() || 0} km</p>
+                      <p><span className="font-medium">In:</span> {detailItem.mileageIn?.toLocaleString() || 0} km</p>
+                      {(detailItem.mileageIn > 0 && detailItem.mileageOut > 0) && (
+                        <p><span className="font-medium">Used:</span> {(detailItem.mileageIn - detailItem.mileageOut).toLocaleString()} km</p>
+                      )}
+                    </div>
+                  )}
+                  <div className="col-span-1 md:col-span-2">
+                    <div className="text-sm space-y-1">
+                      <p><span className="font-medium">Status:</span> <Badge className={`${statusColors[detailItem.status] || ''} text-[10px]`}>{detailItem.status}</Badge></p>
+                    </div>
+                  </div>
+                </div>
+                {detailItem.terms && (
+                  <div className="mt-3">
+                    <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{detailItem.terms}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Notes Section */}
+              <div>
+                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                  <StickyNote className="h-4 w-4 text-primary" />
+                  <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Notes</h3>
+                </div>
+                {detailItem.notes ? (
                   <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-wrap">{detailItem.notes}</p>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground">No notes</p>
+                )}
+              </div>
 
               {/* Action Buttons */}
               <div className="flex gap-2 pt-2 border-t">

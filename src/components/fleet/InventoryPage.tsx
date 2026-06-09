@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Warehouse, ArrowUpDown, ArrowRightLeft, AlertTriangle } from 'lucide-react'
+import { Package, Layers, FileText, Warehouse, ArrowUpDown, ArrowRightLeft, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function InventoryPage() {
@@ -163,36 +163,64 @@ export default function InventoryPage() {
 
       {/* Stock Adjustment Dialog */}
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Stock Adjustment</DialogTitle>
             <DialogDescription>Increase or decrease stock levels for a specific part.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Select Part <span className="text-destructive">*</span></Label>
-              <Select value={adjustForm.partId} onValueChange={v => setAdjustForm({...adjustForm, partId: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a part" /></SelectTrigger>
-                <SelectContent>{parts.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.partNumber || 'N/A'})</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            {selectedPart && (
-              <div className="col-span-1 md:col-span-2 text-sm p-3 rounded-lg bg-muted">
-                Current stock: <span className="font-bold">{selectedPart.quantityInStock}</span> · Location: {selectedPart.location || 'Default'}
+          <div className="space-y-6 py-2">
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Package className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Part Information</h3>
               </div>
-            )}
-            <div><Label className="text-xs">Adjustment Type</Label>
-              <Select value={adjustForm.type} onValueChange={v => setAdjustForm({...adjustForm, type: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent><SelectItem value="increase">Increase (+)</SelectItem><SelectItem value="decrease">Decrease (-)</SelectItem></SelectContent>
-              </Select>
-            </div>
-            <div><Label className="text-xs">Quantity <span className="text-destructive">*</span></Label><Input type="number" min={1} value={adjustForm.quantity || ''} onChange={e => setAdjustForm({...adjustForm, quantity: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="Enter quantity" required /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Reason</Label><Textarea value={adjustForm.reason} onChange={e => setAdjustForm({...adjustForm, reason: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="e.g. New delivery, Damaged, Used in repair..." /></div>
-            {selectedPart && adjustForm.quantity > 0 && (
-              <div className="col-span-1 md:col-span-2 text-sm p-3 rounded-lg bg-muted">
-                New stock level: <span className="font-bold">{adjustForm.type === 'increase' ? selectedPart.quantityInStock + adjustForm.quantity : selectedPart.quantityInStock - adjustForm.quantity}</span>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Select Part <span className="text-destructive">*</span></Label>
+                  <Select value={adjustForm.partId} onValueChange={v => setAdjustForm({...adjustForm, partId: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a part" /></SelectTrigger>
+                    <SelectContent>{parts.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.partNumber || 'N/A'})</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                {selectedPart && (
+                  <div className="col-span-1 md:col-span-2 flex items-end">
+                    <div className="text-sm p-3 rounded-lg bg-muted w-full">
+                      Current stock: <span className="font-bold">{selectedPart.quantityInStock}</span> · Location: {selectedPart.location || 'Default'}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Layers className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Stock</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Adjustment Type</Label>
+                  <Select value={adjustForm.type} onValueChange={v => setAdjustForm({...adjustForm, type: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger>
+                    <SelectContent><SelectItem value="increase">Increase (+)</SelectItem><SelectItem value="decrease">Decrease (-)</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Quantity <span className="text-destructive">*</span></Label><Input type="number" min={1} value={adjustForm.quantity || ''} onChange={e => setAdjustForm({...adjustForm, quantity: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="Enter quantity" required /></div>
+                {selectedPart && adjustForm.quantity > 0 && (
+                  <div className="flex items-end">
+                    <div className="text-sm p-3 rounded-lg bg-muted w-full">
+                      New stock level: <span className="font-bold">{adjustForm.type === 'increase' ? selectedPart.quantityInStock + adjustForm.quantity : selectedPart.quantityInStock - adjustForm.quantity}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Reason</Label><Textarea value={adjustForm.reason} onChange={e => setAdjustForm({...adjustForm, reason: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="e.g. New delivery, Damaged, Used in repair..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setAdjustOpen(false)}>Cancel</Button><Button onClick={handleAdjustStock}>Apply Adjustment</Button></DialogFooter>
         </DialogContent>
@@ -200,46 +228,72 @@ export default function InventoryPage() {
 
       {/* Stock Transfer Dialog */}
       <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Stock Transfer</DialogTitle>
             <DialogDescription>Transfer stock between warehouses or locations.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Select Part <span className="text-destructive">*</span></Label>
-              <Select value={transferForm.partId} onValueChange={v => {
-                const part = parts.find(p => p.id === v)
-                setTransferForm({...transferForm, partId: v, fromLocation: part?.location || 'Default'})
-              }}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a part" /></SelectTrigger>
-                <SelectContent>{parts.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.partNumber || 'N/A'}) — Stock: {p.quantityInStock}</SelectItem>)}</SelectContent>
-              </Select>
-            </div>
-            {selectedPart && (
-              <div className="col-span-1 md:col-span-2 text-sm p-3 rounded-lg bg-muted">
-                Current stock: <span className="font-bold">{selectedPart.quantityInStock}</span> · Location: {selectedPart.location || 'Default'}
+          <div className="space-y-6 py-2">
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Package className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Part Information</h3>
               </div>
-            )}
-            <div><Label className="text-xs">From Location <span className="text-destructive">*</span></Label>
-              <Select value={transferForm.fromLocation} onValueChange={v => setTransferForm({...transferForm, fromLocation: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Source" /></SelectTrigger>
-                <SelectContent>
-                  {warehouses.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-                  <SelectItem value="New Location">+ New Location</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Select Part <span className="text-destructive">*</span></Label>
+                  <Select value={transferForm.partId} onValueChange={v => {
+                    const part = parts.find(p => p.id === v)
+                    setTransferForm({...transferForm, partId: v, fromLocation: part?.location || 'Default'})
+                  }}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a part" /></SelectTrigger>
+                    <SelectContent>{parts.map(p => <SelectItem key={p.id} value={p.id}>{p.name} ({p.partNumber || 'N/A'}) — Stock: {p.quantityInStock}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                {selectedPart && (
+                  <div className="col-span-1 md:col-span-2 flex items-end">
+                    <div className="text-sm p-3 rounded-lg bg-muted w-full">
+                      Current stock: <span className="font-bold">{selectedPart.quantityInStock}</span> · Location: {selectedPart.location || 'Default'}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div><Label className="text-xs">To Location <span className="text-destructive">*</span></Label>
-              <Select value={transferForm.toLocation} onValueChange={v => setTransferForm({...transferForm, toLocation: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Destination" /></SelectTrigger>
-                <SelectContent>
-                  {warehouses.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-                  <SelectItem value="New Location">+ New Location</SelectItem>
-                </SelectContent>
-              </Select>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <ArrowRightLeft className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Transfer</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">From Location <span className="text-destructive">*</span></Label>
+                  <Select value={transferForm.fromLocation} onValueChange={v => setTransferForm({...transferForm, fromLocation: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Source" /></SelectTrigger>
+                    <SelectContent>
+                      {warehouses.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                      <SelectItem value="New Location">+ New Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">To Location <span className="text-destructive">*</span></Label>
+                  <Select value={transferForm.toLocation} onValueChange={v => setTransferForm({...transferForm, toLocation: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Destination" /></SelectTrigger>
+                    <SelectContent>
+                      {warehouses.map(w => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                      <SelectItem value="New Location">+ New Location</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Quantity to Transfer <span className="text-destructive">*</span></Label><Input type="number" min={1} value={transferForm.quantity || ''} onChange={e => setTransferForm({...transferForm, quantity: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="Enter quantity" required /></div>
+              </div>
             </div>
-            <div><Label className="text-xs">Quantity to Transfer <span className="text-destructive">*</span></Label><Input type="number" min={1} value={transferForm.quantity || ''} onChange={e => setTransferForm({...transferForm, quantity: parseInt(e.target.value) || 0})} className="h-10 mt-1" placeholder="Enter quantity" required /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={transferForm.notes} onChange={e => setTransferForm({...transferForm, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Transfer reason or notes..." /></div>
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={transferForm.notes} onChange={e => setTransferForm({...transferForm, notes: e.target.value})} className="mt-1 min-h-[80px]" rows={2} placeholder="Transfer reason or notes..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setTransferOpen(false)}>Cancel</Button><Button onClick={handleStockTransfer}>Transfer Stock</Button></DialogFooter>
         </DialogContent>

@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { IdCard, Plus, Search, Edit, Trash2, Loader2 } from 'lucide-react'
+import { IdCard, Plus, Search, Edit, Trash2, Loader2, User, CreditCard, Briefcase, Star } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -131,25 +131,63 @@ export default function DriversPage() {
             <DialogTitle>{editItem ? 'Edit Driver' : 'Add Driver'}</DialogTitle>
             <DialogDescription>{editItem ? 'Update driver information, license, and employment details' : 'Register a new driver with personal and license information'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">First Name *</Label><Input value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-10 mt-1" required placeholder="Enter first name" /></div>
-            <div><Label className="text-xs">Last Name *</Label><Input value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-10 mt-1" required placeholder="Enter last name" /></div>
-            <div><Label className="text-xs">Email</Label><Input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-10 mt-1" placeholder="driver@email.com" /></div>
-            <div><Label className="text-xs">Phone *</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-10 mt-1" required placeholder="+1 (555) 000-0000" /></div>
-            <div><Label className="text-xs">License Number *</Label><Input value={form.licenseNumber || ''} onChange={e => setForm({...form, licenseNumber: e.target.value})} className="h-10 mt-1" required placeholder="DL-12345678" /></div>
-            <div><Label className="text-xs">License Expiry</Label><Input type="date" value={form.licenseExpiry ? form.licenseExpiry.split('T')[0] : ''} onChange={e => setForm({...form, licenseExpiry: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label className="text-xs">License Class</Label><Input value={form.licenseClass || ''} onChange={e => setForm({...form, licenseClass: e.target.value})} className="h-10 mt-1" placeholder="e.g., Class A, B, C" /></div>
-            <div><Label className="text-xs">Employment Type</Label><Select value={form.employmentType || 'full_time'} onValueChange={v => setForm({...form, employmentType: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="full_time">Full Time</SelectItem><SelectItem value="part_time">Part Time</SelectItem><SelectItem value="contract">Contract</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Base Salary ($)</Label><Input type="number" value={form.baseSalary || ''} onChange={e => setForm({...form, baseSalary: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label className="text-xs">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="on_leave">On Leave</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="terminated">Terminated</SelectItem></SelectContent></Select></div>
-            <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2"><p className="text-sm font-semibold text-muted-foreground mb-3">Personal & Emergency</p></div>
-            <div><Label className="text-xs">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Street address" /></div>
-            <div><Label className="text-xs">City</Label><Input value={form.city || ''} onChange={e => setForm({...form, city: e.target.value})} className="h-10 mt-1" placeholder="City" /></div>
-            <div><Label className="text-xs">Nationality</Label><Input value={form.nationality || ''} onChange={e => setForm({...form, nationality: e.target.value})} className="h-10 mt-1" placeholder="e.g. US, UK, UAE" /></div>
-            <div><Label className="text-xs">Date of Birth</Label><Input type="date" value={form.dateOfBirth ? form.dateOfBirth.split('T')[0] : ''} onChange={e => setForm({...form, dateOfBirth: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label className="text-xs">Hire Date</Label><Input type="date" value={form.hireDate ? form.hireDate.split('T')[0] : ''} onChange={e => setForm({...form, hireDate: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label className="text-xs">Emergency Contact</Label><Input value={form.emergencyContact || ''} onChange={e => setForm({...form, emergencyContact: e.target.value})} className="h-10 mt-1" placeholder="Emergency contact name" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this driver..." /></div>
+          <div className="space-y-6 py-2">
+            {/* Section: Personal Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <User className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Personal Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">First Name *</Label><Input value={form.firstName || ''} onChange={e => setForm({...form, firstName: e.target.value})} className="h-10 mt-1" required placeholder="Enter first name" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Last Name *</Label><Input value={form.lastName || ''} onChange={e => setForm({...form, lastName: e.target.value})} className="h-10 mt-1" required placeholder="Enter last name" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Email</Label><Input type="email" value={form.email || ''} onChange={e => setForm({...form, email: e.target.value})} className="h-10 mt-1" placeholder="driver@email.com" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Phone *</Label><Input value={form.phone || ''} onChange={e => setForm({...form, phone: e.target.value})} className="h-10 mt-1" required placeholder="+1 (555) 000-0000" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Nationality</Label><Input value={form.nationality || ''} onChange={e => setForm({...form, nationality: e.target.value})} className="h-10 mt-1" placeholder="e.g. US, UK, UAE" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Date of Birth</Label><Input type="date" value={form.dateOfBirth ? form.dateOfBirth.split('T')[0] : ''} onChange={e => setForm({...form, dateOfBirth: e.target.value})} className="h-10 mt-1" /></div>
+              </div>
+            </div>
+
+            {/* Section: License Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">License Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">License Number *</Label><Input value={form.licenseNumber || ''} onChange={e => setForm({...form, licenseNumber: e.target.value})} className="h-10 mt-1" required placeholder="DL-12345678" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">License Expiry</Label><Input type="date" value={form.licenseExpiry ? form.licenseExpiry.split('T')[0] : ''} onChange={e => setForm({...form, licenseExpiry: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">License Class</Label><Input value={form.licenseClass || ''} onChange={e => setForm({...form, licenseClass: e.target.value})} className="h-10 mt-1" placeholder="e.g., Class A, B, C" /></div>
+              </div>
+            </div>
+
+            {/* Section: Employment */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Briefcase className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Employment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Hire Date</Label><Input type="date" value={form.hireDate ? form.hireDate.split('T')[0] : ''} onChange={e => setForm({...form, hireDate: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Status</Label><Select value={form.status || 'active'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="on_leave">On Leave</SelectItem><SelectItem value="inactive">Inactive</SelectItem><SelectItem value="terminated">Terminated</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Address</Label><Input value={form.address || ''} onChange={e => setForm({...form, address: e.target.value})} className="h-10 mt-1" placeholder="Street address" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">City</Label><Input value={form.city || ''} onChange={e => setForm({...form, city: e.target.value})} className="h-10 mt-1" placeholder="City" /></div>
+              </div>
+            </div>
+
+            {/* Section: Performance */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Star className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Performance</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Employment Type</Label><Select value={form.employmentType || 'full_time'} onValueChange={v => setForm({...form, employmentType: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="full_time">Full Time</SelectItem><SelectItem value="part_time">Part Time</SelectItem><SelectItem value="contract">Contract</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Base Salary ($)</Label><Input type="number" value={form.baseSalary || ''} onChange={e => setForm({...form, baseSalary: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Emergency Contact</Label><Input value={form.emergencyContact || ''} onChange={e => setForm({...form, emergencyContact: e.target.value})} className="h-10 mt-1" placeholder="Emergency contact name" /></div>
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this driver..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editItem ? 'Update' : 'Create'}</Button></DialogFooter>
         </DialogContent>

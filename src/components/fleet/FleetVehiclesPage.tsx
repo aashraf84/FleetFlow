@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Car, Plus, Search, Filter, Edit, Trash2, Eye, Loader2 } from 'lucide-react'
+import { Car, Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Settings, DollarSign, FileText } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -191,52 +191,88 @@ export default function FleetVehiclesPage() {
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>{editItem ? 'Edit Vehicle' : 'Add Vehicle'}</DialogTitle><DialogDescription>{editItem ? 'Update the vehicle details and specifications.' : 'Add a new vehicle to the fleet registry with all required details.'}</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label>Vehicle Number *</Label><Input value={form.vehicleNumber || ''} onChange={e => setForm({...form, vehicleNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. V-001" required /></div>
-            <div><Label>Registration Number *</Label><Input value={form.registrationNumber || ''} onChange={e => setForm({...form, registrationNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. ABC-1234" required /></div>
-            <div><Label>VIN</Label><Input value={form.vin || ''} onChange={e => setForm({...form, vin: e.target.value})} className="h-10 mt-1" placeholder="Vehicle Identification Number" /></div>
-            <div><Label>Make *</Label><Input value={form.make || ''} onChange={e => setForm({...form, make: e.target.value})} className="h-10 mt-1" placeholder="e.g. Toyota" required /></div>
-            <div><Label>Model *</Label><Input value={form.model || ''} onChange={e => setForm({...form, model: e.target.value})} className="h-10 mt-1" placeholder="e.g. Camry" required /></div>
-            <div><Label>Year</Label><Input type="number" value={form.year || ''} onChange={e => setForm({...form, year: parseInt(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 2024" /></div>
-            <div><Label>Category</Label>
-              <Select value={form.category || 'sedan'} onValueChange={v => setForm({...form, category: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
-                <SelectContent><SelectItem value="sedan">Sedan</SelectItem><SelectItem value="suv">SUV</SelectItem><SelectItem value="truck">Truck</SelectItem><SelectItem value="bus">Bus</SelectItem><SelectItem value="van">Van</SelectItem><SelectItem value="luxury">Luxury</SelectItem><SelectItem value="equipment">Equipment</SelectItem></SelectContent>
-              </Select>
+          <div className="space-y-6 py-2">
+            {/* Section: Vehicle Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Car className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Vehicle Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle Number *</Label><Input value={form.vehicleNumber || ''} onChange={e => setForm({...form, vehicleNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. V-001" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Registration Number *</Label><Input value={form.registrationNumber || ''} onChange={e => setForm({...form, registrationNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. ABC-1234" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Make *</Label><Input value={form.make || ''} onChange={e => setForm({...form, make: e.target.value})} className="h-10 mt-1" placeholder="e.g. Toyota" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Model *</Label><Input value={form.model || ''} onChange={e => setForm({...form, model: e.target.value})} className="h-10 mt-1" placeholder="e.g. Camry" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Year</Label><Input type="number" value={form.year || ''} onChange={e => setForm({...form, year: parseInt(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 2024" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Category</Label>
+                  <Select value={form.category || 'sedan'} onValueChange={v => setForm({...form, category: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
+                    <SelectContent><SelectItem value="sedan">Sedan</SelectItem><SelectItem value="suv">SUV</SelectItem><SelectItem value="truck">Truck</SelectItem><SelectItem value="bus">Bus</SelectItem><SelectItem value="van">Van</SelectItem><SelectItem value="luxury">Luxury</SelectItem><SelectItem value="equipment">Equipment</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Color</Label><Input value={form.color || ''} onChange={e => setForm({...form, color: e.target.value})} className="h-10 mt-1" placeholder="e.g. White, Black, Silver" /></div>
+              </div>
             </div>
-            <div><Label>Fuel Type</Label>
-              <Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select fuel type" /></SelectTrigger>
-                <SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem><SelectItem value="hybrid">Hybrid</SelectItem><SelectItem value="cng">CNG</SelectItem></SelectContent>
-              </Select>
+
+            {/* Section: Specifications */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Settings className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Specifications</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">VIN</Label><Input value={form.vin || ''} onChange={e => setForm({...form, vin: e.target.value})} className="h-10 mt-1" placeholder="Vehicle Identification Number" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Engine Number</Label><Input value={form.engineNumber || ''} onChange={e => setForm({...form, engineNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. ENG-123456" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Transmission</Label>
+                  <Select value={form.transmission || 'automatic'} onValueChange={v => setForm({...form, transmission: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select transmission" /></SelectTrigger>
+                    <SelectContent><SelectItem value="automatic">Automatic</SelectItem><SelectItem value="manual">Manual</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Fuel Type</Label>
+                  <Select value={form.fuelType || 'petrol'} onValueChange={v => setForm({...form, fuelType: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select fuel type" /></SelectTrigger>
+                    <SelectContent><SelectItem value="petrol">Petrol</SelectItem><SelectItem value="diesel">Diesel</SelectItem><SelectItem value="electric">Electric</SelectItem><SelectItem value="hybrid">Hybrid</SelectItem><SelectItem value="cng">CNG</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Mileage</Label><Input type="number" value={form.mileage || ''} onChange={e => setForm({...form, mileage: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0" /></div>
+              </div>
             </div>
-            <div><Label>Transmission</Label>
-              <Select value={form.transmission || 'automatic'} onValueChange={v => setForm({...form, transmission: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select transmission" /></SelectTrigger>
-                <SelectContent><SelectItem value="automatic">Automatic</SelectItem><SelectItem value="manual">Manual</SelectItem></SelectContent>
-              </Select>
+
+            {/* Section: Financial */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Weekly Rate ($)</Label><Input type="number" value={form.weeklyRate || ''} onChange={e => setForm({...form, weeklyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Monthly Rate ($)</Label><Input type="number" value={form.monthlyRate || ''} onChange={e => setForm({...form, monthlyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                  <Select value={form.status || 'available'} onValueChange={v => setForm({...form, status: v})}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent><SelectItem value="available">Available</SelectItem><SelectItem value="reserved">Reserved</SelectItem><SelectItem value="rented">Rented</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem><SelectItem value="in_service">In Service</SelectItem><SelectItem value="retired">Retired</SelectItem></SelectContent>
+                  </Select>
+                </div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Current Location</Label><Input value={form.currentLocation || ''} onChange={e => setForm({...form, currentLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office, Lot B" /></div>
+              </div>
             </div>
-            <div><Label>Seating Capacity</Label><Input type="number" value={form.seatingCapacity || ''} onChange={e => setForm({...form, seatingCapacity: parseInt(e.target.value)})} className="h-10 mt-1" placeholder="e.g. 5" /></div>
-            <div><Label>Daily Rate ($)</Label><Input type="number" value={form.dailyRate || ''} onChange={e => setForm({...form, dailyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Weekly Rate ($)</Label><Input type="number" value={form.weeklyRate || ''} onChange={e => setForm({...form, weeklyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Monthly Rate ($)</Label><Input type="number" value={form.monthlyRate || ''} onChange={e => setForm({...form, monthlyRate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Purchase Price ($)</Label><Input type="number" value={form.purchasePrice || ''} onChange={e => setForm({...form, purchasePrice: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Mileage</Label><Input type="number" value={form.mileage || ''} onChange={e => setForm({...form, mileage: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0" /></div>
-            <div><Label>Status</Label>
-              <Select value={form.status || 'available'} onValueChange={v => setForm({...form, status: v})}>
-                <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
-                <SelectContent><SelectItem value="available">Available</SelectItem><SelectItem value="reserved">Reserved</SelectItem><SelectItem value="rented">Rented</SelectItem><SelectItem value="maintenance">Maintenance</SelectItem><SelectItem value="in_service">In Service</SelectItem><SelectItem value="retired">Retired</SelectItem></SelectContent>
-              </Select>
+
+            {/* Section: Additional */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Last Service Date</Label><Input type="date" value={form.lastServiceDate ? form.lastServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, lastServiceDate: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Next Service Date</Label><Input type="date" value={form.nextServiceDate ? form.nextServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, nextServiceDate: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Insurance Expiry</Label><Input type="date" value={form.insuranceExpiry ? form.insuranceExpiry.split('T')[0] : ''} onChange={e => setForm({...form, insuranceExpiry: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Registration Expiry</Label><Input type="date" value={form.registrationExpiry ? form.registrationExpiry.split('T')[0] : ''} onChange={e => setForm({...form, registrationExpiry: e.target.value})} className="h-10 mt-1" /></div>
+                <div className="col-span-1 md:col-span-2"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this vehicle..." /></div>
+              </div>
             </div>
-            <div className="col-span-1 md:col-span-2"><Label>Current Location</Label><Input value={form.currentLocation || ''} onChange={e => setForm({...form, currentLocation: e.target.value})} className="h-10 mt-1" placeholder="e.g. Main Office, Lot B" /></div>
-            <div className="col-span-1 md:col-span-2 border-t pt-4 mt-2"><p className="text-sm font-semibold text-muted-foreground mb-3">Service & Registration</p></div>
-            <div><Label>Color</Label><Input value={form.color || ''} onChange={e => setForm({...form, color: e.target.value})} className="h-10 mt-1" placeholder="e.g. White, Black, Silver" /></div>
-            <div><Label>Engine Number</Label><Input value={form.engineNumber || ''} onChange={e => setForm({...form, engineNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. ENG-123456" /></div>
-            <div><Label>Registration Expiry</Label><Input type="date" value={form.registrationExpiry ? form.registrationExpiry.split('T')[0] : ''} onChange={e => setForm({...form, registrationExpiry: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label>Insurance Expiry</Label><Input type="date" value={form.insuranceExpiry ? form.insuranceExpiry.split('T')[0] : ''} onChange={e => setForm({...form, insuranceExpiry: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label>Last Service Date</Label><Input type="date" value={form.lastServiceDate ? form.lastServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, lastServiceDate: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label>Next Service Date</Label><Input type="date" value={form.nextServiceDate ? form.nextServiceDate.split('T')[0] : ''} onChange={e => setForm({...form, nextServiceDate: e.target.value})} className="h-10 mt-1" /></div>
-            <div className="col-span-1 md:col-span-2"><Label>Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="h-10 mt-1 min-h-[80px]" placeholder="Additional notes about this vehicle..." /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>

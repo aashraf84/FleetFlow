@@ -14,7 +14,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Plus, Pencil, Trash2, MoreHorizontal, CheckCircle2, XCircle, Loader2
+  Plus, Pencil, Trash2, MoreHorizontal, Receipt, DollarSign, FileText, CheckCircle2, XCircle, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -219,73 +219,96 @@ export default function FinanceExpensesPage() {
             <DialogTitle>{editId ? 'Edit Expense' : 'Record Expense'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the expense details below.' : 'Fill in the details to record a new expense.'}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Category <span className="text-destructive">*</span></Label>
-                <Select value={form.category || 'maintenance'} onValueChange={v => setForm({ ...form, category: v })} required>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="maintenance">Maintenance</SelectItem>
-                    <SelectItem value="fuel">Fuel</SelectItem>
-                    <SelectItem value="payroll">Payroll</SelectItem>
-                    <SelectItem value="insurance">Insurance</SelectItem>
-                    <SelectItem value="permits">Permits</SelectItem>
-                    <SelectItem value="office">Office</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+          <div className="space-y-6 py-2">
+            {/* Expense Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Receipt className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Expense Details</h3>
               </div>
-              <div>
-                <Label className="text-xs">Amount ($) <span className="text-destructive">*</span></Label>
-                <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
-              </div>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Description <span className="text-destructive">*</span></Label>
-              <Input value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="h-10 mt-1" placeholder="Enter expense description" required />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Vendor</Label>
-                <Input value={form.vendor || ''} onChange={e => setForm({ ...form, vendor: e.target.value })} className="h-10 mt-1" placeholder="Vendor or supplier name" />
-              </div>
-              <div>
-                <Label className="text-xs">Date <span className="text-destructive">*</span></Label>
-                <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-10 mt-1" required />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Payment Method</Label>
-                <Select value={form.paymentMethod || ''} onValueChange={v => setForm({ ...form, paymentMethod: v })}>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {editId && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-xs">Status</Label>
-                  <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
-                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <Label className="text-xs font-medium text-muted-foreground">Category <span className="text-destructive">*</span></Label>
+                  <Select value={form.category || 'maintenance'} onValueChange={v => setForm({ ...form, category: v })} required>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
+                      <SelectItem value="maintenance">Maintenance</SelectItem>
+                      <SelectItem value="fuel">Fuel</SelectItem>
+                      <SelectItem value="payroll">Payroll</SelectItem>
+                      <SelectItem value="insurance">Insurance</SelectItem>
+                      <SelectItem value="permits">Permits</SelectItem>
+                      <SelectItem value="office">Office</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-              )}
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Date <span className="text-destructive">*</span></Label>
+                  <Input type="date" value={form.date || ''} onChange={e => setForm({ ...form, date: e.target.value })} className="h-10 mt-1" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Description <span className="text-destructive">*</span></Label>
+                  <Input value={form.description || ''} onChange={e => setForm({ ...form, description: e.target.value })} className="h-10 mt-1" placeholder="Enter expense description" required />
+                </div>
+              </div>
             </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
+
+            {/* Amount & Payment */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Amount & Payment</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Amount ($) <span className="text-destructive">*</span></Label>
+                  <Input type="number" value={form.amount || ''} onChange={e => setForm({ ...form, amount: parseFloat(e.target.value) || 0 })} className="h-10 mt-1" placeholder="0.00" required />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Payment Method</Label>
+                  <Select value={form.paymentMethod || ''} onValueChange={v => setForm({ ...form, paymentMethod: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select payment method" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="card">Card</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cheque">Cheque</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Vendor</Label>
+                  <Input value={form.vendor || ''} onChange={e => setForm({ ...form, vendor: e.target.value })} className="h-10 mt-1" placeholder="Vendor or supplier name" />
+                </div>
+              </div>
+            </div>
+
+            {/* Additional */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {editId && (
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                    <Select value={form.status || 'pending'} onValueChange={v => setForm({ ...form, status: v })}>
+                      <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="approved">Approved</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+                <div className="md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
+                </div>
+              </div>
             </div>
           </div>
           <DialogFooter>

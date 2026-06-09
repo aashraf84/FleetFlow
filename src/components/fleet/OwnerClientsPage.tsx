@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   Building2, Users, UserX, UserPlus, Search, Plus, Pencil, Trash2, Ban, CheckCircle2,
-  Phone, Mail, Globe, MoreHorizontal, Eye, Loader2
+  Phone, Mail, Globe, MoreHorizontal, Eye, Loader2, CreditCard
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
@@ -329,71 +329,87 @@ export default function OwnerClientsPage() {
             <DialogTitle>{editId ? 'Edit Client' : 'Add New Client'}</DialogTitle>
             <DialogDescription>{editId ? 'Update client information and settings' : 'Enter details to register a new enterprise client'}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Company Name *</Label>
-                <Input className="h-10 text-sm" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required placeholder="Enter company name" />
+          <form onSubmit={handleSubmit} className="space-y-6 py-2">
+            {/* Company Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Building2 className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Company Information</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Contact Person *</Label>
-                <Input className="h-10 text-sm" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required placeholder="Full name of contact person" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Company Name *</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required placeholder="Enter company name" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Country</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} placeholder="United States" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Industry</Label>
+                  <Select value={formData.industryType} onValueChange={(v) => setFormData({ ...formData, industryType: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select industry" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Logistics">Logistics</SelectItem>
+                      <SelectItem value="Transport">Transport</SelectItem>
+                      <SelectItem value="Car Rental">Car Rental</SelectItem>
+                      <SelectItem value="Fleet Management">Fleet Management</SelectItem>
+                      <SelectItem value="Government">Government</SelectItem>
+                      <SelectItem value="Construction">Construction</SelectItem>
+                      <SelectItem value="Oil & Gas">Oil & Gas</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select></div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Email *</Label>
-                <Input type="email" className="h-10 text-sm" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required placeholder="contact@company.com" />
+            </div>
+            {/* Contact Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Phone className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contact Details</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Phone</Label>
-                <Input className="h-10 text-sm" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Contact Person *</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required placeholder="Full name of contact person" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Email *</Label>
+                  <Input type="email" className="h-10 text-sm mt-1" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required placeholder="contact@company.com" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Phone</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" /></div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Country</Label>
-                <Input className="h-10 text-sm" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} placeholder="United States" />
+            </div>
+            {/* Subscription & License */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CreditCard className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Subscription & License</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Industry</Label>
-                <Select value={formData.industryType} onValueChange={(v) => setFormData({ ...formData, industryType: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select industry" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Logistics">Logistics</SelectItem>
-                    <SelectItem value="Transport">Transport</SelectItem>
-                    <SelectItem value="Car Rental">Car Rental</SelectItem>
-                    <SelectItem value="Fleet Management">Fleet Management</SelectItem>
-                    <SelectItem value="Government">Government</SelectItem>
-                    <SelectItem value="Construction">Construction</SelectItem>
-                    <SelectItem value="Oil & Gas">Oil & Gas</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Subscription Plan</Label>
+                  <Select value={formData.subscriptionPlan} onValueChange={(v) => setFormData({ ...formData, subscriptionPlan: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select plan" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="trial">Trial</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="annual">Annual</SelectItem>
+                      <SelectItem value="enterprise">Enterprise</SelectItem>
+                    </SelectContent>
+                  </Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">License Status</Label>
+                  <Select value={formData.licenseStatus} onValueChange={(v) => setFormData({ ...formData, licenseStatus: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="expired">Expired</SelectItem>
+                      <SelectItem value="trial">Trial</SelectItem>
+                      <SelectItem value="suspended">Suspended</SelectItem>
+                    </SelectContent>
+                  </Select></div>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Subscription Plan</Label>
-                <Select value={formData.subscriptionPlan} onValueChange={(v) => setFormData({ ...formData, subscriptionPlan: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select plan" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="trial">Trial</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                    <SelectItem value="annual">Annual</SelectItem>
-                    <SelectItem value="enterprise">Enterprise</SelectItem>
-                  </SelectContent>
-                </Select>
+            </div>
+            {/* Additional Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Mail className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional Information</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">License Status</Label>
-                <Select value={formData.licenseStatus} onValueChange={(v) => setFormData({ ...formData, licenseStatus: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="expired">Expired</SelectItem>
-                    <SelectItem value="trial">Trial</SelectItem>
-                    <SelectItem value="suspended">Suspended</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="col-span-1 md:col-span-2 space-y-1.5">
-                <Label className="text-xs">Notes</Label>
-                <Textarea className="min-h-[80px] text-sm" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes about this client..." />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea className="min-h-[80px] text-sm mt-1" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes about this client..." /></div>
               </div>
             </div>
             <DialogFooter>

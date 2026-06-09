@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { FolderOpen, Plus, Upload, Loader2 } from 'lucide-react'
+import { FolderOpen, Plus, Upload, Loader2, FileText, FileIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function DocumentsPage() {
@@ -80,11 +80,29 @@ export default function DocumentsPage() {
             <DialogTitle>Add Document</DialogTitle>
             <DialogDescription>Upload a new document to the system. Provide document details and category.</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Title *</Label><Input value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} className="h-10 mt-1" required placeholder="Document title" /></div>
-            <div><Label className="text-xs">Category</Label><Select value={form.category || 'general'} onValueChange={v => setForm({...form, category: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent><SelectItem value="contract">Contract</SelectItem><SelectItem value="license">License</SelectItem><SelectItem value="insurance">Insurance</SelectItem><SelectItem value="vehicle">Vehicle</SelectItem><SelectItem value="compliance">Compliance</SelectItem><SelectItem value="general">General</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">File Name</Label><Input value={form.fileName || ''} onChange={e => setForm({...form, fileName: e.target.value})} className="h-10 mt-1" placeholder="document.pdf" /></div>
-            <div className="col-span-1 md:col-span-2"><Label className="text-xs">Description</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="min-h-[80px] mt-1 text-sm" placeholder="Describe this document..." /></div>
+          <div className="space-y-6 py-2">
+            {/* Document Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Document Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Title *</Label><Input value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} className="h-10 mt-1" required placeholder="Document title" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Category</Label><Select value={form.category || 'general'} onValueChange={v => setForm({...form, category: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select category" /></SelectTrigger><SelectContent><SelectItem value="contract">Contract</SelectItem><SelectItem value="license">License</SelectItem><SelectItem value="insurance">Insurance</SelectItem><SelectItem value="vehicle">Vehicle</SelectItem><SelectItem value="compliance">Compliance</SelectItem><SelectItem value="general">General</SelectItem></SelectContent></Select></div>
+              </div>
+            </div>
+            {/* File Information */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileIcon className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">File Information</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">File Name</Label><Input value={form.fileName || ''} onChange={e => setForm({...form, fileName: e.target.value})} className="h-10 mt-1" placeholder="document.pdf" /></div>
+                <div className="col-span-1 md:col-span-2"><Label className="text-xs font-medium text-muted-foreground">Description</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="min-h-[80px] mt-1 text-sm" placeholder="Describe this document..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Add</Button></DialogFooter>
         </DialogContent>

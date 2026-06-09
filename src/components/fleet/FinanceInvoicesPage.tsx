@@ -14,7 +14,8 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Receipt, Plus, Pencil, Trash2, MoreHorizontal, Send, CheckCircle2, XCircle, Eye, Loader2
+  Receipt, Plus, Pencil, Trash2, MoreHorizontal, Send, CheckCircle2, XCircle, Eye, Loader2,
+  FileText, DollarSign, StickyNote, List
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -265,35 +266,53 @@ export default function FinanceInvoicesPage() {
             <DialogTitle>{editId ? 'Edit Invoice' : 'Create Invoice'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify the invoice details below.' : 'Fill in the details to create a new invoice.'}</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Customer <span className="text-destructive">*</span></Label>
-                <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })} disabled={!!editId} required>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a customer" /></SelectTrigger>
-                  <SelectContent>
-                    {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}
-                  </SelectContent>
-                </Select>
+          <div className="space-y-6 py-2">
+            {/* Invoice Details */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <FileText className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Invoice Details</h3>
               </div>
-              <div>
-                <Label className="text-xs">Type</Label>
-                <Select value={form.type || 'rental'} onValueChange={v => setForm({ ...form, type: v })}>
-                  <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select invoice type" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="rental">Rental</SelectItem>
-                    <SelectItem value="transport">Transport</SelectItem>
-                    <SelectItem value="fuel">Fuel</SelectItem>
-                    <SelectItem value="service">Service</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Customer <span className="text-destructive">*</span></Label>
+                  <Select value={form.customerId || ''} onValueChange={v => setForm({ ...form, customerId: v })} disabled={!!editId} required>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select a customer" /></SelectTrigger>
+                    <SelectContent>
+                      {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.firstName} {c.lastName}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Type</Label>
+                  <Select value={form.type || 'rental'} onValueChange={v => setForm({ ...form, type: v })}>
+                    <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select invoice type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="rental">Rental</SelectItem>
+                      <SelectItem value="transport">Transport</SelectItem>
+                      <SelectItem value="fuel">Fuel</SelectItem>
+                      <SelectItem value="service">Service</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Issue Date</Label>
+                  <Input type="date" value={form.issueDate || ''} onChange={e => setForm({ ...form, issueDate: e.target.value })} className="h-10 mt-1" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Due Date <span className="text-destructive">*</span></Label>
+                  <Input type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="h-10 mt-1" required />
+                </div>
               </div>
             </div>
 
             {/* Line Items */}
             <div>
-              <div className="flex items-center justify-between mb-2">
-                <Label className="text-xs font-medium">Line Items</Label>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <List className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Line Items</h3>
+              </div>
+              <div className="flex items-center justify-end mb-2">
                 <Button variant="outline" size="sm" className="h-7 text-xs" onClick={addItem}>
                   <Plus className="h-3 w-3 mr-1" /> Add Item
                 </Button>
@@ -331,39 +350,63 @@ export default function FinanceInvoicesPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label className="text-xs">Subtotal ($)</Label>
-                <Input type="number" value={form.subtotal || ''} onChange={e => {
-                  const val = parseFloat(e.target.value) || 0
-                  setForm({ ...form, subtotal: val, totalAmount: val + (form.taxAmount || 0) })
-                }} className="h-10 mt-1" placeholder="0.00" />
+            {/* Amounts */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Amounts</h3>
               </div>
-              <div>
-                <Label className="text-xs">Tax ($)</Label>
-                <Input type="number" value={form.taxAmount || ''} onChange={e => {
-                  const val = parseFloat(e.target.value) || 0
-                  setForm({ ...form, taxAmount: val, totalAmount: (form.subtotal || 0) + val })
-                }} className="h-10 mt-1" placeholder="0.00" />
-              </div>
-              <div>
-                <Label className="text-xs">Total ($)</Label>
-                <Input type="number" value={form.totalAmount || ''} readOnly className="h-10 mt-1 bg-muted font-medium" placeholder="0.00" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Subtotal ($)</Label>
+                  <Input type="number" value={form.subtotal || ''} onChange={e => {
+                    const val = parseFloat(e.target.value) || 0
+                    setForm({ ...form, subtotal: val, totalAmount: val + (form.taxAmount || 0) })
+                  }} className="h-10 mt-1" placeholder="0.00" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Tax ($)</Label>
+                  <Input type="number" value={form.taxAmount || ''} onChange={e => {
+                    const val = parseFloat(e.target.value) || 0
+                    setForm({ ...form, taxAmount: val, totalAmount: (form.subtotal || 0) + val })
+                  }} className="h-10 mt-1" placeholder="0.00" />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-muted-foreground">Total ($)</Label>
+                  <Input type="number" value={form.totalAmount || ''} readOnly className="h-10 mt-1 bg-muted font-medium" placeholder="0.00" />
+                </div>
+                {editId && (
+                  <div>
+                    <Label className="text-xs font-medium text-muted-foreground">Status</Label>
+                    <Select value={form.status || 'draft'} onValueChange={v => setForm({ ...form, status: v })}>
+                      <SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="sent">Sent</SelectItem>
+                        <SelectItem value="paid">Paid</SelectItem>
+                        <SelectItem value="partial">Partial</SelectItem>
+                        <SelectItem value="overdue">Overdue</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-xs">Issue Date</Label>
-                <Input type="date" value={form.issueDate || ''} onChange={e => setForm({ ...form, issueDate: e.target.value })} className="h-10 mt-1" />
+
+            {/* Notes */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <StickyNote className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Notes</h3>
               </div>
-              <div>
-                <Label className="text-xs">Due Date <span className="text-destructive">*</span></Label>
-                <Input type="date" value={form.dueDate || ''} onChange={e => setForm({ ...form, dueDate: e.target.value })} className="h-10 mt-1" required />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Notes</Label>
+                  <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
+                </div>
               </div>
-            </div>
-            <div className="col-span-1 md:col-span-2">
-              <Label className="text-xs">Notes</Label>
-              <Textarea value={form.notes || ''} onChange={e => setForm({ ...form, notes: e.target.value })} className="mt-1 min-h-[80px]" placeholder="Additional notes or comments..." rows={3} />
             </div>
           </div>
           <DialogFooter>
@@ -375,7 +418,7 @@ export default function FinanceInvoicesPage() {
 
       {/* View Invoice Dialog */}
       <Dialog open={!!viewInvoice} onOpenChange={() => setViewInvoice(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Invoice {viewInvoice?.invoiceNumber}</DialogTitle>
             <DialogDescription>View the full invoice details below.</DialogDescription>

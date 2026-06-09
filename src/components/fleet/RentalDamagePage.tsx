@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertTriangle, Plus, Search, Loader2 } from 'lucide-react'
+import { AlertTriangle, Plus, Search, Loader2, Link, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -120,13 +120,49 @@ export default function RentalDamagePage() {
       </Card>
 
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>New Damage Report</DialogTitle><DialogDescription>Report vehicle damage with details, repair estimates, and liability information.</DialogDescription></DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="col-span-1 md:col-span-2"><Label>Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div className="col-span-1 md:col-span-2"><Label>Description *</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe the damage in detail" required /></div>
-            <div><Label>Repair Estimate ($)</Label><Input type="number" value={form.repairEstimate || ''} onChange={e => setForm({...form, repairEstimate: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
-            <div><Label>Customer Liability ($)</Label><Input type="number" value={form.customerLiability || ''} onChange={e => setForm({...form, customerLiability: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+          <div className="space-y-6 py-2">
+            {/* Related Records Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Link className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Related Records</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle *</Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Customer</Label><Select value={form.customerId || ''} onValueChange={v => setForm({...form, customerId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select customer" /></SelectTrigger><SelectContent><SelectItem value="">None</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Contract</Label><Select value={form.contractId || ''} onValueChange={v => setForm({...form, contractId: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select contract" /></SelectTrigger><SelectContent><SelectItem value="">None</SelectItem></SelectContent></Select></div>
+              </div>
+            </div>
+
+            {/* Damage Details Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <AlertTriangle className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Damage Details</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Reported Date</Label><Input type="date" value={form.reportedDate || ''} onChange={e => setForm({...form, reportedDate: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Severity</Label><Select value={form.severity || ''} onValueChange={v => setForm({...form, severity: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select severity" /></SelectTrigger><SelectContent><SelectItem value="minor">Minor</SelectItem><SelectItem value="moderate">Moderate</SelectItem><SelectItem value="major">Major</SelectItem><SelectItem value="severe">Severe</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Location</Label><Input value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} className="h-10 mt-1" placeholder="e.g. Front bumper" /></div>
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Description *</Label><Textarea value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} className="mt-1 min-h-[80px]" rows={3} placeholder="Describe the damage in detail" required /></div>
+              </div>
+            </div>
+
+            {/* Financial Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <DollarSign className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Financial</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Repair Cost ($)</Label><Input type="number" value={form.repairCost || ''} onChange={e => setForm({...form, repairCost: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Insurance Claim ($)</Label><Input type="number" value={form.insuranceClaim || ''} onChange={e => setForm({...form, insuranceClaim: parseFloat(e.target.value)})} className="h-10 mt-1" placeholder="0.00" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Status</Label><Select value={form.status || 'reported'} onValueChange={v => setForm({...form, status: v})}><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select status" /></SelectTrigger><SelectContent><SelectItem value="reported">Reported</SelectItem><SelectItem value="assessed">Assessed</SelectItem><SelectItem value="repairing">Repairing</SelectItem><SelectItem value="repaired">Repaired</SelectItem><SelectItem value="closed">Closed</SelectItem></SelectContent></Select></div>
+                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label><Textarea value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} className="mt-1 min-h-[60px]" rows={2} placeholder="Additional notes..." /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}Create</Button></DialogFooter>
         </DialogContent>

@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { FileCheck, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Shield, CalendarDays, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function CompliancePage() {
@@ -167,13 +167,32 @@ export default function CompliancePage() {
             <DialogTitle>{editMode ? 'Edit Compliance Record' : 'Add Compliance Record'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the compliance record details below.' : 'Fill in the details to add a new compliance record.'}</DialogDescription>
           </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div><Label className="text-xs">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
-            <div><Label className="text-xs">Type <span className="text-destructive">*</span></Label><Select value={form.type || 'road_tax'} onValueChange={v => setForm({...form, type: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="road_tax">Road Tax</SelectItem><SelectItem value="permit">Permit</SelectItem><SelectItem value="fitness_certificate">Fitness Certificate</SelectItem><SelectItem value="emission">Emission</SelectItem><SelectItem value="registration">Registration</SelectItem></SelectContent></Select></div>
-            <div><Label className="text-xs">Document/Certificate Number <span className="text-destructive">*</span></Label><Input value={form.certificateNumber || form.documentNumber || ''} onChange={e => setForm({...form, certificateNumber: e.target.value, documentNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. CERT-2024-001" required /></div>
-            <div><Label className="text-xs">Issuing Authority</Label><Input value={form.issuingAuthority || ''} onChange={e => setForm({...form, issuingAuthority: e.target.value})} className="h-10 mt-1" placeholder="e.g. DMV, Transport Authority" /></div>
-            <div><Label className="text-xs">Issue Date</Label><Input type="date" value={form.issueDate || ''} onChange={e => setForm({...form, issueDate: e.target.value})} className="h-10 mt-1" /></div>
-            <div><Label className="text-xs">Expiry Date <span className="text-destructive">*</span></Label><Input type="date" value={form.expiryDate || ''} onChange={e => setForm({...form, expiryDate: e.target.value})} className="h-10 mt-1" required /></div>
+          <div className="space-y-6 py-2">
+            {/* Vehicle & Type */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Shield className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Vehicle & Type</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Vehicle <span className="text-destructive">*</span></Label><Select value={form.vehicleId || ''} onValueChange={v => setForm({...form, vehicleId: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select vehicle" /></SelectTrigger><SelectContent>{vehicles.map(v => <SelectItem key={v.id} value={v.id}>{v.make} {v.model}</SelectItem>)}</SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Type <span className="text-destructive">*</span></Label><Select value={form.type || 'road_tax'} onValueChange={v => setForm({...form, type: v})} required><SelectTrigger className="h-10 mt-1"><SelectValue placeholder="Select type" /></SelectTrigger><SelectContent><SelectItem value="road_tax">Road Tax</SelectItem><SelectItem value="permit">Permit</SelectItem><SelectItem value="fitness_certificate">Fitness Certificate</SelectItem><SelectItem value="emission">Emission</SelectItem><SelectItem value="registration">Registration</SelectItem></SelectContent></Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Document/Certificate Number <span className="text-destructive">*</span></Label><Input value={form.certificateNumber || form.documentNumber || ''} onChange={e => setForm({...form, certificateNumber: e.target.value, documentNumber: e.target.value})} className="h-10 mt-1" placeholder="e.g. CERT-2024-001" required /></div>
+              </div>
+            </div>
+
+            {/* Dates & Authority */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <CalendarDays className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Dates & Authority</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Issue Date</Label><Input type="date" value={form.issueDate || ''} onChange={e => setForm({...form, issueDate: e.target.value})} className="h-10 mt-1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Expiry Date <span className="text-destructive">*</span></Label><Input type="date" value={form.expiryDate || ''} onChange={e => setForm({...form, expiryDate: e.target.value})} className="h-10 mt-1" required /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Issuing Authority</Label><Input value={form.issuingAuthority || ''} onChange={e => setForm({...form, issuingAuthority: e.target.value})} className="h-10 mt-1" placeholder="e.g. DMV, Transport Authority" /></div>
+              </div>
+            </div>
           </div>
           <DialogFooter><Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="button" onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleSubmit(); }} disabled={saving}>{saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{editMode ? 'Update' : 'Add'}</Button></DialogFooter>
         </DialogContent>

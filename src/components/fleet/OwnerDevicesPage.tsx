@@ -276,49 +276,55 @@ export default function OwnerDevicesPage() {
 
       {/* Add Device Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Register New Device</DialogTitle>
             <DialogDescription>Add a new device to the registry. Provide device details for tracking and management.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs">Device Name *</Label>
-              <Input className="h-10 text-sm" value={formData.deviceName} onChange={(e) => setFormData({ ...formData, deviceName: e.target.value })} required placeholder="e.g., Chrome on Windows 11" />
+          <form onSubmit={handleSubmit} className="space-y-6 py-2">
+            {/* Device Identity */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Monitor className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Device Identity</h3>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">Device Name *</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.deviceName} onChange={(e) => setFormData({ ...formData, deviceName: e.target.value })} required placeholder="e.g., Chrome on Windows 11" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Browser</Label>
+                  <Select value={formData.browser} onValueChange={(v) => setFormData({ ...formData, browser: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select browser" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Chrome">Chrome</SelectItem>
+                      <SelectItem value="Firefox">Firefox</SelectItem>
+                      <SelectItem value="Safari">Safari</SelectItem>
+                      <SelectItem value="Edge">Edge</SelectItem>
+                    </SelectContent>
+                  </Select></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">OS</Label>
+                  <Select value={formData.os} onValueChange={(v) => setFormData({ ...formData, os: v })}>
+                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select OS" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Windows 11">Windows 11</SelectItem>
+                      <SelectItem value="macOS">macOS</SelectItem>
+                      <SelectItem value="Linux">Linux</SelectItem>
+                      <SelectItem value="iOS">iOS</SelectItem>
+                      <SelectItem value="Android">Android</SelectItem>
+                    </SelectContent>
+                  </Select></div>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs">Browser</Label>
-                <Select value={formData.browser} onValueChange={(v) => setFormData({ ...formData, browser: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select browser" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Chrome">Chrome</SelectItem>
-                    <SelectItem value="Firefox">Firefox</SelectItem>
-                    <SelectItem value="Safari">Safari</SelectItem>
-                    <SelectItem value="Edge">Edge</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Network & Location */}
+            <div>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
+                <Globe className="h-4 w-4 text-primary" />
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Network & Location</h3>
               </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">OS</Label>
-                <Select value={formData.os} onValueChange={(v) => setFormData({ ...formData, os: v })}>
-                  <SelectTrigger className="h-10 text-sm"><SelectValue placeholder="Select OS" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Windows 11">Windows 11</SelectItem>
-                    <SelectItem value="macOS">macOS</SelectItem>
-                    <SelectItem value="Linux">Linux</SelectItem>
-                    <SelectItem value="iOS">iOS</SelectItem>
-                    <SelectItem value="Android">Android</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">IP Address</Label>
-                <Input className="h-10 text-sm" value={formData.ipAddress} onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })} placeholder="192.168.1.1" />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-xs">Location</Label>
-                <Input className="h-10 text-sm" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="City, Country" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div><Label className="text-xs font-medium text-muted-foreground">IP Address</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.ipAddress} onChange={(e) => setFormData({ ...formData, ipAddress: e.target.value })} placeholder="192.168.1.1" /></div>
+                <div><Label className="text-xs font-medium text-muted-foreground">Location</Label>
+                  <Input className="h-10 text-sm mt-1" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} placeholder="City, Country" /></div>
               </div>
             </div>
             <DialogFooter>
