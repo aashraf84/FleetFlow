@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Car, ClipboardCheck, FileText, Plus, Pencil, Trash2, Eye } from 'lucide-react'
+import { Car, ClipboardCheck, FileText, Plus, Pencil, Trash2, Eye, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -169,40 +169,54 @@ export default function FleetInspectionsPage() {
   }
 
   const stats = [
-    { label: 'Total Inspections', value: inspections.length },
-    { label: 'Passed', value: inspections.filter(i => i.status === 'passed').length },
-    { label: 'Failed', value: inspections.filter(i => i.status === 'failed').length },
-    { label: 'Pending', value: inspections.filter(i => i.status === 'pending').length },
+    { label: 'Total Inspections', value: inspections.length, icon: ClipboardCheck, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Passed', value: inspections.filter(i => i.status === 'passed').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Failed', value: inspections.filter(i => i.status === 'failed').length, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Pending', value: inspections.filter(i => i.status === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Inspections</h2>
-          <p className="text-sm text-muted-foreground">Vehicle inspection records</p>
-        </div>
-        <Button onClick={() => { setCreateForm({ ...defaultCreateForm }); setCreateOpen(true) }}>
-          <Plus className="h-4 w-4 mr-2" />New Inspection
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Inspections</CardTitle>
+              <CardDescription>Vehicle inspection records</CardDescription>
+            </div>
+            <Button onClick={() => { setCreateForm({ ...defaultCreateForm }); setCreateOpen(true) }}>
+              <Plus className="h-4 w-4 mr-2" />New Inspection
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="text-xs">Vehicle</TableHead>
-                <TableHead className="text-xs">Inspector</TableHead>
-                <TableHead className="text-xs">Type</TableHead>
-                <TableHead className="text-xs">Date</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Inspector</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Type</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Date</TableHead>
                 <TableHead className="text-xs">Overall</TableHead>
                 <TableHead className="text-xs">Status</TableHead>
-                <TableHead className="text-xs">Issues</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Issues</TableHead>
                 <TableHead className="text-xs">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
@@ -214,12 +228,12 @@ export default function FleetInspectionsPage() {
                   inspections.map(i => (
                     <TableRow key={i.id}>
                       <TableCell className="text-xs font-medium">{i.vehicle ? `${i.vehicle.make} ${i.vehicle.model}` : 'N/A'}</TableCell>
-                      <TableCell className="text-xs">{i.inspector || 'N/A'}</TableCell>
-                      <TableCell className="text-xs capitalize">{i.type?.replace('_', ' ')}</TableCell>
-                      <TableCell className="text-xs">{i.inspectionDate ? new Date(i.inspectionDate).toLocaleDateString() : 'N/A'}</TableCell>
+                      <TableCell className="text-xs hidden md:table-cell">{i.inspector || 'N/A'}</TableCell>
+                      <TableCell className="text-xs hidden md:table-cell capitalize">{i.type?.replace('_', ' ')}</TableCell>
+                      <TableCell className="text-xs hidden lg:table-cell">{i.inspectionDate ? new Date(i.inspectionDate).toLocaleDateString() : 'N/A'}</TableCell>
                       <TableCell><ConditionBadge value={i.overallCondition} /></TableCell>
                       <TableCell><Badge variant={i.status === 'passed' ? 'default' : i.status === 'failed' ? 'destructive' : 'outline'} className={`text-[10px] ${statusColors[i.status] || ''}`}>{i.status}</Badge></TableCell>
-                      <TableCell className="text-xs max-w-32 truncate">{i.issues || i.notes || 'N/A'}</TableCell>
+                      <TableCell className="text-xs max-w-32 truncate hidden lg:table-cell">{i.issues || i.notes || 'N/A'}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={() => { setSelectedInspection(i); setViewOpen(true) }} title="View Details">

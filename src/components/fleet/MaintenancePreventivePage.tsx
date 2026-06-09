@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Wrench, Car, CalendarDays, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Wrench, Car, CalendarDays, Plus, Pencil, Trash2, Loader2, Clock, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = { scheduled: 'bg-amber-100 text-amber-800', in_progress: 'bg-blue-100 text-blue-800', completed: 'bg-emerald-100 text-emerald-800', cancelled: 'bg-red-100 text-red-800' }
@@ -91,35 +91,58 @@ export default function MaintenancePreventivePage() {
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
   const stats = [
-    { label: 'Total Scheduled', value: records.length },
-    { label: 'Pending', value: records.filter(r => r.status === 'scheduled').length },
-    { label: 'In Progress', value: records.filter(r => r.status === 'in_progress').length },
-    { label: 'Total Cost', value: fmt(records.reduce((s, r) => s + (r.cost || 0), 0)) },
+    { label: 'Total Scheduled', value: records.length, icon: CalendarDays, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-950/30' },
+    { label: 'Pending', value: records.filter(r => r.status === 'scheduled').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'In Progress', value: records.filter(r => r.status === 'in_progress').length, icon: Wrench, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-950/30' },
+    { label: 'Total Cost', value: fmt(records.reduce((s, r) => s + (r.cost || 0), 0)), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Preventive Maintenance</h2><p className="text-sm text-muted-foreground">Schedule oil changes, tire replacements, inspections, and services</p></div>
-        <Button onClick={() => { setEditId(null); setForm({ category: 'oil_change', type: 'preventive', status: 'scheduled', cost: 0, priority: 'normal', completedDate: '', odometer: '' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Schedule Maintenance</Button>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Preventive Maintenance</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">Schedule oil changes, tire replacements, inspections, and services</CardDescription>
+          </div>
+          <Button onClick={() => { setEditId(null); setForm({ category: 'oil_change', type: 'preventive', status: 'scheduled', cost: 0, priority: 'normal', completedDate: '', odometer: '' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Schedule Maintenance</Button>
+        </CardHeader>
+      </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">{stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}</div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Category</TableHead><TableHead className="text-xs">Description</TableHead>
-            <TableHead className="text-xs">Scheduled</TableHead><TableHead className="text-xs">Next Due</TableHead><TableHead className="text-xs">Cost</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
+            <TableHead className="text-xs">Vehicle</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Category</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Description</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Scheduled</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Next Due</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Cost</TableHead>
+            <TableHead className="text-xs">Status</TableHead>
+            <TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
             records.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No preventive maintenance scheduled</TableCell></TableRow> :
             records.map(r => (
               <TableRow key={r.id}>
                 <TableCell className="text-xs font-medium">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
-                <TableCell className="text-xs capitalize">{r.category?.replace('_', ' ')}</TableCell>
-                <TableCell className="text-xs max-w-48 truncate">{r.description}</TableCell>
-                <TableCell className="text-xs">{r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString() : 'N/A'}</TableCell>
-                <TableCell className="text-xs">{r.nextDueDate ? new Date(r.nextDueDate).toLocaleDateString() : 'N/A'}</TableCell>
-                <TableCell className="text-xs font-medium">{fmt(r.cost)}</TableCell>
+                <TableCell className="text-xs capitalize hidden md:table-cell">{r.category?.replace('_', ' ')}</TableCell>
+                <TableCell className="text-xs max-w-48 truncate hidden md:table-cell">{r.description}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{r.scheduledDate ? new Date(r.scheduledDate).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{r.nextDueDate ? new Date(r.nextDueDate).toLocaleDateString() : 'N/A'}</TableCell>
+                <TableCell className="text-xs font-medium hidden lg:table-cell">{fmt(r.cost)}</TableCell>
                 <TableCell><Badge className={`text-[10px] ${statusColors[r.status] || ''}`}>{r.status?.replace('_', ' ')}</Badge></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1 flex-wrap">

@@ -42,9 +42,16 @@ export default function FleetTrackingPage() {
 
   return (
     <div className="space-y-6">
-      <div><h2 className="text-2xl font-bold">Fleet Tracking</h2><p className="text-sm text-muted-foreground">Monitor fleet utilization, mileage, and profitability</p></div>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-2xl">Fleet Tracking</CardTitle>
+            <CardDescription>Monitor fleet utilization, mileage, and profitability</CardDescription>
+          </div>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: 'Total Vehicles', value: vehicles.length, icon: Car, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
           { label: 'Fleet Utilization', value: `${utilizationRate}%`, icon: BarChart3, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
@@ -52,10 +59,10 @@ export default function FleetTrackingPage() {
           { label: 'Fleet Value', value: `$${(totalValue / 1000).toFixed(0)}k`, icon: DollarSign, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
           { label: 'Fuel Types', value: fuelData.length, icon: Fuel, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950/30' },
         ].map((s) => (
-          <Card key={s.label}>
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2"><span className="text-xs text-muted-foreground">{s.label}</span><div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div></div>
-              <p className="text-lg font-bold">{s.value}</p>
+              <div className="flex items-center justify-between mb-2"><span className="text-xs font-medium text-muted-foreground">{s.label}</span><div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div></div>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}

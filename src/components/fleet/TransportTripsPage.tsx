@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Route, Users, MapPin, Clock, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Route, Users, MapPin, Clock, Plus, Pencil, Trash2, Loader2, CalendarDays, Truck, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function TransportTripsPage() {
@@ -108,10 +108,10 @@ export default function TransportTripsPage() {
   }
 
   const stats = [
-    { label: 'Total Trips', value: trips.length },
-    { label: 'Planned', value: trips.filter(t => t.status === 'planned').length },
-    { label: 'In Progress', value: trips.filter(t => t.status === 'in_progress').length },
-    { label: 'Completed', value: trips.filter(t => t.status === 'completed').length },
+    { label: 'Total Trips', value: trips.length, icon: Route, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-950/30' },
+    { label: 'Planned', value: trips.filter(t => t.status === 'planned').length, icon: CalendarDays, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'In Progress', value: trips.filter(t => t.status === 'in_progress').length, icon: Truck, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-950/30' },
+    { label: 'Completed', value: trips.filter(t => t.status === 'completed').length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
   ]
 
   const statusBadge = (status: string) => {
@@ -124,24 +124,44 @@ export default function TransportTripsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Trip Management</h2><p className="text-sm text-muted-foreground">Track trip distances, ETAs, and performance</p></div>
-        <Button onClick={() => {
-          setForm({ driverId: '', vehicleId: '', dispatchOrderId: '', origin: '', destination: '', startTime: new Date().toISOString().slice(0, 16), endTime: '', distance: 0, status: 'planned', notes: '' })
-          setEditMode(false)
-          setOpen(true)
-        }}><Plus className="h-4 w-4 mr-2" />New Trip</Button>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Trip Management</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">Track trip distances, ETAs, and performance</CardDescription>
+          </div>
+          <Button onClick={() => {
+            setForm({ driverId: '', vehicleId: '', dispatchOrderId: '', origin: '', destination: '', startTime: new Date().toISOString().slice(0, 16), endTime: '', distance: 0, status: 'planned', notes: '' })
+            setEditMode(false)
+            setOpen(true)
+          }}><Plus className="h-4 w-4 mr-2" />New Trip</Button>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Route</TableHead><TableHead className="text-xs">Driver</TableHead><TableHead className="text-xs">Vehicle</TableHead>
-                <TableHead className="text-xs">Start Time</TableHead><TableHead className="text-xs">Distance</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-40">Actions</TableHead>
+                <TableHead className="text-xs">Route</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Driver</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Vehicle</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Start Time</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Distance</TableHead>
+                <TableHead className="text-xs">Status</TableHead>
+                <TableHead className="text-xs w-40">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow> :
@@ -156,10 +176,10 @@ export default function TransportTripsPage() {
                         <span className="font-medium">{t.destination}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-xs">{t.driver ? `${t.driver.firstName} ${t.driver.lastName}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{t.vehicle ? `${t.vehicle.make} ${t.vehicle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{t.startTime ? new Date(t.startTime).toLocaleString() : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{t.distance?.toLocaleString()} km</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{t.driver ? `${t.driver.firstName} ${t.driver.lastName}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{t.vehicle ? `${t.vehicle.make} ${t.vehicle.model}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{t.startTime ? new Date(t.startTime).toLocaleString() : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{t.distance?.toLocaleString()} km</TableCell>
                     <TableCell>{statusBadge(t.status)}</TableCell>
                     <TableCell className="text-xs">
                       <div className="flex items-center gap-1 flex-wrap">

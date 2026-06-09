@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle, Loader2, Users, CalendarDays, DollarSign, FileText, StickyNote } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, Eye, Play, CheckCircle, XCircle, Loader2, Users, CalendarDays, DollarSign, FileText, StickyNote, FileEdit, AlertOctagon } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -184,32 +184,39 @@ export default function RentalContractsPage() {
   })
 
   const stats = [
-    { label: 'Total Contracts', value: contracts.length },
-    { label: 'Draft', value: contracts.filter(c => c.status === 'draft').length },
-    { label: 'Active', value: contracts.filter(c => c.status === 'active').length },
-    { label: 'Completed', value: contracts.filter(c => c.status === 'completed').length },
-    { label: 'Terminated', value: contracts.filter(c => c.status === 'terminated').length },
-    { label: 'Total Value', value: fmt(contracts.reduce((s, c) => s + (c.totalAmount || 0), 0)) },
+    { label: 'Total Contracts', value: contracts.length, icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Draft', value: contracts.filter(c => c.status === 'draft').length, icon: FileEdit, color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-950/30' },
+    { label: 'Active', value: contracts.filter(c => c.status === 'active').length, icon: Play, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Completed', value: contracts.filter(c => c.status === 'completed').length, icon: CheckCircle, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Terminated', value: contracts.filter(c => c.status === 'terminated').length, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Total Value', value: fmt(contracts.reduce((s, c) => s + (c.totalAmount || 0), 0)), icon: DollarSign, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Rental Contracts</h2>
-          <p className="text-sm text-muted-foreground">View and manage rental contracts</p>
-        </div>
-        <Button onClick={openCreate}>
-          <Plus className="h-4 w-4 mr-2" />New Contract
-        </Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Rental Contracts</CardTitle>
+              <CardDescription>View and manage rental contracts</CardDescription>
+            </div>
+            <Button onClick={openCreate}>
+              <Plus className="h-4 w-4 mr-2" />New Contract
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map(s => (
-          <Card key={s.label}>
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -223,17 +230,17 @@ export default function RentalContractsPage() {
               <Input placeholder="Search contracts..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
             </div>
           </div>
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Contract #</TableHead>
                   <TableHead className="text-xs">Customer</TableHead>
-                  <TableHead className="text-xs">Vehicle</TableHead>
-                  <TableHead className="text-xs">Period</TableHead>
-                  <TableHead className="text-xs">Daily Rate</TableHead>
-                  <TableHead className="text-xs">Total</TableHead>
-                  <TableHead className="text-xs">Deposit</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Vehicle</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Period</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Daily Rate</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Total</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Deposit</TableHead>
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Actions</TableHead>
                 </TableRow>
@@ -247,11 +254,11 @@ export default function RentalContractsPage() {
                   <TableRow key={c.id}>
                     <TableCell className="text-xs font-mono">{c.contractNumber}</TableCell>
                     <TableCell className="text-xs">{c.customer ? `${c.customer.firstName} ${c.customer.lastName}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{c.vehicle ? `${c.vehicle.make} ${c.vehicle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{fmtDate(c.startDate)} - {fmtDate(c.endDate)}</TableCell>
-                    <TableCell className="text-xs">{fmt(c.dailyRate)}</TableCell>
-                    <TableCell className="text-xs font-medium">{fmt(c.totalAmount)}</TableCell>
-                    <TableCell className="text-xs">{fmt(c.depositAmount)}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{c.vehicle ? `${c.vehicle.make} ${c.vehicle.model}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmtDate(c.startDate)} - {fmtDate(c.endDate)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmt(c.dailyRate)}</TableCell>
+                    <TableCell className="text-xs font-medium hidden md:table-cell">{fmt(c.totalAmount)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmt(c.depositAmount)}</TableCell>
                     <TableCell>
                       <Badge className={`text-[10px] ${statusColors[c.status] || ''}`}>
                         {c.status}

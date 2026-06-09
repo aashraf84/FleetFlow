@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Wallet, Plus, Loader2, Users, DollarSign, RotateCcw } from 'lucide-react'
+import { Wallet, Plus, Loader2, Users, DollarSign, RotateCcw, TrendingDown, ArrowDownRight } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function RentalDepositsPage() {
@@ -48,34 +48,51 @@ export default function RentalDepositsPage() {
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
   const stats = [
-    { label: 'Total Deposits', value: deposits.length },
-    { label: 'Collected', value: fmt(deposits.filter(d => d.type === 'collection').reduce((s, d) => s + d.amount, 0)) },
-    { label: 'Refunded', value: fmt(deposits.filter(d => d.type === 'refund').reduce((s, d) => s + d.amount, 0)) },
-    { label: 'Deductions', value: fmt(deposits.filter(d => d.type === 'deduction').reduce((s, d) => s + d.amount, 0)) },
+    { label: 'Total Deposits', value: deposits.length, icon: Wallet, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Collected', value: fmt(deposits.filter(d => d.type === 'collection').reduce((s, d) => s + d.amount, 0)), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Refunded', value: fmt(deposits.filter(d => d.type === 'refund').reduce((s, d) => s + d.amount, 0)), icon: RotateCcw, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Deductions', value: fmt(deposits.filter(d => d.type === 'deduction').reduce((s, d) => s + d.amount, 0)), icon: ArrowDownRight, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Deposit Management</h2><p className="text-sm text-muted-foreground">Track deposits, refunds, and deductions</p></div>
-        <Button onClick={() => { setForm({ type: 'collection', method: 'cash', amount: 0, status: 'collected' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Record Deposit</Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Deposit Management</CardTitle>
+              <CardDescription>Track deposits, refunds, and deductions</CardDescription>
+            </div>
+            <Button onClick={() => { setForm({ type: 'collection', method: 'cash', amount: 0, status: 'collected' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Record Deposit</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="text-xs">Contract</TableHead>
-                <TableHead className="text-xs">Customer</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Customer</TableHead>
                 <TableHead className="text-xs">Type</TableHead>
                 <TableHead className="text-xs">Amount</TableHead>
-                <TableHead className="text-xs">Method</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Method</TableHead>
                 <TableHead className="text-xs">Status</TableHead>
-                <TableHead className="text-xs">Reason</TableHead>
-                <TableHead className="text-xs">Date</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Reason</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Date</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
@@ -83,13 +100,13 @@ export default function RentalDepositsPage() {
                 deposits.map(d => (
                   <TableRow key={d.id}>
                     <TableCell className="text-xs font-mono">{d.contract?.contractNumber || 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{d.contract?.customer ? `${d.contract.customer.firstName} ${d.contract.customer.lastName}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{d.contract?.customer ? `${d.contract.customer.firstName} ${d.contract.customer.lastName}` : 'N/A'}</TableCell>
                     <TableCell><Badge variant="outline" className="text-[10px] capitalize">{d.type}</Badge></TableCell>
                     <TableCell className="text-xs font-medium">{fmt(d.amount)}</TableCell>
-                    <TableCell className="text-xs capitalize">{d.method}</TableCell>
+                    <TableCell className="text-xs capitalize hidden lg:table-cell">{d.method}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${d.status === 'collected' ? 'bg-emerald-100 text-emerald-800' : d.status === 'refunded' ? 'bg-blue-100 text-blue-800' : 'bg-amber-100 text-amber-800'}`}>{d.status?.replace('_', ' ')}</Badge></TableCell>
-                    <TableCell className="text-xs max-w-32 truncate">{d.reason || 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{new Date(d.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-xs max-w-32 truncate hidden lg:table-cell">{d.reason || 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{new Date(d.createdAt).toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -99,7 +116,7 @@ export default function RentalDepositsPage() {
       </Card>
 
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Record Deposit</DialogTitle><DialogDescription>Record a deposit collection, refund, or deduction for a rental contract.</DialogDescription></DialogHeader>
           <div className="space-y-6 py-2">
             {/* Contract & Customer Section */}

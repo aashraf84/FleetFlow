@@ -154,6 +154,19 @@ export default function OwnerUpdatesPage() {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Owner Updates</CardTitle>
+              <CardDescription className="text-sm">Manage platform updates and version releases</CardDescription>
+            </div>
+            <Button size="sm" className="h-9" onClick={() => { setEditId(null); setFormData(emptyForm); setOpen(true) }}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> New Update
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
@@ -230,7 +243,7 @@ export default function OwnerUpdatesPage() {
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="max-h-[500px]">
+            <ScrollArea className="max-h-[440px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -315,7 +328,7 @@ export default function OwnerUpdatesPage() {
 
       {/* Publish Update Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Update' : 'Publish New Update'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify update version, release notes, and settings' : 'Create a new platform update version with release notes'}</DialogDescription>

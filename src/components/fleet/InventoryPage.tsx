@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Package, Layers, FileText, Warehouse, ArrowUpDown, ArrowRightLeft, AlertTriangle } from 'lucide-react'
+import { Package, Layers, FileText, Warehouse, ArrowUpDown, ArrowRightLeft, AlertTriangle, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function InventoryPage() {
@@ -81,19 +81,31 @@ export default function InventoryPage() {
     } catch (e) { toast.error('Transfer failed') }
   }
 
+  const stats = [
+    { label: 'Total Items', value: parts.length, icon: Package, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-950/30' },
+    { label: 'Total Value', value: `$${totalValue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Warehouses', value: warehouses.length, icon: Warehouse, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-950/30' },
+    { label: 'Low Stock Items', value: lowStockItems.length, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Inventory Management</h2><p className="text-sm text-muted-foreground">Stock transfers, adjustments, and goods receipts</p></div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setAdjustForm({ partId: '', type: 'increase', quantity: 0, reason: '' }); setAdjustOpen(true) }}>
-            <ArrowUpDown className="h-4 w-4 mr-2" />Stock Adjustment
-          </Button>
-          <Button variant="outline" onClick={() => { setTransferForm({ partId: '', fromLocation: '', toLocation: '', quantity: 0, notes: '' }); setTransferOpen(true) }}>
-            <ArrowRightLeft className="h-4 w-4 mr-2" />Stock Transfer
-          </Button>
-        </div>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Inventory Management</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">Stock transfers, adjustments, and goods receipts</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => { setAdjustForm({ partId: '', type: 'increase', quantity: 0, reason: '' }); setAdjustOpen(true) }}>
+              <ArrowUpDown className="h-4 w-4 mr-2" />Stock Adjustment
+            </Button>
+            <Button variant="outline" onClick={() => { setTransferForm({ partId: '', fromLocation: '', toLocation: '', quantity: 0, notes: '' }); setTransferOpen(true) }}>
+              <ArrowRightLeft className="h-4 w-4 mr-2" />Stock Transfer
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       {lowStockItems.length > 0 && (
         <Card className="border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20">
@@ -105,12 +117,17 @@ export default function InventoryPage() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Items', value: parts.length },
-          { label: 'Total Value', value: `$${totalValue.toLocaleString()}` },
-          { label: 'Warehouses', value: warehouses.length },
-          { label: 'Low Stock Items', value: lowStockItems.length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -133,21 +150,26 @@ export default function InventoryPage() {
       </Card>
 
       <Card><CardHeader className="pb-2"><CardTitle className="text-base">Inventory Items</CardTitle></CardHeader><CardContent className="p-0">
-        <ScrollArea className="max-h-[400px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Part #</TableHead><TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Warehouse</TableHead>
-            <TableHead className="text-xs">Stock</TableHead><TableHead className="text-xs">Unit Cost</TableHead><TableHead className="text-xs">Value</TableHead><TableHead className="text-xs">Status</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Part #</TableHead>
+            <TableHead className="text-xs">Name</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Warehouse</TableHead>
+            <TableHead className="text-xs">Stock</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Unit Cost</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Value</TableHead>
+            <TableHead className="text-xs">Status</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow> :
             parts.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No inventory items</TableCell></TableRow> :
             parts.map(p => (
               <TableRow key={p.id} className={p.quantityInStock <= p.reorderLevel ? 'bg-red-50/50 dark:bg-red-950/10' : ''}>
-                <TableCell className="text-xs font-mono">{p.partNumber}</TableCell>
+                <TableCell className="text-xs font-mono hidden md:table-cell">{p.partNumber}</TableCell>
                 <TableCell className="text-xs">{p.name}</TableCell>
-                <TableCell className="text-xs">{p.location || 'Default'}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{p.location || 'Default'}</TableCell>
                 <TableCell className="text-xs">{p.quantityInStock}</TableCell>
-                <TableCell className="text-xs">${p.unitCost}</TableCell>
-                <TableCell className="text-xs font-medium">${((p.quantityInStock || 0) * (p.unitCost || 0)).toLocaleString()}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">${p.unitCost}</TableCell>
+                <TableCell className="text-xs font-medium hidden lg:table-cell">${((p.quantityInStock || 0) * (p.unitCost || 0)).toLocaleString()}</TableCell>
                 <TableCell>
                   <Badge variant={p.quantityInStock <= p.reorderLevel ? 'destructive' : 'secondary'} className="text-[10px]">
                     {p.quantityInStock <= p.reorderLevel ? (
@@ -163,7 +185,7 @@ export default function InventoryPage() {
 
       {/* Stock Adjustment Dialog */}
       <Dialog open={adjustOpen} onOpenChange={setAdjustOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Stock Adjustment</DialogTitle>
             <DialogDescription>Increase or decrease stock levels for a specific part.</DialogDescription>
@@ -228,7 +250,7 @@ export default function InventoryPage() {
 
       {/* Stock Transfer Dialog */}
       <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Stock Transfer</DialogTitle>
             <DialogDescription>Transfer stock between warehouses or locations.</DialogDescription>

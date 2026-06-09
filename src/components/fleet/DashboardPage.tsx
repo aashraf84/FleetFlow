@@ -90,7 +90,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
           {Array.from({ length: 11 }).map((_, i) => (
             <Card key={i} className="animate-pulse">
               <CardContent className="p-4">
@@ -113,7 +113,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4">
         {statCards.map((card) => (
           <Card key={card.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
@@ -123,7 +123,7 @@ export default function DashboardPage() {
                   <card.icon className={`h-3.5 w-3.5 ${card.color}`} />
                 </div>
               </div>
-              <p className="text-lg font-bold">{card.value}</p>
+              <p className="text-2xl font-bold">{card.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -221,7 +221,7 @@ export default function DashboardPage() {
             <CardDescription>Latest rental bookings</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-80">
+            <ScrollArea className="max-h-[440px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -263,7 +263,7 @@ export default function DashboardPage() {
             <CardDescription>Scheduled maintenance tasks</CardDescription>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-80">
+            <ScrollArea className="max-h-[440px]">
               <Table>
                 <TableHeader>
                   <TableRow>

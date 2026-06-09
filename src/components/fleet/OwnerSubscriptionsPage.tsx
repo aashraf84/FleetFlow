@@ -171,6 +171,19 @@ export default function OwnerSubscriptionsPage() {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Owner Subscriptions</CardTitle>
+              <CardDescription className="text-sm">Manage client subscription plans and billing</CardDescription>
+            </div>
+            <Button size="sm" className="h-9" onClick={() => { setEditId(null); setFormData(emptyForm); setOpen(true) }}>
+              <Plus className="h-3.5 w-3.5 mr-1" /> Add Subscription
+            </Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
@@ -318,7 +331,7 @@ export default function OwnerSubscriptionsPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Subscription' : 'Add Subscription'}</DialogTitle>
             <DialogDescription>{editId ? 'Modify subscription plan and billing details' : 'Create a new subscription for a client'}</DialogDescription>

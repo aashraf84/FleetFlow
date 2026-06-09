@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { DollarSign, Wallet, FileText, Banknote, Plus, ArrowRight, Loader2 } from 'lucide-react'
+import { DollarSign, Wallet, FileText, Banknote, Plus, ArrowRight, Loader2, Receipt, Clock, CheckCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrPayrollPage() {
@@ -99,26 +99,42 @@ export default function HrPayrollPage() {
     }
   }
 
+  const statCards = [
+    { label: 'Total Records', value: records.length, icon: Receipt, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Pending', value: records.filter(p => p.status === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Processed', value: records.filter(p => p.status === 'processed').length, icon: CheckCircle, color: 'text-sky-600', bg: 'bg-sky-50 dark:bg-sky-950/30' },
+    { label: 'Total Net Pay', value: fmt(records.reduce((s: number, p: any) => s + (p.netPay || 0), 0)), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Payroll</h2><p className="text-sm text-muted-foreground">Employee payroll processing and history</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Run Payroll</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div><CardTitle className="text-2xl">Payroll</CardTitle><p className="text-sm text-muted-foreground">Employee payroll processing and history</p></div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Run Payroll</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Records', value: records.length },
-          { label: 'Pending', value: records.filter(p => p.status === 'pending').length },
-          { label: 'Processed', value: records.filter(p => p.status === 'processed').length },
-          { label: 'Total Net Pay', value: fmt(records.reduce((s: number, p: any) => s + (p.netPay || 0), 0)) },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {statCards.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Period</TableHead><TableHead className="text-xs">Base</TableHead>
-            <TableHead className="text-xs">Overtime</TableHead><TableHead className="text-xs">Bonuses</TableHead><TableHead className="text-xs">Deductions</TableHead>
-            <TableHead className="text-xs">Net Pay</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
+            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Period</TableHead><TableHead className="text-xs hidden md:table-cell">Base</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Overtime</TableHead><TableHead className="text-xs hidden lg:table-cell">Bonuses</TableHead><TableHead className="text-xs hidden lg:table-cell">Deductions</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Net Pay</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={9} className="text-center py-8">Loading...</TableCell></TableRow> :
             records.length === 0 ? <TableRow><TableCell colSpan={9} className="text-center py-8 text-muted-foreground">No payroll records</TableCell></TableRow> :
@@ -126,11 +142,11 @@ export default function HrPayrollPage() {
               <TableRow key={p.id}>
                 <TableCell className="text-xs font-medium">{p.employee?.firstName} {p.employee?.lastName}</TableCell>
                 <TableCell className="text-xs">{p.period}</TableCell>
-                <TableCell className="text-xs">{fmt(p.baseSalary)}</TableCell>
-                <TableCell className="text-xs">{fmt(p.overtime)}</TableCell>
-                <TableCell className="text-xs">{fmt(p.bonuses)}</TableCell>
-                <TableCell className="text-xs">{fmt(p.deductions)}</TableCell>
-                <TableCell className="text-xs font-medium">{fmt(p.netPay)}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{fmt(p.baseSalary)}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{fmt(p.overtime)}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{fmt(p.bonuses)}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{fmt(p.deductions)}</TableCell>
+                <TableCell className="text-xs font-medium hidden md:table-cell">{fmt(p.netPay)}</TableCell>
                 <TableCell><Badge className={`text-[10px] ${statusColor(p.status)}`}>{p.status}</Badge></TableCell>
                 <TableCell>
                   {p.status === 'pending' && (

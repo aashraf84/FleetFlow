@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Award, Plus, Star, BarChart3, Send, CheckCircle, Loader2 } from 'lucide-react'
+import { Award, Plus, Star, BarChart3, Send, CheckCircle, Loader2, TrendingUp, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrPerformancePage() {
@@ -106,25 +106,41 @@ export default function HrPerformancePage() {
     ))
   }
 
+  const statCards = [
+    { label: 'Total Reviews', value: records.length, icon: Award, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Avg Rating', value: records.length > 0 ? (records.reduce((s: number, r: any) => s + (r.rating || 0), 0) / records.length).toFixed(1) : '0', icon: Star, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Top Performers', value: records.filter((r: any) => r.rating >= 4.5).length, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Needs Improvement', value: records.filter((r: any) => r.rating < 3).length, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Performance Reviews</h2><p className="text-sm text-muted-foreground">Employee performance tracking and evaluations</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />New Review</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div><CardTitle className="text-2xl">Performance Reviews</CardTitle><p className="text-sm text-muted-foreground">Employee performance tracking and evaluations</p></div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />New Review</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Reviews', value: records.length },
-          { label: 'Avg Rating', value: records.length > 0 ? (records.reduce((s: number, r: any) => s + (r.rating || 0), 0) / records.length).toFixed(1) : '0' },
-          { label: 'Top Performers', value: records.filter((r: any) => r.rating >= 4.5).length },
-          { label: 'Needs Improvement', value: records.filter((r: any) => r.rating < 3).length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {statCards.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Reviewer</TableHead><TableHead className="text-xs">Period</TableHead>
-            <TableHead className="text-xs">Rating</TableHead><TableHead className="text-xs">Goals</TableHead><TableHead className="text-xs">Feedback</TableHead>
+            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs hidden md:table-cell">Reviewer</TableHead><TableHead className="text-xs hidden md:table-cell">Period</TableHead>
+            <TableHead className="text-xs">Rating</TableHead><TableHead className="text-xs hidden lg:table-cell">Goals</TableHead><TableHead className="text-xs hidden lg:table-cell">Feedback</TableHead>
             <TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
@@ -132,11 +148,11 @@ export default function HrPerformancePage() {
             records.map((r: any) => (
               <TableRow key={r.id}>
                 <TableCell className="text-xs font-medium">{r.employee?.firstName} {r.employee?.lastName}</TableCell>
-                <TableCell className="text-xs">{r.reviewer}</TableCell>
-                <TableCell className="text-xs">{r.period}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{r.reviewer}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{r.period}</TableCell>
                 <TableCell className="text-xs"><div className="flex items-center gap-1">{renderStars(r.rating)}<span className="ml-1">{r.rating}/5</span></div></TableCell>
-                <TableCell className="text-xs max-w-32 truncate">{r.goals || 'N/A'}</TableCell>
-                <TableCell className="text-xs max-w-32 truncate">{r.feedback || 'N/A'}</TableCell>
+                <TableCell className="text-xs max-w-32 truncate hidden lg:table-cell">{r.goals || 'N/A'}</TableCell>
+                <TableCell className="text-xs max-w-32 truncate hidden lg:table-cell">{r.feedback || 'N/A'}</TableCell>
                 <TableCell><Badge className={`text-[10px] ${statusColor(r.status)}`}>{r.status}</Badge></TableCell>
                 <TableCell>
                   {r.status === 'draft' && (

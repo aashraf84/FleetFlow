@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Package, Layers, FileText, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle, Loader2 } from 'lucide-react'
+import { Package, Layers, FileText, Plus, Pencil, Trash2, ArrowUpDown, AlertTriangle, Loader2, DollarSign } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function SparePartsPage() {
@@ -96,12 +96,24 @@ export default function SparePartsPage() {
     } catch (e) { toast.error('Adjustment failed') } finally { setSaving(false) }
   }
 
+  const stats = [
+    { label: 'Total Parts', value: parts.length, icon: Package, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-950/30' },
+    { label: 'Low Stock', value: lowStock.length, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Total Value', value: `$${parts.reduce((s, p) => s + (p.quantityInStock || 0) * (p.unitCost || 0), 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Categories', value: new Set(parts.map(p => p.category).filter(Boolean)).size, icon: Layers, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Spare Parts</h2><p className="text-sm text-muted-foreground">Manage parts, categories, suppliers, and stock levels</p></div>
-        <Button onClick={() => { setForm({ partNumber: '', name: '', quantityInStock: 0, reorderLevel: 5, unitCost: 0, sellingPrice: 0, category: '', supplier: '', location: '' }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Part</Button>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Spare Parts</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">Manage parts, categories, suppliers, and stock levels</CardDescription>
+          </div>
+          <Button onClick={() => { setForm({ partNumber: '', name: '', quantityInStock: 0, reorderLevel: 5, unitCost: 0, sellingPrice: 0, category: '', supplier: '', location: '' }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Part</Button>
+        </CardHeader>
+      </Card>
 
       {lowStock.length > 0 && (
         <Card className="border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20">
@@ -113,35 +125,46 @@ export default function SparePartsPage() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Parts', value: parts.length },
-          { label: 'Low Stock', value: lowStock.length },
-          { label: 'Total Value', value: `$${parts.reduce((s, p) => s + (p.quantityInStock || 0) * (p.unitCost || 0), 0).toLocaleString()}` },
-          { label: 'Categories', value: new Set(parts.map(p => p.category).filter(Boolean)).size },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Part #</TableHead><TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Category</TableHead>
-            <TableHead className="text-xs">In Stock</TableHead><TableHead className="text-xs">Reorder Level</TableHead><TableHead className="text-xs">Unit Cost</TableHead><TableHead className="text-xs">Supplier</TableHead><TableHead className="text-xs w-28">Actions</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Part #</TableHead>
+            <TableHead className="text-xs">Name</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Category</TableHead>
+            <TableHead className="text-xs">In Stock</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Reorder Level</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Unit Cost</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Supplier</TableHead>
+            <TableHead className="text-xs w-28">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
             parts.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No spare parts in inventory</TableCell></TableRow> :
             parts.map(p => (
               <TableRow key={p.id} className={p.quantityInStock <= p.reorderLevel ? 'bg-red-50/50 dark:bg-red-950/10' : ''}>
-                <TableCell className="text-xs font-mono">{p.partNumber}</TableCell>
+                <TableCell className="text-xs font-mono hidden md:table-cell">{p.partNumber}</TableCell>
                 <TableCell className="text-xs font-medium">{p.name}</TableCell>
-                <TableCell className="text-xs">{p.category || 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{p.category || 'N/A'}</TableCell>
                 <TableCell className="text-xs">
                   <Badge variant={p.quantityInStock <= p.reorderLevel ? 'destructive' : 'outline'} className="text-[10px]">
                     {p.quantityInStock <= p.reorderLevel && <AlertTriangle className="h-3 w-3 mr-1" />}
                     {p.quantityInStock}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-xs">{p.reorderLevel}</TableCell>
-                <TableCell className="text-xs">${p.unitCost}</TableCell>
-                <TableCell className="text-xs">{p.supplier || 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{p.reorderLevel}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">${p.unitCost}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{p.supplier || 'N/A'}</TableCell>
                 <TableCell className="text-xs">
                   <div className="flex items-center gap-1">
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setAdjustPart(p); setAdjustForm({ type: 'increase', quantity: 0, reason: '' }); setAdjustOpen(true) }} title="Adjust Stock"><ArrowUpDown className="h-3 w-3" /></Button>
@@ -207,7 +230,7 @@ export default function SparePartsPage() {
 
       {/* Adjust Stock Dialog */}
       <Dialog open={adjustOpen} onOpenChange={(v) => { if (!saving) setAdjustOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Adjust Stock — {adjustPart?.name}</DialogTitle>
             <DialogDescription>Increase or decrease the stock level for this part.</DialogDescription>

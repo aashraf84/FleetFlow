@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Shield, CalendarDays, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Shield, CalendarDays, Plus, Pencil, Trash2, AlertTriangle, CheckCircle2, XCircle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function CompliancePage() {
@@ -97,20 +97,41 @@ export default function CompliancePage() {
     return <Badge className={`text-[10px] ${cls}`}>{status?.replace('_', ' ')}</Badge>
   }
 
+  const stats = [
+    { label: 'Total Records', value: records.length, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Valid', value: records.filter(r => r.status === 'valid').length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Expiring Soon', value: expiringSoon.length, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Expired', value: records.filter(r => r.status === 'expired').length, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Compliance</h2><p className="text-sm text-muted-foreground">Road taxes, permits, fitness certificates, and vehicle compliance</p></div>
-        <Button onClick={() => { setForm({ type: 'road_tax', status: 'valid', reminderDays: 30 }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Record</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Compliance</CardTitle>
+              <CardDescription>Road taxes, permits, fitness certificates, and vehicle compliance</CardDescription>
+            </div>
+            <Button onClick={() => { setForm({ type: 'road_tax', status: 'valid', reminderDays: 30 }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Record</Button>
+          </div>
+        </CardHeader>
+      </Card>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Records', value: records.length },
-          { label: 'Valid', value: records.filter(r => r.status === 'valid').length },
-          { label: 'Expiring Soon', value: expiringSoon.length },
-          { label: 'Expired', value: records.filter(r => r.status === 'expired').length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
       {expiringSoon.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
           <CardHeader className="pb-2"><CardTitle className="text-base text-amber-700 dark:text-amber-400">⚠️ Expiring Soon</CardTitle></CardHeader>
@@ -123,11 +144,12 @@ export default function CompliancePage() {
           ))}</div></CardContent>
         </Card>
       )}
+
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Type</TableHead><TableHead className="text-xs">Certificate #</TableHead>
-            <TableHead className="text-xs">Expiry</TableHead><TableHead className="text-xs">Authority</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-36">Actions</TableHead>
+            <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Type</TableHead><TableHead className="text-xs hidden md:table-cell">Certificate #</TableHead>
+            <TableHead className="text-xs">Expiry</TableHead><TableHead className="text-xs hidden lg:table-cell">Authority</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-36">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow> :
             records.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No compliance records</TableCell></TableRow> :
@@ -135,9 +157,9 @@ export default function CompliancePage() {
               <TableRow key={r.id} className={r.status === 'expired' ? 'bg-red-50/50 dark:bg-red-950/10' : r.status === 'renewal_required' ? 'bg-amber-50/50 dark:bg-amber-950/10' : ''}>
                 <TableCell className="text-xs font-medium">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
                 <TableCell className="text-xs capitalize">{r.type?.replace('_', ' ')}</TableCell>
-                <TableCell className="text-xs font-mono">{r.documentNumber || r.certificateNumber || 'N/A'}</TableCell>
+                <TableCell className="text-xs font-mono hidden md:table-cell">{r.documentNumber || r.certificateNumber || 'N/A'}</TableCell>
                 <TableCell className="text-xs">{new Date(r.expiryDate).toLocaleDateString()}</TableCell>
-                <TableCell className="text-xs">{r.issuingAuthority || 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{r.issuingAuthority || 'N/A'}</TableCell>
                 <TableCell>{statusBadge(r.status)}</TableCell>
                 <TableCell className="text-xs">
                   <div className="flex items-center gap-1 flex-wrap">
@@ -162,7 +184,7 @@ export default function CompliancePage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editMode ? 'Edit Compliance Record' : 'Add Compliance Record'}</DialogTitle>
             <DialogDescription>{editMode ? 'Update the compliance record details below.' : 'Fill in the details to add a new compliance record.'}</DialogDescription>

@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -118,40 +118,70 @@ export default function FinanceAccountingPage() {
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
 
+  const stats = [
+    { label: 'Total Entries', value: data.entries?.length || 0, icon: BookOpen, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Total Debit', value: fmt(data.totalDebit), icon: DollarSign, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Total Credit', value: fmt(data.totalCredit), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Balance', value: fmt(data.balance), icon: DollarSign, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Accounting</h2>
-          <p className="text-sm text-muted-foreground">General ledger, journal entries, and financial statements</p>
-        </div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />New Entry</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Accounting</CardTitle>
+              <CardDescription>General ledger, journal entries, and financial statements</CardDescription>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />New Entry</Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Entries', value: data.entries?.length || 0 },
-          { label: 'Total Debit', value: fmt(data.totalDebit) },
-          { label: 'Total Credit', value: fmt(data.totalCredit) },
-          { label: 'Balance', value: fmt(data.balance) },
-        ].map(s => (
+        {stats.map(s => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground mb-1">Profit & Loss</p><p className="text-lg font-bold">{fmt(data.totalDebit - data.totalCredit)}</p><p className="text-xs text-muted-foreground mt-1">Revenue minus expenses</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground mb-1">Cash Flow</p><p className="text-lg font-bold">{fmt(data.totalCredit)}</p><p className="text-xs text-muted-foreground mt-1">Total incoming</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground mb-1">Balance Sheet</p><p className="text-lg font-bold">{fmt(data.totalDebit)}</p><p className="text-xs text-muted-foreground mt-1">Total assets</p></CardContent></Card>
+        <Card className="hover:shadow-md transition-shadow"><CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">Profit & Loss</span>
+            <div className="p-1.5 rounded-md bg-amber-50 dark:bg-amber-950/30"><DollarSign className="h-3.5 w-3.5 text-amber-600" /></div>
+          </div>
+          <p className="text-2xl font-bold">{fmt(data.totalDebit - data.totalCredit)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Revenue minus expenses</p>
+        </CardContent></Card>
+        <Card className="hover:shadow-md transition-shadow"><CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">Cash Flow</span>
+            <div className="p-1.5 rounded-md bg-emerald-50 dark:bg-emerald-950/30"><DollarSign className="h-3.5 w-3.5 text-emerald-600" /></div>
+          </div>
+          <p className="text-2xl font-bold">{fmt(data.totalCredit)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Total incoming</p>
+        </CardContent></Card>
+        <Card className="hover:shadow-md transition-shadow"><CardContent className="p-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">Balance Sheet</span>
+            <div className="p-1.5 rounded-md bg-blue-50 dark:bg-blue-950/30"><DollarSign className="h-3.5 w-3.5 text-blue-600" /></div>
+          </div>
+          <p className="text-2xl font-bold">{fmt(data.totalDebit)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Total assets</p>
+        </CardContent></Card>
       </div>
 
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table>
             <TableHeader><TableRow>
               <TableHead className="text-xs">Entry #</TableHead>

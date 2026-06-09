@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { IdCard, Plus, Search, Edit, Trash2, Loader2, User, CreditCard, Briefcase, Star } from 'lucide-react'
+import { IdCard, Plus, Search, Edit, Trash2, Loader2, User, CreditCard, Briefcase, Star, CheckCircle, Clock } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -78,30 +78,47 @@ export default function DriversPage() {
   }
 
   const stats = [
-    { label: 'Total Drivers', value: data.length },
-    { label: 'Active', value: data.filter(d => d.status === 'active').length },
-    { label: 'On Leave', value: data.filter(d => d.status === 'on_leave').length },
-    { label: 'Avg Rating', value: data.length > 0 ? (data.reduce((s, d) => s + (d.rating || 0), 0) / data.length).toFixed(1) : '0' },
+    { label: 'Total Drivers', value: data.length, icon: IdCard, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Active', value: data.filter(d => d.status === 'active').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'On Leave', value: data.filter(d => d.status === 'on_leave').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Avg Rating', value: data.length > 0 ? (data.reduce((s, d) => s + (d.rating || 0), 0) / data.length).toFixed(1) : '0', icon: Star, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Driver Management</h2><p className="text-sm text-muted-foreground">Manage drivers, licenses, and performance</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Driver</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Driver Management</CardTitle>
+              <CardDescription className="text-sm">Manage drivers, licenses, and performance</CardDescription>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Driver</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card>
         <CardHeader className="pb-3"><div className="relative w-64"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Search drivers..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" /></div></CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Phone</TableHead><TableHead className="text-xs">License #</TableHead>
-                <TableHead className="text-xs">License Expiry</TableHead><TableHead className="text-xs">Employment</TableHead><TableHead className="text-xs">Hours</TableHead>
-                <TableHead className="text-xs">Rating</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
+                <TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Phone</TableHead><TableHead className="text-xs hidden md:table-cell">License #</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">License Expiry</TableHead><TableHead className="text-xs hidden lg:table-cell">Employment</TableHead><TableHead className="text-xs hidden lg:table-cell">Hours</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Rating</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
                 {loading ? <TableRow><TableCell colSpan={9} className="text-center py-8">Loading...</TableCell></TableRow> :
@@ -110,11 +127,11 @@ export default function DriversPage() {
                   <TableRow key={d.id}>
                     <TableCell className="text-xs font-medium">{d.firstName} {d.lastName}</TableCell>
                     <TableCell className="text-xs">{d.phone}</TableCell>
-                    <TableCell className="text-xs font-mono">{d.licenseNumber}</TableCell>
-                    <TableCell className="text-xs">{d.licenseExpiry ? new Date(d.licenseExpiry).toLocaleDateString() : 'N/A'}</TableCell>
-                    <TableCell className="text-xs capitalize">{d.employmentType?.replace('_', ' ')}</TableCell>
-                    <TableCell className="text-xs">{d.drivingHours}h</TableCell>
-                    <TableCell className="text-xs"><Badge variant="outline" className="text-[10px]">{'★'.repeat(Math.round(d.rating || 0))}</Badge></TableCell>
+                    <TableCell className="text-xs font-mono hidden md:table-cell">{d.licenseNumber}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{d.licenseExpiry ? new Date(d.licenseExpiry).toLocaleDateString() : 'N/A'}</TableCell>
+                    <TableCell className="text-xs capitalize hidden lg:table-cell">{d.employmentType?.replace('_', ' ')}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{d.drivingHours}h</TableCell>
+                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-[10px]">{'★'.repeat(Math.round(d.rating || 0))}</Badge></TableCell>
                     <TableCell><Badge className={`text-[10px] ${d.status === 'active' ? 'bg-emerald-100 text-emerald-800' : d.status === 'on_leave' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>{d.status?.replace('_', ' ')}</Badge></TableCell>
                     <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(d)}><Edit className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(d.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                   </TableRow>

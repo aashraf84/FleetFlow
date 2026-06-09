@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Car, Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Settings, DollarSign, FileText } from 'lucide-react'
+import { Car, Plus, Search, Filter, Edit, Trash2, Eye, Loader2, Settings, DollarSign, FileText, CheckCircle, Wrench } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -95,25 +95,35 @@ export default function FleetVehiclesPage() {
   const openCreate = () => { setEditItem(null); setForm({ vehicleNumber: '', registrationNumber: '', make: '', model: '', year: new Date().getFullYear(), category: 'sedan', fuelType: 'petrol', transmission: 'automatic', seatingCapacity: 5, mileage: 0, status: 'available', dailyRate: 0, weeklyRate: 0, monthlyRate: 0, purchasePrice: 0, currentValue: 0, color: '', engineNumber: '', registrationExpiry: '', insuranceExpiry: '', lastServiceDate: '', nextServiceDate: '', notes: '' }); setOpen(true) }
 
   const statCards = [
-    { label: 'Total Vehicles', value: vehicles.length, icon: Car, color: 'text-emerald-600' },
-    { label: 'Available', value: vehicles.filter(v => v.status === 'available').length, icon: Car, color: 'text-green-600' },
-    { label: 'Rented', value: vehicles.filter(v => v.status === 'rented').length, icon: Car, color: 'text-blue-600' },
-    { label: 'Maintenance', value: vehicles.filter(v => v.status === 'maintenance').length, icon: Car, color: 'text-red-600' },
+    { label: 'Total Vehicles', value: vehicles.length, icon: Car, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Available', value: vehicles.filter(v => v.status === 'available').length, icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30' },
+    { label: 'Rented', value: vehicles.filter(v => v.status === 'rented').length, icon: Car, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Maintenance', value: vehicles.filter(v => v.status === 'maintenance').length, icon: Wrench, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Vehicle Registry</h2><p className="text-sm text-muted-foreground">Manage your fleet vehicles</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Vehicle</Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Vehicle Registry</CardTitle>
+              <CardDescription>Manage your fleet vehicles</CardDescription>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Vehicle</Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((s) => (
-          <Card key={s.label}>
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-md bg-muted"><s.icon className={`h-4 w-4 ${s.color}`} /></div>
-              <div><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></div>
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -140,18 +150,18 @@ export default function FleetVehiclesPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Vehicle #</TableHead>
-                  <TableHead className="text-xs">Registration</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Registration</TableHead>
                   <TableHead className="text-xs">Make/Model</TableHead>
-                  <TableHead className="text-xs">Year</TableHead>
-                  <TableHead className="text-xs">Category</TableHead>
-                  <TableHead className="text-xs">Fuel</TableHead>
-                  <TableHead className="text-xs">Daily Rate</TableHead>
-                  <TableHead className="text-xs">Mileage</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Year</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Category</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Fuel</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Daily Rate</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Mileage</TableHead>
                   <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Actions</TableHead>
                 </TableRow>
@@ -164,13 +174,13 @@ export default function FleetVehiclesPage() {
                 ) : vehicles.map((v) => (
                   <TableRow key={v.id}>
                     <TableCell className="text-xs font-mono">{v.vehicleNumber}</TableCell>
-                    <TableCell className="text-xs">{v.registrationNumber}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{v.registrationNumber}</TableCell>
                     <TableCell className="text-xs font-medium">{v.make} {v.model}</TableCell>
-                    <TableCell className="text-xs">{v.year}</TableCell>
-                    <TableCell className="text-xs capitalize">{v.category}</TableCell>
-                    <TableCell className="text-xs capitalize">{v.fuelType}</TableCell>
-                    <TableCell className="text-xs">${v.dailyRate?.toLocaleString()}</TableCell>
-                    <TableCell className="text-xs">{v.mileage?.toLocaleString()}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{v.year}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell capitalize">{v.category}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell capitalize">{v.fuelType}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">${v.dailyRate?.toLocaleString()}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{v.mileage?.toLocaleString()}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${statusColors[v.status] || ''}`}>{v.status?.replace('_', ' ')}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">

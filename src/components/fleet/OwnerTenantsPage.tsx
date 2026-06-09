@@ -186,7 +186,7 @@ export default function OwnerTenantsPage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[520px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader>
                 <TableRow>

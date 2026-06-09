@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Shield, DollarSign, CalendarDays, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
+import { Shield, DollarSign, CalendarDays, Plus, Pencil, Trash2, AlertTriangle, CheckCircle2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function InsurancePage() {
@@ -93,12 +93,26 @@ export default function InsurancePage() {
   const expiringPolicies = policies.filter(p => new Date(p.endDate) < new Date(now.getTime() + thirtyDays) && p.status === 'active')
   const expiredPolicies = policies.filter(p => new Date(p.endDate) < now && p.status === 'active')
 
+  const stats = [
+    { label: 'Total Policies', value: policies.length, icon: Shield, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Active', value: policies.filter(p => p.status === 'active').length, icon: CheckCircle2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Expiring Soon', value: expiringPolicies.length, icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Total Premiums', value: fmt(policies.filter(p => p.status === 'active').reduce((s, p) => s + (p.premium || 0), 0)), icon: DollarSign, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Insurance</h2><p className="text-sm text-muted-foreground">Manage insurance policies for your fleet</p></div>
-        <Button onClick={() => { setForm({ type: 'comprehensive', premium: 0, status: 'active', deductible: 0, startDate: new Date().toISOString().split('T')[0], endDate: '' }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Policy</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Insurance</CardTitle>
+              <CardDescription>Manage insurance policies for your fleet</CardDescription>
+            </div>
+            <Button onClick={() => { setForm({ type: 'comprehensive', premium: 0, status: 'active', deductible: 0, startDate: new Date().toISOString().split('T')[0], endDate: '' }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Policy</Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       {expiringPolicies.length > 0 && (
         <Card className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
@@ -123,18 +137,24 @@ export default function InsurancePage() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Policies', value: policies.length },
-          { label: 'Active', value: policies.filter(p => p.status === 'active').length },
-          { label: 'Expiring Soon', value: expiringPolicies.length },
-          { label: 'Total Premiums', value: fmt(policies.filter(p => p.status === 'active').reduce((s, p) => s + (p.premium || 0), 0)) },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
+
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Policy #</TableHead><TableHead className="text-xs">Provider</TableHead>
-            <TableHead className="text-xs">Type</TableHead><TableHead className="text-xs">Premium</TableHead><TableHead className="text-xs">Expiry</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-28">Actions</TableHead>
+            <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Policy #</TableHead><TableHead className="text-xs hidden md:table-cell">Provider</TableHead>
+            <TableHead className="text-xs hidden lg:table-cell">Type</TableHead><TableHead className="text-xs">Premium</TableHead><TableHead className="text-xs hidden md:table-cell">Expiry</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs w-28">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
             policies.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No insurance policies</TableCell></TableRow> :
@@ -142,10 +162,10 @@ export default function InsurancePage() {
               <TableRow key={p.id} className={p.status === 'expired' ? 'bg-red-50/50 dark:bg-red-950/10' : new Date(p.endDate) < new Date(now.getTime() + thirtyDays) && p.status === 'active' ? 'bg-amber-50/50 dark:bg-amber-950/10' : ''}>
                 <TableCell className="text-xs font-medium">{p.vehicle ? `${p.vehicle.make} ${p.vehicle.model}` : 'N/A'}</TableCell>
                 <TableCell className="text-xs font-mono">{p.policyNumber}</TableCell>
-                <TableCell className="text-xs">{p.provider}</TableCell>
-                <TableCell className="text-xs capitalize">{p.type}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{p.provider}</TableCell>
+                <TableCell className="text-xs capitalize hidden lg:table-cell">{p.type}</TableCell>
                 <TableCell className="text-xs font-medium">{fmt(p.premium)}</TableCell>
-                <TableCell className="text-xs">{new Date(p.endDate).toLocaleDateString()}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{new Date(p.endDate).toLocaleDateString()}</TableCell>
                 <TableCell>
                   <Badge className={`text-[10px] ${p.status === 'active' ? 'bg-emerald-100 text-emerald-800' : p.status === 'expired' ? 'bg-red-100 text-red-800' : p.status === 'cancelled' ? 'bg-gray-100 text-gray-800' : 'bg-amber-100 text-amber-800'}`}>{p.status}</Badge>
                 </TableCell>

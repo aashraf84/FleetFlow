@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Clock, Timer, FileText, Plus, Edit, Loader2 } from 'lucide-react'
+import { Clock, Timer, FileText, Plus, Edit, Loader2, ClipboardList, UserCheck, UserX } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrAttendancePage() {
@@ -91,25 +91,41 @@ export default function HrAttendancePage() {
     }
   }
 
+  const statCards = [
+    { label: 'Total Records', value: records.length, icon: ClipboardList, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Present', value: records.filter(a => a.status === 'present').length, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Late', value: records.filter(a => a.status === 'late').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Absent', value: records.filter(a => a.status === 'absent').length, icon: UserX, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Attendance</h2><p className="text-sm text-muted-foreground">Track employee attendance and hours</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Record Attendance</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div><CardTitle className="text-2xl">Attendance</CardTitle><p className="text-sm text-muted-foreground">Track employee attendance and hours</p></div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Record Attendance</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Records', value: records.length },
-          { label: 'Present', value: records.filter(a => a.status === 'present').length },
-          { label: 'Late', value: records.filter(a => a.status === 'late').length },
-          { label: 'Absent', value: records.filter(a => a.status === 'absent').length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {statCards.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Date</TableHead><TableHead className="text-xs">Check In</TableHead>
-            <TableHead className="text-xs">Check Out</TableHead><TableHead className="text-xs">Hours</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
+            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Date</TableHead><TableHead className="text-xs hidden md:table-cell">Check In</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">Check Out</TableHead><TableHead className="text-xs hidden lg:table-cell">Hours</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={7} className="text-center py-8">Loading...</TableCell></TableRow> :
             records.length === 0 ? <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">No attendance records</TableCell></TableRow> :
@@ -117,9 +133,9 @@ export default function HrAttendancePage() {
               <TableRow key={a.id}>
                 <TableCell className="text-xs font-medium">{a.employee?.firstName} {a.employee?.lastName}</TableCell>
                 <TableCell className="text-xs">{new Date(a.date).toLocaleDateString()}</TableCell>
-                <TableCell className="text-xs">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : 'N/A'}</TableCell>
-                <TableCell className="text-xs">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : 'N/A'}</TableCell>
-                <TableCell className="text-xs">{a.hoursWorked}h</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{a.checkIn ? new Date(a.checkIn).toLocaleTimeString() : 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{a.checkOut ? new Date(a.checkOut).toLocaleTimeString() : 'N/A'}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{a.hoursWorked}h</TableCell>
                 <TableCell><Badge className={`text-[10px] ${statusColor(a.status)}`}>{a.status?.replace('_', ' ')}</Badge></TableCell>
                 <TableCell><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(a)}><Edit className="h-3.5 w-3.5" /></Button></TableCell>
               </TableRow>
@@ -129,7 +145,7 @@ export default function HrAttendancePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Attendance' : 'Record Attendance'}</DialogTitle><DialogDescription>{editItem ? 'Update attendance record details.' : 'Record a new attendance entry for an employee.'}</DialogDescription></DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{editItem ? 'Edit Attendance' : 'Record Attendance'}</DialogTitle><DialogDescription>{editItem ? 'Update attendance record details.' : 'Record a new attendance entry for an employee.'}</DialogDescription></DialogHeader>
           <div className="space-y-6 py-2">
             <div>
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">

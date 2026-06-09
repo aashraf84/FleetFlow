@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CalendarDays, Plus, Search, Pencil, Trash2, Loader2, Users, DollarSign, MapPin } from 'lucide-react'
+import { CalendarDays, Plus, Search, Pencil, Trash2, Loader2, Users, DollarSign, MapPin, Clock, CheckCircle, XCircle, Car } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -115,22 +115,41 @@ export default function RentalReservationsPage() {
   const fmt = (n: number) => `$${n?.toLocaleString()}`
   const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'
 
+  const statCards = [
+    { label: 'Total', value: reservations.length, icon: CalendarDays, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Pending', value: reservations.filter(r => r.status === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Confirmed', value: reservations.filter(r => r.status === 'confirmed').length, icon: CheckCircle, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
+    { label: 'Active', value: reservations.filter(r => r.status === 'active').length, icon: Car, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Completed', value: reservations.filter(r => r.status === 'completed').length, icon: CheckCircle, color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-950/30' },
+    { label: 'Cancelled', value: reservations.filter(r => r.status === 'cancelled').length, icon: XCircle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Reservations</h2><p className="text-sm text-muted-foreground">Manage rental reservations and bookings</p></div>
-        <Button onClick={() => { setEditId(null); setForm({ startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], status: 'pending', dailyRate: 0, totalAmount: 0, depositAmount: 0 }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Reservation</Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Reservations</CardTitle>
+              <CardDescription>Manage rental reservations and bookings</CardDescription>
+            </div>
+            <Button onClick={() => { setEditId(null); setForm({ startDate: new Date().toISOString().split('T')[0], endDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0], status: 'pending', dailyRate: 0, totalAmount: 0, depositAmount: 0 }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Reservation</Button>
+          </div>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-        {[
-          { label: 'Total', value: reservations.length },
-          { label: 'Pending', value: reservations.filter(r => r.status === 'pending').length },
-          { label: 'Confirmed', value: reservations.filter(r => r.status === 'confirmed').length },
-          { label: 'Active', value: reservations.filter(r => r.status === 'active').length },
-          { label: 'Completed', value: reservations.filter(r => r.status === 'completed').length },
-          { label: 'Cancelled', value: reservations.filter(r => r.status === 'cancelled').length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCards.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -138,15 +157,15 @@ export default function RentalReservationsPage() {
           <div className="relative w-64"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Search reservations..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" /></div>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="text-xs">Code</TableHead>
                 <TableHead className="text-xs">Customer</TableHead>
-                <TableHead className="text-xs">Vehicle</TableHead>
-                <TableHead className="text-xs">Start</TableHead>
-                <TableHead className="text-xs">End</TableHead>
-                <TableHead className="text-xs">Amount</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Vehicle</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Start</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">End</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Amount</TableHead>
                 <TableHead className="text-xs">Status</TableHead>
                 <TableHead className="text-xs">Actions</TableHead>
               </TableRow></TableHeader>
@@ -157,10 +176,10 @@ export default function RentalReservationsPage() {
                   <TableRow key={r.id}>
                     <TableCell className="text-xs font-mono">{r.reservationCode}</TableCell>
                     <TableCell className="text-xs">{r.customer ? `${r.customer.firstName} ${r.customer.lastName}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{fmtDate(r.startDate)}</TableCell>
-                    <TableCell className="text-xs">{fmtDate(r.endDate)}</TableCell>
-                    <TableCell className="text-xs font-medium">{fmt(r.totalAmount)}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmtDate(r.startDate)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmtDate(r.endDate)}</TableCell>
+                    <TableCell className="text-xs font-medium hidden md:table-cell">{fmt(r.totalAmount)}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${statusColors[r.status] || ''}`}>{r.status?.replace('_', ' ')}</Badge></TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 flex-wrap">

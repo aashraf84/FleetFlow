@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { CalendarDays, Palmtree, Plus, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { CalendarDays, Palmtree, Plus, CheckCircle, XCircle, Loader2, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 
 export default function HrLeavePage() {
@@ -85,25 +85,41 @@ export default function HrLeavePage() {
     }
   }
 
+  const statCards = [
+    { label: 'Total Requests', value: records.length, icon: CalendarDays, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Pending', value: records.filter(l => l.status === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Approved', value: records.filter(l => l.status === 'approved').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'On Leave Now', value: records.filter(l => l.status === 'approved' && new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length, icon: Palmtree, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Leave Management</h2><p className="text-sm text-muted-foreground">Track and manage employee leave requests</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Request Leave</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div><CardTitle className="text-2xl">Leave Management</CardTitle><p className="text-sm text-muted-foreground">Track and manage employee leave requests</p></div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Request Leave</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Requests', value: records.length },
-          { label: 'Pending', value: records.filter(l => l.status === 'pending').length },
-          { label: 'Approved', value: records.filter(l => l.status === 'approved').length },
-          { label: 'On Leave Now', value: records.filter(l => l.status === 'approved' && new Date(l.startDate) <= new Date() && new Date(l.endDate) >= new Date()).length },
-        ].map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {statCards.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table><TableHeader><TableRow>
-            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Type</TableHead><TableHead className="text-xs">Start</TableHead>
-            <TableHead className="text-xs">End</TableHead><TableHead className="text-xs">Days</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Reason</TableHead><TableHead className="text-xs">Actions</TableHead>
+            <TableHead className="text-xs">Employee</TableHead><TableHead className="text-xs">Type</TableHead><TableHead className="text-xs hidden md:table-cell">Start</TableHead>
+            <TableHead className="text-xs hidden md:table-cell">End</TableHead><TableHead className="text-xs hidden lg:table-cell">Days</TableHead><TableHead className="text-xs">Status</TableHead><TableHead className="text-xs hidden lg:table-cell">Reason</TableHead><TableHead className="text-xs">Actions</TableHead>
           </TableRow></TableHeader><TableBody>
             {loading ? <TableRow><TableCell colSpan={8} className="text-center py-8">Loading...</TableCell></TableRow> :
             records.length === 0 ? <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No leave records</TableCell></TableRow> :
@@ -111,11 +127,11 @@ export default function HrLeavePage() {
               <TableRow key={l.id}>
                 <TableCell className="text-xs font-medium">{l.employee?.firstName} {l.employee?.lastName}</TableCell>
                 <TableCell className="text-xs capitalize">{l.type}</TableCell>
-                <TableCell className="text-xs">{new Date(l.startDate).toLocaleDateString()}</TableCell>
-                <TableCell className="text-xs">{new Date(l.endDate).toLocaleDateString()}</TableCell>
-                <TableCell className="text-xs">{l.days}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{new Date(l.startDate).toLocaleDateString()}</TableCell>
+                <TableCell className="text-xs hidden md:table-cell">{new Date(l.endDate).toLocaleDateString()}</TableCell>
+                <TableCell className="text-xs hidden lg:table-cell">{l.days}</TableCell>
                 <TableCell><Badge className={`text-[10px] ${statusColor(l.status)}`}>{l.status}</Badge></TableCell>
-                <TableCell className="text-xs max-w-32 truncate">{l.reason || 'N/A'}</TableCell>
+                <TableCell className="text-xs max-w-32 truncate hidden lg:table-cell">{l.reason || 'N/A'}</TableCell>
                 <TableCell>
                   {l.status === 'pending' && (
                     <div className="flex gap-1">
@@ -131,7 +147,7 @@ export default function HrLeavePage() {
       </CardContent></Card>
 
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Request Leave</DialogTitle><DialogDescription>Submit a new leave request for an employee.</DialogDescription></DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>Request Leave</DialogTitle><DialogDescription>Submit a new leave request for an employee.</DialogDescription></DialogHeader>
           <div className="space-y-6 py-2">
             <div>
               <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Fuel, Droplets, FileText, Plus, Pencil, Trash2, Loader2 } from 'lucide-react'
+import { Fuel, Droplets, FileText, Plus, Pencil, Trash2, Loader2, DollarSign, Calculator } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts'
 import { toast } from 'sonner'
 
@@ -111,20 +111,37 @@ export default function FuelManagementPage() {
   })
 
   const stats = [
-    { label: 'Total Records', value: records.length },
-    { label: 'Total Cost', value: fmt(totalCost) },
-    { label: 'Total Fuel', value: `${totalLiters.toLocaleString()}L` },
-    { label: 'Avg Cost/Fill', value: records.length > 0 ? fmt(totalCost / records.length) : '$0' },
+    { label: 'Total Records', value: records.length, icon: Fuel, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Total Cost', value: fmt(totalCost), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Total Fuel', value: `${totalLiters.toLocaleString()}L`, icon: Droplets, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Avg Cost/Fill', value: records.length > 0 ? fmt(totalCost / records.length) : '$0', icon: Calculator, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Fuel Management</h2><p className="text-sm text-muted-foreground">Track fuel purchases, usage, and costs</p></div>
-        <Button onClick={() => { setForm({ fuelType: 'petrol', quantity: 0, costPerUnit: 0, totalCost: 0, date: new Date().toISOString().split('T')[0] }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Fuel Record</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Fuel Management</CardTitle>
+              <CardDescription className="text-sm">Track fuel purchases, usage, and costs</CardDescription>
+            </div>
+            <Button onClick={() => { setForm({ fuelType: 'petrol', quantity: 0, costPerUnit: 0, totalCost: 0, date: new Date().toISOString().split('T')[0] }); setEditMode(false); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />Add Fuel Record</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -142,20 +159,20 @@ export default function FuelManagementPage() {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-base">Recent Fuel Records</CardTitle></CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-64">
+            <ScrollArea className="max-h-[440px]">
               <Table>
                 <TableHeader><TableRow>
-                  <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs">Driver</TableHead><TableHead className="text-xs">Quantity</TableHead>
-                  <TableHead className="text-xs">Cost</TableHead><TableHead className="text-xs">Date</TableHead><TableHead className="text-xs w-20">Actions</TableHead>
+                  <TableHead className="text-xs">Vehicle</TableHead><TableHead className="text-xs hidden md:table-cell">Driver</TableHead><TableHead className="text-xs hidden md:table-cell">Quantity</TableHead>
+                  <TableHead className="text-xs">Cost</TableHead><TableHead className="text-xs hidden lg:table-cell">Date</TableHead><TableHead className="text-xs w-20">Actions</TableHead>
                 </TableRow></TableHeader>
                 <TableBody>
                   {filtered.slice(0, 15).map(r => (
                     <TableRow key={r.id}>
                       <TableCell className="text-xs">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
-                      <TableCell className="text-xs">{r.driver ? `${r.driver.firstName} ${r.driver.lastName}` : 'N/A'}</TableCell>
-                      <TableCell className="text-xs">{r.quantity}L</TableCell>
+                      <TableCell className="text-xs hidden md:table-cell">{r.driver ? `${r.driver.firstName} ${r.driver.lastName}` : 'N/A'}</TableCell>
+                      <TableCell className="text-xs hidden md:table-cell">{r.quantity}L</TableCell>
                       <TableCell className="text-xs font-medium">{fmt(r.totalCost)}</TableCell>
-                      <TableCell className="text-xs">{new Date(r.date).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-xs hidden lg:table-cell">{new Date(r.date).toLocaleDateString()}</TableCell>
                       <TableCell className="text-xs">
                         <div className="flex items-center gap-1">
                           <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEdit(r)}><Pencil className="h-3 w-3" /></Button>

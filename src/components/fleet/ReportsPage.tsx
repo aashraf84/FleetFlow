@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { PieChart as RPieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer } from 'recharts'
-import { PieChart, Download } from 'lucide-react'
+import { PieChart, Download, Car, DollarSign, TrendingUp, BarChart3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 const COLORS = ['#10b981', '#f59e0b', '#6366f1', '#ef4444', '#8b5cf6', '#06b6d4']
@@ -45,14 +45,23 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Vehicles', value: s.totalVehicles, color: 'text-emerald-600' },
-          { label: 'Revenue', value: `$${s.totalRevenue?.toLocaleString()}`, color: 'text-green-600' },
-          { label: 'Expenses', value: `$${s.totalExpenses?.toLocaleString()}`, color: 'text-red-600' },
-          { label: 'Net Profit', value: `$${s.netProfit?.toLocaleString()}`, color: 'text-blue-600' },
-          { label: 'Utilization', value: `${s.utilizationRate}%`, color: 'text-violet-600' },
-        ].map(c => <Card key={c.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{c.label}</p><p className={`text-lg font-bold ${c.color}`}>{c.value}</p></CardContent></Card>)}
+          { label: 'Vehicles', value: s.totalVehicles, icon: Car, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+          { label: 'Revenue', value: `$${s.totalRevenue?.toLocaleString()}`, icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30' },
+          { label: 'Expenses', value: `$${s.totalExpenses?.toLocaleString()}`, icon: TrendingUp, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+          { label: 'Net Profit', value: `$${s.netProfit?.toLocaleString()}`, icon: DollarSign, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+        ].map(c => (
+          <Card key={c.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{c.label}</span>
+                <div className={`p-1.5 rounded-md ${c.bg}`}><c.icon className={`h-3.5 w-3.5 ${c.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{c.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Tabs defaultValue="fleet">

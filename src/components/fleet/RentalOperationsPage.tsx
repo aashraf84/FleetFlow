@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -159,11 +159,11 @@ export default function RentalOperationsPage() {
   })
 
   const stats = [
-    { label: 'Total Contracts', value: contracts.length, icon: ArrowLeftRight },
-    { label: 'Pending Pickup', value: operations.filter(o => o.opStatus === 'pending').length, icon: Clock },
-    { label: 'Picked Up', value: operations.filter(o => o.opStatus === 'picked_up').length, icon: LogIn },
-    { label: 'Returned', value: operations.filter(o => o.opStatus === 'returned').length, icon: LogOut },
-    { label: 'Overdue', value: operations.filter(o => o.opStatus === 'overdue').length, icon: AlertTriangle },
+    { label: 'Total Contracts', value: contracts.length, icon: ArrowLeftRight, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Pending Pickup', value: operations.filter(o => o.opStatus === 'pending').length, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Picked Up', value: operations.filter(o => o.opStatus === 'picked_up').length, icon: LogIn, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Returned', value: operations.filter(o => o.opStatus === 'returned').length, icon: LogOut, color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-950/30' },
+    { label: 'Overdue', value: operations.filter(o => o.opStatus === 'overdue').length, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
   ]
 
   const buildTimeline = (contract: any) => {
@@ -209,22 +209,24 @@ export default function RentalOperationsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Rental Operations</h2>
-          <p className="text-sm text-muted-foreground">Track pickups, returns, and contract operations</p>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <div>
+            <CardTitle className="text-2xl">Rental Operations</CardTitle>
+            <CardDescription>Track pickups, returns, and contract operations</CardDescription>
+          </div>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map(s => (
-          <Card key={s.label}>
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <s.icon className="h-4 w-4 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground">{s.label}</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
               </div>
-              <p className="text-xl font-bold mt-1">{s.value}</p>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
@@ -238,17 +240,17 @@ export default function RentalOperationsPage() {
               <Input placeholder="Search operations..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" />
             </div>
           </div>
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Contract #</TableHead>
-                  <TableHead className="text-xs">Customer</TableHead>
-                  <TableHead className="text-xs">Vehicle</TableHead>
-                  <TableHead className="text-xs">Period</TableHead>
-                  <TableHead className="text-xs">Mileage Out</TableHead>
-                  <TableHead className="text-xs">Mileage In</TableHead>
-                  <TableHead className="text-xs">Operation Status</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Customer</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Vehicle</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Period</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Mileage Out</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Mileage In</TableHead>
+                  <TableHead className="text-xs">Status</TableHead>
                   <TableHead className="text-xs">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -260,11 +262,11 @@ export default function RentalOperationsPage() {
                 ) : filtered.map(c => (
                   <TableRow key={c.id}>
                     <TableCell className="text-xs font-mono">{c.contractNumber}</TableCell>
-                    <TableCell className="text-xs">{c.customer ? `${c.customer.firstName} ${c.customer.lastName}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{c.vehicle ? `${c.vehicle.make} ${c.vehicle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{fmtDate(c.startDate)} - {fmtDate(c.endDate)}</TableCell>
-                    <TableCell className="text-xs">{c.mileageOut ? `${Number(c.mileageOut).toLocaleString()} km` : '—'}</TableCell>
-                    <TableCell className="text-xs">{c.mileageIn ? `${Number(c.mileageIn).toLocaleString()} km` : '—'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{c.customer ? `${c.customer.firstName} ${c.customer.lastName}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{c.vehicle ? `${c.vehicle.make} ${c.vehicle.model}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmtDate(c.startDate)} - {fmtDate(c.endDate)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{c.mileageOut ? `${Number(c.mileageOut).toLocaleString()} km` : '—'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{c.mileageIn ? `${Number(c.mileageIn).toLocaleString()} km` : '—'}</TableCell>
                     <TableCell>
                       <Badge className={`text-[10px] ${opStatusColors[c.opStatus] || ''}`}>
                         {getOperationStatusLabel(c.opStatus)}
@@ -297,7 +299,7 @@ export default function RentalOperationsPage() {
 
       {/* Record Pickup Dialog */}
       <Dialog open={pickupOpen} onOpenChange={setPickupOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Pickup</DialogTitle>
             <DialogDescription>Record vehicle pickup details and activate the rental contract.</DialogDescription>
@@ -370,7 +372,7 @@ export default function RentalOperationsPage() {
 
       {/* Record Return Dialog */}
       <Dialog open={returnOpen} onOpenChange={setReturnOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Record Return</DialogTitle>
             <DialogDescription>Record vehicle return details including mileage, fuel level, and condition.</DialogDescription>
@@ -472,7 +474,7 @@ export default function RentalOperationsPage() {
 
       {/* Timeline Dialog */}
       <Dialog open={timelineOpen} onOpenChange={setTimelineOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Operations Timeline — {timelineContract?.contractNumber}</DialogTitle>
             <DialogDescription>View the full timeline of pickup, return, and status change events.</DialogDescription>

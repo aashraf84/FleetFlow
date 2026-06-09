@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Cog, Wrench, Clock, DollarSign, Plus, Pencil, Trash2, Play, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Cog, Wrench, Clock, DollarSign, Plus, Pencil, Trash2, Play, CheckCircle, XCircle, Loader2, FolderOpen, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -154,30 +154,39 @@ export default function WorkshopPage() {
   const totalPartsCost = jobCards.reduce((s: number, j: any) => s + (j.partsCost || 0), 0)
   const totalAllCost = jobCards.reduce((s: number, j: any) => s + (j.totalCost || 0), 0)
 
+  const stats = [
+    { label: 'Total Job Cards', value: jobCards.length, icon: Cog, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-950/30' },
+    { label: 'Open', value: jobCards.filter((j: any) => j.status === 'open').length, icon: FolderOpen, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'In Progress', value: jobCards.filter((j: any) => j.status === 'in_progress').length, icon: Clock, color: 'text-cyan-600', bg: 'bg-cyan-50 dark:bg-cyan-950/30' },
+    { label: 'Labor Cost', value: fmt(totalLaborCost), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Total Cost', value: fmt(totalAllCost), icon: Banknote, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-950/30' },
+  ]
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Workshop Management</h2>
-          <p className="text-sm text-muted-foreground">Job cards, mechanics, repair orders, and labor costs</p>
-        </div>
-        <Button onClick={() => { setCreateForm({ maintenanceId: '', technician: '', estimatedHours: '', notes: '' }); setCreateOpen(true) }}>
-          <Plus className="h-4 w-4 mr-2" />Create Job Card
-        </Button>
-      </div>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <div>
+            <CardTitle className="text-2xl font-bold">Workshop Management</CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">Job cards, mechanics, repair orders, and labor costs</CardDescription>
+          </div>
+          <Button onClick={() => { setCreateForm({ maintenanceId: '', technician: '', estimatedHours: '', notes: '' }); setCreateOpen(true) }}>
+            <Plus className="h-4 w-4 mr-2" />Create Job Card
+          </Button>
+        </CardHeader>
+      </Card>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[
-          { label: 'Total Job Cards', value: jobCards.length },
-          { label: 'Open', value: jobCards.filter((j: any) => j.status === 'open').length },
-          { label: 'In Progress', value: jobCards.filter((j: any) => j.status === 'in_progress').length },
-          { label: 'Labor Cost', value: fmt(totalLaborCost) },
-          { label: 'Total Cost', value: fmt(totalAllCost) },
-        ].map(s => (
-          <Card key={s.label}><CardContent className="p-4">
-            <p className="text-xs text-muted-foreground">{s.label}</p>
-            <p className="text-xl font-bold">{s.value}</p>
-          </CardContent></Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
@@ -194,18 +203,18 @@ export default function WorkshopPage() {
       )}
 
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table>
             <TableHeader><TableRow>
               <TableHead className="text-xs">Vehicle</TableHead>
-              <TableHead className="text-xs">Maint. Type</TableHead>
-              <TableHead className="text-xs">Technician</TableHead>
-              <TableHead className="text-xs">Est. Hours</TableHead>
-              <TableHead className="text-xs">Actual Hours</TableHead>
-              <TableHead className="text-xs">Labor Cost</TableHead>
-              <TableHead className="text-xs">Parts Cost</TableHead>
-              <TableHead className="text-xs">Total Cost</TableHead>
-              <TableHead className="text-xs">Priority</TableHead>
+              <TableHead className="text-xs hidden md:table-cell">Maint. Type</TableHead>
+              <TableHead className="text-xs hidden md:table-cell">Technician</TableHead>
+              <TableHead className="text-xs hidden lg:table-cell">Est. Hours</TableHead>
+              <TableHead className="text-xs hidden lg:table-cell">Actual Hours</TableHead>
+              <TableHead className="text-xs hidden lg:table-cell">Labor Cost</TableHead>
+              <TableHead className="text-xs hidden lg:table-cell">Parts Cost</TableHead>
+              <TableHead className="text-xs hidden lg:table-cell">Total Cost</TableHead>
+              <TableHead className="text-xs hidden md:table-cell">Priority</TableHead>
               <TableHead className="text-xs">Status</TableHead>
               <TableHead className="text-xs">Actions</TableHead>
             </TableRow></TableHeader>
@@ -220,14 +229,14 @@ export default function WorkshopPage() {
                     <TableCell className="text-xs font-medium">
                       {jc.maintenance?.vehicle ? `${jc.maintenance.vehicle.make} ${jc.maintenance.vehicle.model}` : 'N/A'}
                     </TableCell>
-                    <TableCell className="text-xs capitalize">{jc.maintenance?.type?.replace('_', ' ') || 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{jc.technician || 'Unassigned'}</TableCell>
-                    <TableCell className="text-xs">{jc.estimatedHours}h</TableCell>
-                    <TableCell className="text-xs">{jc.actualHours}h</TableCell>
-                    <TableCell className="text-xs font-medium">{fmt(jc.laborCost)}</TableCell>
-                    <TableCell className="text-xs font-medium">{fmt(jc.partsCost)}</TableCell>
-                    <TableCell className="text-xs font-bold">{fmt(jc.totalCost)}</TableCell>
-                    <TableCell>
+                    <TableCell className="text-xs capitalize hidden md:table-cell">{jc.maintenance?.type?.replace('_', ' ') || 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{jc.technician || 'Unassigned'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{jc.estimatedHours}h</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{jc.actualHours}h</TableCell>
+                    <TableCell className="text-xs font-medium hidden lg:table-cell">{fmt(jc.laborCost)}</TableCell>
+                    <TableCell className="text-xs font-medium hidden lg:table-cell">{fmt(jc.partsCost)}</TableCell>
+                    <TableCell className="text-xs font-bold hidden lg:table-cell">{fmt(jc.totalCost)}</TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge className={`text-[10px] ${priorityColors[jc.maintenance?.priority] || ''}`} variant={jc.maintenance?.priority === 'urgent' ? 'destructive' : 'outline'}>
                         {jc.maintenance?.priority || 'normal'}
                       </Badge>
@@ -274,7 +283,7 @@ export default function WorkshopPage() {
 
       {/* Create Job Card Dialog */}
       <Dialog open={createOpen} onOpenChange={(v) => { if (!saving) setCreateOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create Job Card</DialogTitle>
             <DialogDescription>Create a new job card from an existing maintenance record.</DialogDescription>
@@ -348,7 +357,7 @@ export default function WorkshopPage() {
 
       {/* Edit Job Card Dialog */}
       <Dialog open={editOpen} onOpenChange={(v) => { if (!saving) setEditOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Job Card</DialogTitle>
             <DialogDescription>Update the job card details, hours, and costs.</DialogDescription>

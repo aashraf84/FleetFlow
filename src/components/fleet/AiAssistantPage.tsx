@@ -84,7 +84,7 @@ export default function AiAssistantPage() {
         <Card className="lg:col-span-3 flex flex-col">
           <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Bot className="h-5 w-5 text-primary" />FleetFlow AI</CardTitle></CardHeader>
           <CardContent className="flex-1 flex flex-col">
-            <ScrollArea className="flex-1 h-[500px] pr-4">
+            <ScrollArea className="flex-1 min-h-[400px] max-h-[calc(100vh-300px)] pr-4">
               <div className="space-y-4">
                 {messages.map((m, i) => (
                   <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>

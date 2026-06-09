@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Textarea } from '@/components/ui/textarea'
-import { AlertTriangle, Plus, Search, Loader2, Link, DollarSign } from 'lucide-react'
+import { AlertTriangle, Plus, Search, Loader2, Link, DollarSign, Eye, Wrench } from 'lucide-react'
 import { toast } from 'sonner'
 
 const statusColors: Record<string, string> = {
@@ -64,33 +64,50 @@ export default function RentalDamagePage() {
 
   const fmt = (n: number) => `$${n?.toLocaleString()}`
   const stats = [
-    { label: 'Total Reports', value: reports.length },
-    { label: 'Open', value: reports.filter(r => r.status === 'reported' || r.status === 'assessed').length },
-    { label: 'Repairing', value: reports.filter(r => r.status === 'repairing').length },
-    { label: 'Total Liability', value: fmt(reports.reduce((s, r) => s + (r.customerLiability || 0), 0)) },
+    { label: 'Total Reports', value: reports.length, icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Open', value: reports.filter(r => r.status === 'reported' || r.status === 'assessed').length, icon: Eye, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Repairing', value: reports.filter(r => r.status === 'repairing').length, icon: Wrench, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Total Liability', value: fmt(reports.reduce((s, r) => s + (r.customerLiability || 0), 0)), icon: DollarSign, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Damage Management</h2><p className="text-sm text-muted-foreground">Track vehicle damage reports and repairs</p></div>
-        <Button onClick={() => { setForm({ description: '', status: 'reported' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Report</Button>
-      </div>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Damage Management</CardTitle>
+              <CardDescription>Track vehicle damage reports and repairs</CardDescription>
+            </div>
+            <Button onClick={() => { setForm({ description: '', status: 'reported' }); setOpen(true) }}><Plus className="h-4 w-4 mr-2" />New Report</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card>
         <CardHeader className="pb-3"><div className="relative w-64"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" /></div></CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
                 <TableHead className="text-xs">Vehicle</TableHead>
-                <TableHead className="text-xs">Customer</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Customer</TableHead>
                 <TableHead className="text-xs">Description</TableHead>
-                <TableHead className="text-xs">Repair Estimate</TableHead>
-                <TableHead className="text-xs">Actual Cost</TableHead>
-                <TableHead className="text-xs">Liability</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Repair Estimate</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Actual Cost</TableHead>
+                <TableHead className="text-xs hidden md:table-cell">Liability</TableHead>
                 <TableHead className="text-xs">Status</TableHead>
                 <TableHead className="text-xs">Actions</TableHead>
               </TableRow></TableHeader>
@@ -100,11 +117,11 @@ export default function RentalDamagePage() {
                 reports.map(r => (
                   <TableRow key={r.id}>
                     <TableCell className="text-xs font-medium">{r.vehicle ? `${r.vehicle.make} ${r.vehicle.model}` : 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{r.customer ? `${r.customer.firstName} ${r.customer.lastName}` : 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{r.customer ? `${r.customer.firstName} ${r.customer.lastName}` : 'N/A'}</TableCell>
                     <TableCell className="text-xs max-w-48 truncate">{r.description}</TableCell>
-                    <TableCell className="text-xs">{fmt(r.repairEstimate)}</TableCell>
-                    <TableCell className="text-xs">{fmt(r.repairCost)}</TableCell>
-                    <TableCell className="text-xs font-medium">{fmt(r.customerLiability)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmt(r.repairEstimate)}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{fmt(r.repairCost)}</TableCell>
+                    <TableCell className="text-xs font-medium hidden md:table-cell">{fmt(r.customerLiability)}</TableCell>
                     <TableCell><Badge className={`text-[10px] ${statusColors[r.status] || ''}`}>{r.status}</Badge></TableCell>
                     <TableCell>
                       {r.status === 'reported' && <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => updateStatus(r.id, 'assessed')}>Assess</Button>}

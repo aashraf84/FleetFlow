@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -119,35 +119,42 @@ export default function FinanceExpensesPage() {
   const fmt = (n: number) => `$${n?.toLocaleString()}`
 
   const stats = [
-    { label: 'Total Expenses', value: fmt(expenses.reduce((s, e) => s + (e.amount || 0), 0)) },
-    { label: 'Pending', value: fmt(expenses.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0)) },
-    { label: 'Approved', value: fmt(expenses.filter(e => e.status === 'approved').reduce((s, e) => s + e.amount, 0)) },
-    { label: 'Paid', value: fmt(expenses.filter(e => e.status === 'paid' || e.status === 'completed').reduce((s, e) => s + e.amount, 0)) },
+    { label: 'Total Expenses', value: fmt(expenses.reduce((s, e) => s + (e.amount || 0), 0)), icon: DollarSign, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Pending', value: fmt(expenses.filter(e => e.status === 'pending').reduce((s, e) => s + e.amount, 0)), icon: Receipt, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+    { label: 'Approved', value: fmt(expenses.filter(e => e.status === 'approved').reduce((s, e) => s + e.amount, 0)), icon: CheckCircle2, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Paid', value: fmt(expenses.filter(e => e.status === 'paid' || e.status === 'completed').reduce((s, e) => s + e.amount, 0)), icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Expenses</h2>
-          <p className="text-sm text-muted-foreground">Track maintenance, fuel, payroll, insurance, and permit expenses</p>
-        </div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Record Expense</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Expenses</CardTitle>
+              <CardDescription>Track maintenance, fuel, payroll, insurance, and permit expenses</CardDescription>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Record Expense</Button>
+          </div>
+        </CardHeader>
+      </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.map(s => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground">{s.label}</p>
-              <p className="text-xl font-bold">{s.value}</p>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
             </CardContent>
           </Card>
         ))}
       </div>
 
       <Card><CardContent className="p-0">
-        <ScrollArea className="max-h-[500px]">
+        <ScrollArea className="max-h-[440px]">
           <Table>
             <TableHeader><TableRow>
               <TableHead className="text-xs">Category</TableHead>

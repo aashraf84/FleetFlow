@@ -153,6 +153,17 @@ export default function OwnerRevenuePage() {
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Revenue</CardTitle>
+              <CardDescription>Track revenue streams, subscriptions, and financial performance</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map((s) => (
           <Card key={s.label} className="hover:shadow-md transition-shadow">
@@ -161,7 +172,7 @@ export default function OwnerRevenuePage() {
                 <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
                 <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
               </div>
-              <p className="text-xl font-bold">{s.value}</p>
+              <p className="text-2xl font-bold">{s.value}</p>
               <div className="flex items-center gap-1 mt-1">
                 {s.up ? <ArrowUpRight className="h-3 w-3 text-emerald-500" /> : <ArrowDownRight className="h-3 w-3 text-red-500" />}
                 <span className={`text-[10px] ${s.up ? 'text-emerald-500' : 'text-red-500'}`}>{s.trend}</span>
@@ -253,14 +264,14 @@ export default function OwnerRevenuePage() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[420px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-xs">Date</TableHead>
                   <TableHead className="text-xs">Category</TableHead>
-                  <TableHead className="text-xs">Client</TableHead>
-                  <TableHead className="text-xs">Description</TableHead>
+                  <TableHead className="text-xs hidden md:table-cell">Client</TableHead>
+                  <TableHead className="text-xs hidden lg:table-cell">Description</TableHead>
                   <TableHead className="text-xs">Amount</TableHead>
                   <TableHead className="text-xs">Actions</TableHead>
                 </TableRow>
@@ -281,8 +292,8 @@ export default function OwnerRevenuePage() {
                       <TableCell>
                         <Badge variant="outline" className="text-[10px] capitalize">{r.category}</Badge>
                       </TableCell>
-                      <TableCell className="text-xs">{r.client?.companyName || '—'}</TableCell>
-                      <TableCell className="text-xs max-w-48 truncate">{r.description || '—'}</TableCell>
+                      <TableCell className="text-xs hidden md:table-cell">{r.client?.companyName || '—'}</TableCell>
+                      <TableCell className="text-xs max-w-48 truncate hidden lg:table-cell">{r.description || '—'}</TableCell>
                       <TableCell className="text-xs font-bold text-emerald-600">{fmt(r.amount)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -357,7 +368,7 @@ export default function OwnerRevenuePage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editId ? 'Edit Revenue Record' : 'Add Revenue Record'}</DialogTitle>
             <DialogDescription>{editId ? 'Update revenue transaction details' : 'Record a new revenue transaction'}</DialogDescription>

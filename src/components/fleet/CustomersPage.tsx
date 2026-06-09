@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Users, Plus, Search, Edit, Trash2, Loader2, User, CreditCard, MapPin, Phone, FileText } from 'lucide-react'
+import { Users, Plus, Search, Edit, Trash2, Loader2, User, CreditCard, MapPin, Phone, FileText, CheckCircle, Ban, Star } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 
@@ -79,29 +79,46 @@ export default function CustomersPage() {
   }
 
   const stats = [
-    { label: 'Total Customers', value: data.length },
-    { label: 'Active', value: data.filter(c => c.status === 'active').length },
-    { label: 'Blacklisted', value: data.filter(c => c.status === 'blacklisted').length },
-    { label: 'Good Credit', value: data.filter(c => c.creditRating === 'good' || c.creditRating === 'excellent').length },
+    { label: 'Total Customers', value: data.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-950/30' },
+    { label: 'Active', value: data.filter(c => c.status === 'active').length, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
+    { label: 'Blacklisted', value: data.filter(c => c.status === 'blacklisted').length, icon: Ban, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
+    { label: 'Good Credit', value: data.filter(c => c.creditRating === 'good' || c.creditRating === 'excellent').length, icon: Star, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-950/30' },
   ]
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Customer Management</h2><p className="text-sm text-muted-foreground">Manage customer records and rental history</p></div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Customer</Button>
-      </div>
+      <Card>
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl">Customer Management</CardTitle>
+              <CardDescription className="text-sm">Manage customer records and rental history</CardDescription>
+            </div>
+            <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Customer</Button>
+          </div>
+        </CardHeader>
+      </Card>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map(s => <Card key={s.label}><CardContent className="p-4"><p className="text-xs text-muted-foreground">{s.label}</p><p className="text-xl font-bold">{s.value}</p></CardContent></Card>)}
+        {stats.map(s => (
+          <Card key={s.label} className="hover:shadow-md transition-shadow">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-medium text-muted-foreground">{s.label}</span>
+                <div className={`p-1.5 rounded-md ${s.bg}`}><s.icon className={`h-3.5 w-3.5 ${s.color}`} /></div>
+              </div>
+              <p className="text-2xl font-bold">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       <Card>
         <CardHeader className="pb-3"><div className="relative w-64"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input placeholder="Search customers..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-9" /></div></CardHeader>
         <CardContent className="p-0">
-          <ScrollArea className="max-h-[500px]">
+          <ScrollArea className="max-h-[440px]">
             <Table>
               <TableHeader><TableRow>
-                <TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Email</TableHead><TableHead className="text-xs">Phone</TableHead>
-                <TableHead className="text-xs">Company</TableHead><TableHead className="text-xs">License</TableHead><TableHead className="text-xs">Credit</TableHead>
+                <TableHead className="text-xs">Name</TableHead><TableHead className="text-xs">Email</TableHead><TableHead className="text-xs hidden md:table-cell">Phone</TableHead>
+                <TableHead className="text-xs hidden lg:table-cell">Company</TableHead><TableHead className="text-xs hidden lg:table-cell">License</TableHead><TableHead className="text-xs hidden md:table-cell">Credit</TableHead>
                 <TableHead className="text-xs">Status</TableHead><TableHead className="text-xs">Actions</TableHead>
               </TableRow></TableHeader>
               <TableBody>
@@ -111,10 +128,10 @@ export default function CustomersPage() {
                   <TableRow key={c.id}>
                     <TableCell className="text-xs font-medium">{c.firstName} {c.lastName}</TableCell>
                     <TableCell className="text-xs">{c.email}</TableCell>
-                    <TableCell className="text-xs">{c.phone || 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{c.companyName || 'N/A'}</TableCell>
-                    <TableCell className="text-xs">{c.drivingLicense || 'N/A'}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px] capitalize">{c.creditRating}</Badge></TableCell>
+                    <TableCell className="text-xs hidden md:table-cell">{c.phone || 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{c.companyName || 'N/A'}</TableCell>
+                    <TableCell className="text-xs hidden lg:table-cell">{c.drivingLicense || 'N/A'}</TableCell>
+                    <TableCell className="hidden md:table-cell"><Badge variant="outline" className="text-[10px] capitalize">{c.creditRating}</Badge></TableCell>
                     <TableCell><Badge className={`text-[10px] ${c.status === 'active' ? 'bg-emerald-100 text-emerald-800' : c.status === 'blacklisted' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>{c.status}</Badge></TableCell>
                     <TableCell><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(c)}><Edit className="h-3.5 w-3.5" /></Button><Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleDelete(c.id)}><Trash2 className="h-3.5 w-3.5" /></Button></div></TableCell>
                   </TableRow>
