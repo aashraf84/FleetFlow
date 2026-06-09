@@ -1024,3 +1024,33 @@ Stage Summary:
 - Admin user auto-creation with client_owner role
 - Tenant database auto-provisioning on Neon PostgreSQL
 - API tested and working: POST /api/fleet/clients returns client + tenant + DB provisioning status
+---
+Task ID: 2
+Agent: Main
+Task: Make client registration form wider and add multi-currency support
+
+Work Log:
+- Changed dialog width from max-w-5xl to max-w-[1400px] w-[95vw] for maximum width
+- Added 15 currencies: USD, EUR, GBP, AED, SAR, PKR, INR, CAD, AUD, TRY, QAR, KWD, BHD, OMR, MYR
+- Each currency has symbol, name, flag emoji, and exchange rate
+- Added auto country-to-currency mapping (selecting Pakistan → PKR, UAE → AED, etc.)
+- Added currency selector in dialog header for quick switching
+- Module prices now show in selected currency with proper formatting
+- Plan cards show prices in local currency with USD equivalent
+- Price breakdown shows dual-currency (local + USD in gray)
+- Total amount displays in both currencies with exchange rate badge
+- Added "Billing & Payment" section with billing cycle, payment method, invoice currency
+- Updated grid layouts from 3-col to 4-col for wider form
+- Module grid supports 4 columns on xl screens
+- Added billingCycle and paymentMethod fields to form
+- Updated backend to store currency in subscription record
+- Backend passes currency through to subscription creation
+- All lint checks pass
+
+Stage Summary:
+- Dialog is now 95vw wide (max 1400px) - much more spacious
+- Full multi-currency support with 15 currencies and real-time conversion
+- Auto country-currency mapping for convenience
+- Dual-currency price breakdown showing both local and USD amounts
+- New Billing & Payment section added
+- Changes committed and pushed to GitHub (0c88f0d)
