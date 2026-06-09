@@ -990,3 +990,37 @@ In shadcn/ui Dialog components, when a button's onClick starts an async operatio
 ### Verification
 - `bun run lint` passed with zero errors
 - All 26 fleet module pages now have the race condition fix applied consistently
+---
+Task ID: 1
+Agent: Main
+Task: Redesign Client Registration Form with Module Selection, Pricing, Discount, User Creation, and Auto Tenant DB
+
+Work Log:
+- Analyzed uploaded image showing current simple "Add New Client" form
+- Redesigned OwnerClientsPage.tsx with professional multi-section collapsible form
+- Added 6 form sections: Company Information, Contact Details, Module Selection, Subscription & Pricing, Admin User Creation, Tenant Database
+- Implemented 12 ERP module cards with checkboxes, prices, and descriptions
+- Added plan selection cards (Trial, Monthly, Annual, Enterprise) with discount badges
+- Implemented real-time price breakdown with subtotal, plan discount, custom discount, and total
+- Added discount field with percentage/fixed toggle
+- Added admin user creation section with toggle switch and name/email/password fields
+- Added tenant database auto-provisioning section with DB name preview and provisioning steps
+- Upgraded dialog width to max-w-5xl with sticky footer
+- Updated backend API (clients/route.ts) to handle all new fields
+- Added subscription creation with module-based pricing calculation
+- Added admin User creation linked to tenant
+- Added Tenant record creation with modulesEnabled
+- Added auto tenant DB provisioning via Neon SQL API (CREATE DATABASE + schema migration)
+- Added discount and discountType fields to Subscription model in Prisma schema
+- Created /api/fleet/tenant-provision endpoint for manual DB provisioning
+- Fixed CREATE DATABASE SQL injection issue (using sql.unsafe with sanitized names)
+- Fixed password field type from text to password
+- Cleaned up unused imports (Checkbox, Textarea, DialogFooter)
+- All lint checks pass
+
+Stage Summary:
+- Client registration form is now a professional multi-section form with all requested features
+- Module selection with 12 ERP modules, pricing auto-calculation, discount support
+- Admin user auto-creation with client_owner role
+- Tenant database auto-provisioning on Neon PostgreSQL
+- API tested and working: POST /api/fleet/clients returns client + tenant + DB provisioning status

@@ -1,25 +1,29 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Switch } from '@/components/ui/switch'
 import {
   Building2, Users, UserX, UserPlus, Search, Plus, Pencil, Trash2, Ban, CheckCircle2,
-  Phone, Mail, Globe, MoreHorizontal, Eye, Loader2, CreditCard
+  Phone, Mail, Globe, MoreHorizontal, Eye, Loader2, CreditCard, Package, Database,
+  Shield, Car, ClipboardCheck, CalendarDays, Fuel, Wrench, UsersRound, Route, FileText,
+  DollarSign, Percent, Hash, KeyRound, Server, CheckCircle, XCircle, AlertCircle,
+  ChevronDown, ChevronRight, Sparkles, Crown, Zap, ArrowRight
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAppStore } from '@/lib/store'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -27,6 +31,7 @@ import {
 interface Client {
   id: string
   companyName: string
+  slug: string
   contactPerson: string
   email: string
   phone: string | null
@@ -36,8 +41,9 @@ interface Client {
   licenseStatus: string
   status: string
   notes: string | null
+  tenantId: string | null
   createdAt: string
-  subscription?: { planType: string; status: string; price: number } | null
+  subscription?: { planType: string; status: string; price: number; activeModules: string; discount: number } | null
   license?: { licenseKey: string; status: string } | null
   activities?: { action: string; details: string | null; createdAt: string }[]
 }
@@ -49,9 +55,45 @@ interface Stats {
   newThisMonth: number
 }
 
+// ============================================
+// Module Definitions
+// ============================================
+const ERP_MODULES = [
+  { id: 'fleet', label: 'Fleet Management', icon: Car, description: 'Vehicle inventory, tracking & status', price: 49 },
+  { id: 'rental', label: 'Rental Operations', icon: CalendarDays, description: 'Reservations, contracts & deposits', price: 39 },
+  { id: 'customer', label: 'Customer CRM', icon: UsersRound, description: 'Customer profiles & history', price: 29 },
+  { id: 'driver', label: 'Driver Management', icon: Users, description: 'Driver profiles, licenses & ratings', price: 29 },
+  { id: 'transport', label: 'Transport & Dispatch', icon: Route, description: 'Dispatch orders, trips & GPS', price: 49 },
+  { id: 'fuel', label: 'Fuel Management', icon: Fuel, description: 'Fuel tracking, costs & analytics', price: 19 },
+  { id: 'maintenance', label: 'Maintenance', icon: Wrench, description: 'Service records, workshop & parts', price: 39 },
+  { id: 'finance', label: 'Finance & Accounting', icon: DollarSign, description: 'Invoices, payments & journals', price: 49 },
+  { id: 'insurance', label: 'Insurance', icon: Shield, description: 'Policy management & claims', price: 19 },
+  { id: 'hr', label: 'HR & Payroll', icon: Users, description: 'Employees, attendance & payroll', price: 39 },
+  { id: 'compliance', label: 'Compliance', icon: ClipboardCheck, description: 'Regulatory docs & tracking', price: 19 },
+  { id: 'documents', label: 'Document Center', icon: FileText, description: 'Centralized document storage', price: 9 },
+]
+
+// Plan pricing
+const PLAN_CONFIG: Record<string, { label: string; basePrice: number; months: number; discount: number; color: string; icon: React.ReactNode; description: string }> = {
+  trial: { label: 'Trial', basePrice: 0, months: 1, discount: 0, color: 'text-gray-500', icon: <Zap className="h-4 w-4" />, description: '14-day free trial with limited features' },
+  monthly: { label: 'Monthly', basePrice: 99, months: 1, discount: 0, color: 'text-blue-500', icon: <CalendarDays className="h-4 w-4" />, description: 'Billed monthly, cancel anytime' },
+  annual: { label: 'Annual', basePrice: 999, months: 12, discount: 16, color: 'text-purple-500', icon: <Crown className="h-4 w-4" />, description: 'Billed annually, save 16%' },
+  enterprise: { label: 'Enterprise', basePrice: 2499, months: 12, discount: 25, color: 'text-amber-500', icon: <Sparkles className="h-4 w-4" />, description: 'Custom limits, priority support' },
+}
+
 const emptyForm = {
   companyName: '', contactPerson: '', email: '', phone: '', country: '',
   industryType: '', subscriptionPlan: 'trial', licenseStatus: 'active', notes: '',
+  // New fields
+  selectedModules: ['fleet', 'rental', 'customer', 'driver'] as string[],
+  discount: 0,
+  discountType: 'percentage' as 'percentage' | 'fixed',
+  // Admin user creation
+  adminName: '', adminEmail: '', adminPassword: '', createAdminUser: true,
+  // Tenant DB
+  autoProvisionDB: true,
+  domain: '',
+  address: '', city: '', state: '', zipCode: '',
 }
 
 export default function OwnerClientsPage() {
@@ -65,6 +107,7 @@ export default function OwnerClientsPage() {
   const [formData, setFormData] = useState(emptyForm)
   const [saving, setSaving] = useState(false)
   const [activityClient, setActivityClient] = useState<Client | null>(null)
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['company', 'contact', 'modules', 'pricing', 'user', 'tenant']))
   const { addNotification } = useAppStore()
 
   useEffect(() => { fetchData() }, [search, statusFilter])
@@ -88,25 +131,90 @@ export default function OwnerClientsPage() {
     }
   }
 
+  // ============================================
+  // Pricing calculations
+  // ============================================
+  const pricing = useMemo(() => {
+    const plan = PLAN_CONFIG[formData.subscriptionPlan] || PLAN_CONFIG.trial
+    const modulePrices = ERP_MODULES
+      .filter(m => formData.selectedModules.includes(m.id))
+      .reduce((sum, m) => sum + m.price, 0)
+    const subtotal = plan.basePrice + modulePrices
+    const planDiscount = plan.discount / 100
+    const afterPlanDiscount = subtotal * (1 - planDiscount)
+    
+    let customDiscount = 0
+    if (formData.discountType === 'percentage') {
+      customDiscount = afterPlanDiscount * (formData.discount / 100)
+    } else {
+      customDiscount = Math.min(formData.discount, afterPlanDiscount)
+    }
+    const total = afterPlanDiscount - customDiscount
+    const monthlyEquivalent = plan.months > 1 ? total / plan.months : total
+
+    return { subtotal, planDiscountAmount: subtotal * planDiscount, afterPlanDiscount, customDiscount, total, monthlyEquivalent, moduleCount: formData.selectedModules.length }
+  }, [formData.subscriptionPlan, formData.selectedModules, formData.discount, formData.discountType])
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev)
+      if (next.has(section)) next.delete(section)
+      else next.add(section)
+      return next
+    })
+  }
+
+  const toggleModule = (moduleId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedModules: prev.selectedModules.includes(moduleId)
+        ? prev.selectedModules.filter(id => id !== moduleId)
+        : [...prev.selectedModules, moduleId]
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (formData.selectedModules.length === 0) {
+      toast.error('Please select at least one module')
+      return
+    }
+    if (formData.createAdminUser && (!formData.adminName || !formData.adminEmail || !formData.adminPassword)) {
+      toast.error('Please fill in all admin user fields')
+      return
+    }
+    if (formData.createAdminUser && formData.adminPassword.length < 6) {
+      toast.error('Admin password must be at least 6 characters')
+      return
+    }
     setSaving(true)
     try {
-      const url = editId
-        ? `/api/fleet/clients`
-        : `/api/fleet/clients`
-      const res = await fetch(url, {
+      const payload = {
+        ...formData,
+        totalAmount: pricing.total,
+        monthlyEquivalent: pricing.monthlyEquivalent,
+      }
+      const res = await fetch(`/api/fleet/clients`, {
         method: editId ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editId ? { id: editId, ...formData } : formData),
+        body: JSON.stringify(editId ? { id: editId, ...payload } : payload),
       })
+      const json = await res.json()
       if (res.ok) {
-        toast.success(editId ? 'Client updated successfully' : 'Client created successfully')
-        addNotification({ title: editId ? 'Client Updated' : 'Client Created', message: `${formData.companyName} has been ${editId ? 'updated' : 'added'}`, type: 'success' })
+        toast.success(editId ? 'Client updated successfully' : 'Client registered successfully', {
+          description: editId ? undefined : `Tenant DB: ${json.dbName || 'pending'} | Admin user created`
+        })
+        addNotification({ 
+          title: editId ? 'Client Updated' : 'Client Registered', 
+          message: `${formData.companyName} has been ${editId ? 'updated' : 'registered'}`, 
+          type: 'success' 
+        })
         fetchData()
         setOpen(false)
         setEditId(null)
         setFormData(emptyForm)
+      } else {
+        toast.error(json.error || 'Operation failed')
       }
     } catch (e) {
       toast.error('Operation failed')
@@ -114,7 +222,7 @@ export default function OwnerClientsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this client?')) return
+    if (!confirm('Are you sure you want to delete this client? This will also remove their subscription, license, and tenant database reference.')) return
     try {
       const res = await fetch(`/api/fleet/clients?id=${id}`, { method: 'DELETE' })
       if (res.ok) {
@@ -146,6 +254,11 @@ export default function OwnerClientsPage() {
 
   const openEdit = (client: Client) => {
     setEditId(client.id)
+    const subModules = client.subscription?.activeModules 
+      ? (typeof client.subscription.activeModules === 'string' 
+          ? client.subscription.activeModules.split(',') 
+          : [])
+      : ['fleet', 'rental', 'customer', 'driver']
     setFormData({
       companyName: client.companyName,
       contactPerson: client.contactPerson,
@@ -156,6 +269,16 @@ export default function OwnerClientsPage() {
       subscriptionPlan: client.subscriptionPlan,
       licenseStatus: client.licenseStatus,
       notes: client.notes || '',
+      selectedModules: subModules,
+      discount: client.subscription?.discount || 0,
+      discountType: 'percentage',
+      adminName: client.contactPerson,
+      adminEmail: client.email,
+      adminPassword: '',
+      createAdminUser: false,
+      autoProvisionDB: !client.tenantId,
+      domain: '',
+      address: '', city: '', state: '', zipCode: '',
     })
     setOpen(true)
   }
@@ -163,8 +286,14 @@ export default function OwnerClientsPage() {
   const openCreate = () => {
     setEditId(null)
     setFormData(emptyForm)
+    setExpandedSections(new Set(['company', 'contact', 'modules', 'pricing', 'user', 'tenant']))
     setOpen(true)
   }
+
+  // Auto-generate slug preview
+  const slugPreview = formData.companyName
+    ? `ff_${formData.companyName.toLowerCase().replace(/[^a-z0-9]+/g, '_').slice(0, 20)}`
+    : 'ff_...'
 
   const statCards = [
     { label: 'Total Clients', value: stats.total, icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
@@ -172,6 +301,41 @@ export default function OwnerClientsPage() {
     { label: 'Suspended', value: stats.suspended, icon: UserX, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-950/30' },
     { label: 'New This Month', value: stats.newThisMonth, icon: UserPlus, color: 'text-violet-600', bg: 'bg-violet-50 dark:bg-violet-950/30' },
   ]
+
+  // Section component
+  const FormSection = ({ id, icon, title, description, children, required }: {
+    id: string; icon: React.ReactNode; title: string; description: string; children: React.ReactNode; required?: boolean
+  }) => {
+    const isExpanded = expandedSections.has(id)
+    return (
+      <div className="border border-border/60 rounded-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection(id)}
+          className="w-full flex items-center gap-3 px-5 py-3.5 bg-muted/30 hover:bg-muted/50 transition-colors"
+        >
+          <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-primary/10 text-primary shrink-0">
+            {icon}
+          </div>
+          <div className="flex-1 text-left">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+              {required && <span className="text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-950/30 px-1.5 py-0.5 rounded">REQUIRED</span>}
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">{description}</p>
+          </div>
+          <motion.div animate={{ rotate: isExpanded ? 0 : -90 }} transition={{ duration: 0.15 }}>
+            <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          </motion.div>
+        </button>
+        {isExpanded && (
+          <div className="px-5 py-4 space-y-4">
+            {children}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -198,7 +362,7 @@ export default function OwnerClientsPage() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <CardTitle className="text-base">Client Management</CardTitle>
-              <CardDescription>Manage all enterprise clients</CardDescription>
+              <CardDescription>Manage all enterprise clients and their subscriptions</CardDescription>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-64">
@@ -322,100 +486,439 @@ export default function OwnerClientsPage() {
         </CardContent>
       </Card>
 
-      {/* Add/Edit Dialog */}
+      {/* ============================================ */}
+      {/* Add/Edit Dialog — Professional Multi-Section */}
+      {/* ============================================ */}
       <Dialog open={open} onOpenChange={(v) => { if (!saving) setOpen(v) }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editId ? 'Edit Client' : 'Add New Client'}</DialogTitle>
-            <DialogDescription>{editId ? 'Update client information and settings' : 'Enter details to register a new enterprise client'}</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-6 py-2">
-            {/* Company Information */}
-            <div>
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                <Building2 className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Company Information</h3>
+        <DialogContent className="max-w-5xl max-h-[92vh] p-0 gap-0">
+          {/* Header */}
+          <div className="px-6 pt-6 pb-4 border-b border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-primary/10 text-primary shrink-0">
+                <Building2 className="h-5 w-5" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs font-medium text-muted-foreground">Company Name *</Label>
-                  <Input className="h-10 text-sm mt-1" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required placeholder="Enter company name" /></div>
-                <div><Label className="text-xs font-medium text-muted-foreground">Country</Label>
-                  <Input className="h-10 text-sm mt-1" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} placeholder="United States" /></div>
-                <div><Label className="text-xs font-medium text-muted-foreground">Industry</Label>
-                  <Select value={formData.industryType} onValueChange={(v) => setFormData({ ...formData, industryType: v })}>
-                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select industry" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Logistics">Logistics</SelectItem>
-                      <SelectItem value="Transport">Transport</SelectItem>
-                      <SelectItem value="Car Rental">Car Rental</SelectItem>
-                      <SelectItem value="Fleet Management">Fleet Management</SelectItem>
-                      <SelectItem value="Government">Government</SelectItem>
-                      <SelectItem value="Construction">Construction</SelectItem>
-                      <SelectItem value="Oil & Gas">Oil & Gas</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select></div>
+              <div>
+                <DialogTitle className="text-lg font-bold">{editId ? 'Edit Client' : 'Register New Enterprise Client'}</DialogTitle>
+                <DialogDescription className="text-xs mt-0.5">
+                  {editId ? 'Update client information, subscription and settings' : 'Complete all sections to register a new client with subscription, admin user & tenant database'}
+                </DialogDescription>
               </div>
             </div>
-            {/* Contact Details */}
-            <div>
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                <Phone className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Contact Details</h3>
+          </div>
+
+          {/* Scrollable Form Body */}
+          <form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(92vh-140px)]">
+            <div className="px-6 py-5 space-y-4">
+              
+              {/* Section 1: Company Information */}
+              <FormSection id="company" icon={<Building2 className="h-4 w-4" />} title="Company Information" description="Business details and company profile" required>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Company Name *</Label>
+                    <Input className="h-10" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} required placeholder="Enter company name" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Industry *</Label>
+                    <Select value={formData.industryType} onValueChange={(v) => setFormData({ ...formData, industryType: v })}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select industry" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Logistics">Logistics & Freight</SelectItem>
+                        <SelectItem value="Transport">Transport & Transit</SelectItem>
+                        <SelectItem value="Car Rental">Car Rental</SelectItem>
+                        <SelectItem value="Fleet Management">Fleet Management</SelectItem>
+                        <SelectItem value="Government">Government</SelectItem>
+                        <SelectItem value="Construction">Construction</SelectItem>
+                        <SelectItem value="Oil & Gas">Oil & Gas</SelectItem>
+                        <SelectItem value="Hospitality">Hospitality</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Country</Label>
+                    <Select value={formData.country} onValueChange={(v) => setFormData({ ...formData, country: v })}>
+                      <SelectTrigger className="h-10"><SelectValue placeholder="Select country" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="United States">United States</SelectItem>
+                        <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                        <SelectItem value="UAE">UAE</SelectItem>
+                        <SelectItem value="Saudi Arabia">Saudi Arabia</SelectItem>
+                        <SelectItem value="Pakistan">Pakistan</SelectItem>
+                        <SelectItem value="India">India</SelectItem>
+                        <SelectItem value="Canada">Canada</SelectItem>
+                        <SelectItem value="Australia">Australia</SelectItem>
+                        <SelectItem value="Germany">Germany</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Address</Label>
+                    <Input className="h-10" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="Street address" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">City</Label>
+                    <Input className="h-10" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="City" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">State</Label>
+                      <Input className="h-10" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} placeholder="State" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Zip</Label>
+                      <Input className="h-10" value={formData.zipCode} onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })} placeholder="Code" />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Domain</Label>
+                    <div className="flex items-center gap-1">
+                      <Input className="h-10 flex-1" value={formData.domain} onChange={(e) => setFormData({ ...formData, domain: e.target.value })} placeholder="company-name" />
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">.fleetflow.app</span>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Notes</Label>
+                    <Input className="h-10" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes..." />
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Section 2: Contact Details */}
+              <FormSection id="contact" icon={<Phone className="h-4 w-4" />} title="Contact Details" description="Primary contact person and communication info" required>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Contact Person *</Label>
+                    <Input className="h-10" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required placeholder="Full name" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Email *</Label>
+                    <Input type="email" className="h-10" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required placeholder="contact@company.com" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Phone *</Label>
+                    <Input className="h-10" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} required placeholder="+1 (555) 000-0000" />
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Section 3: Module Selection */}
+              <FormSection id="modules" icon={<Package className="h-4 w-4" />} title="Module Selection" description={`Choose which ERP modules to enable (${formData.selectedModules.length} of ${ERP_MODULES.length} selected)`} required>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {ERP_MODULES.map((mod) => {
+                    const isSelected = formData.selectedModules.includes(mod.id)
+                    const ModIcon = mod.icon
+                    return (
+                      <button
+                        key={mod.id}
+                        type="button"
+                        onClick={() => toggleModule(mod.id)}
+                        className={cn(
+                          "flex items-start gap-3 p-3.5 rounded-xl border-2 transition-all text-left",
+                          isSelected
+                            ? "border-primary bg-primary/5 shadow-sm"
+                            : "border-border/50 hover:border-border bg-background hover:bg-muted/30"
+                        )}
+                      >
+                        <div className={cn(
+                          "flex items-center justify-center h-9 w-9 rounded-lg shrink-0 transition-colors",
+                          isSelected ? "bg-primary/15 text-primary" : "bg-muted/50 text-muted-foreground"
+                        )}>
+                          <ModIcon className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <span className={cn("text-xs font-semibold", isSelected ? "text-foreground" : "text-muted-foreground")}>{mod.label}</span>
+                            <span className="text-[10px] font-bold text-primary">${mod.price}/mo</span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground mt-0.5 leading-tight">{mod.description}</p>
+                        </div>
+                        <div className={cn(
+                          "flex items-center justify-center h-5 w-5 rounded-md border-2 shrink-0 mt-0.5 transition-colors",
+                          isSelected ? "bg-primary border-primary" : "border-border"
+                        )}>
+                          {isSelected && <CheckCircle2 className="h-3 w-3 text-primary-foreground" />}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                {/* Quick select */}
+                <div className="flex items-center gap-2 pt-1">
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setFormData({ ...formData, selectedModules: ERP_MODULES.map(m => m.id) })}>
+                    Select All
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setFormData({ ...formData, selectedModules: ['fleet', 'rental', 'customer', 'driver'] })}>
+                    Core Modules
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" className="h-7 text-[10px]" onClick={() => setFormData({ ...formData, selectedModules: [] })}>
+                    Clear All
+                  </Button>
+                  <span className="text-[10px] text-muted-foreground ml-auto">
+                    {formData.selectedModules.length} modules selected
+                  </span>
+                </div>
+              </FormSection>
+
+              {/* Section 4: Subscription & Pricing */}
+              <FormSection id="pricing" icon={<CreditCard className="h-4 w-4" />} title="Subscription & Pricing" description="Plan selection, pricing breakdown & discount" required>
+                {/* Plan Selection Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(PLAN_CONFIG).map(([key, plan]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, subscriptionPlan: key })}
+                      className={cn(
+                        "relative flex flex-col p-3.5 rounded-xl border-2 transition-all text-left",
+                        formData.subscriptionPlan === key
+                          ? "border-primary bg-primary/5 shadow-sm"
+                          : "border-border/50 hover:border-border bg-background"
+                      )}
+                    >
+                      {plan.discount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-emerald-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+                          SAVE {plan.discount}%
+                        </span>
+                      )}
+                      <div className={cn("flex items-center gap-1.5 mb-2", plan.color)}>
+                        {plan.icon}
+                        <span className="text-xs font-bold">{plan.label}</span>
+                      </div>
+                      <div className="flex items-baseline gap-0.5">
+                        <span className="text-lg font-bold">${plan.basePrice}</span>
+                        <span className="text-[10px] text-muted-foreground">/{plan.months > 1 ? 'yr' : 'mo'}</span>
+                      </div>
+                      <p className="text-[9px] text-muted-foreground mt-1 leading-tight">{plan.description}</p>
+                      {formData.subscriptionPlan === key && (
+                        <div className="absolute top-2 right-2">
+                          <CheckCircle2 className="h-4 w-4 text-primary" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* License Status */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">License Status</Label>
+                    <Select value={formData.licenseStatus} onValueChange={(v) => setFormData({ ...formData, licenseStatus: v })}>
+                      <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="trial">Trial</SelectItem>
+                        <SelectItem value="expired">Expired</SelectItem>
+                        <SelectItem value="suspended">Suspended</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* Discount */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-medium">Custom Discount</Label>
+                    <div className="flex gap-2">
+                      <Select value={formData.discountType} onValueChange={(v: any) => setFormData({ ...formData, discountType: v })}>
+                        <SelectTrigger className="h-10 w-24"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="percentage">%</SelectItem>
+                          <SelectItem value="fixed">$</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        className="h-10 flex-1"
+                        min={0}
+                        max={formData.discountType === 'percentage' ? 100 : undefined}
+                        value={formData.discount || ''}
+                        onChange={(e) => setFormData({ ...formData, discount: e.target.value === '' ? 0 : parseFloat(e.target.value) })}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Price Breakdown */}
+                <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">Price Breakdown</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Base Plan ({PLAN_CONFIG[formData.subscriptionPlan]?.label})</span>
+                      <span className="font-medium">${PLAN_CONFIG[formData.subscriptionPlan]?.basePrice}/mo</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Modules ({pricing.moduleCount} × selected)</span>
+                      <span className="font-medium">${ERP_MODULES.filter(m => formData.selectedModules.includes(m.id)).reduce((s, m) => s + m.price, 0)}/mo</span>
+                    </div>
+                    <Separator />
+                    <div className="flex justify-between text-xs">
+                      <span className="text-muted-foreground">Subtotal</span>
+                      <span className="font-medium">${pricing.subtotal.toFixed(2)}</span>
+                    </div>
+                    {PLAN_CONFIG[formData.subscriptionPlan]?.discount > 0 && (
+                      <div className="flex justify-between text-xs text-emerald-600 dark:text-emerald-400">
+                        <span>Plan Discount ({PLAN_CONFIG[formData.subscriptionPlan]?.discount}%)</span>
+                        <span>-${pricing.planDiscountAmount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.customDiscount > 0 && (
+                      <div className="flex justify-between text-xs text-amber-600 dark:text-amber-400">
+                        <span>Custom Discount {formData.discountType === 'percentage' ? `(${formData.discount}%)` : ''}</span>
+                        <span>-${pricing.customDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+                    <Separator />
+                    <div className="flex justify-between text-sm">
+                      <span className="font-bold">Total Amount</span>
+                      <span className="font-bold text-lg text-primary">${pricing.total.toFixed(2)}</span>
+                    </div>
+                    {PLAN_CONFIG[formData.subscriptionPlan]?.months > 1 && (
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>Monthly Equivalent</span>
+                        <span>${pricing.monthlyEquivalent.toFixed(2)}/mo</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </FormSection>
+
+              {/* Section 5: Admin User Creation */}
+              <FormSection id="user" icon={<Shield className="h-4 w-4" />} title="Admin User Creation" description="Create the primary admin account for this client" required>
+                <div className="flex items-center gap-3 mb-4">
+                  <Switch
+                    checked={formData.createAdminUser}
+                    onCheckedChange={(v) => setFormData({ ...formData, createAdminUser: v })}
+                  />
+                  <div>
+                    <span className="text-xs font-medium">Create admin user automatically</span>
+                    <p className="text-[10px] text-muted-foreground">A client_owner account will be created with full access</p>
+                  </div>
+                </div>
+                {formData.createAdminUser && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Admin Name *</Label>
+                      <Input className="h-10" value={formData.adminName} onChange={(e) => setFormData({ ...formData, adminName: e.target.value })} placeholder="Admin full name" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Admin Email *</Label>
+                      <Input type="email" className="h-10" value={formData.adminEmail} onChange={(e) => setFormData({ ...formData, adminEmail: e.target.value })} placeholder="admin@company.com" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium">Password *</Label>
+                      <div className="relative">
+                        <KeyRound className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                        <Input type="password" className="h-10 pl-8" value={formData.adminPassword} onChange={(e) => setFormData({ ...formData, adminPassword: e.target.value })} placeholder="Min 6 characters" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {formData.createAdminUser && (
+                  <div className="bg-muted/30 rounded-lg p-3 border border-border/50">
+                    <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <Hash className="h-3 w-3" />
+                      <span>Role: <span className="font-semibold text-foreground">client_owner</span></span>
+                      <span className="mx-1">•</span>
+                      <span>Access: <span className="font-semibold text-foreground">Full Admin Panel</span></span>
+                      <span className="mx-1">•</span>
+                      <span>Auto-login: <span className="font-semibold text-emerald-600">Enabled</span></span>
+                    </div>
+                  </div>
+                )}
+              </FormSection>
+
+              {/* Section 6: Tenant Database */}
+              <FormSection id="tenant" icon={<Database className="h-4 w-4" />} title="Tenant Database" description="Auto-provision a dedicated PostgreSQL database for this client">
+                <div className="flex items-center gap-3 mb-4">
+                  <Switch
+                    checked={formData.autoProvisionDB}
+                    onCheckedChange={(v) => setFormData({ ...formData, autoProvisionDB: v })}
+                  />
+                  <div>
+                    <span className="text-xs font-medium">Auto-provision tenant database</span>
+                    <p className="text-[10px] text-muted-foreground">Creates a dedicated database on Neon PostgreSQL</p>
+                  </div>
+                </div>
+                {formData.autoProvisionDB && (
+                  <div className="bg-muted/30 rounded-xl p-4 border border-border/50 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Database Name</Label>
+                        <div className="flex items-center h-10 px-3 rounded-md border border-border bg-background">
+                          <Server className="h-3.5 w-3.5 text-muted-foreground mr-2" />
+                          <span className="text-xs font-mono text-muted-foreground">{slugPreview}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium">Host</Label>
+                        <div className="flex items-center h-10 px-3 rounded-md border border-border bg-background">
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground mr-2" />
+                          <span className="text-xs font-mono text-muted-foreground">ep-lucky-fog-ap5pa8qr-pooler.c-7.us-east-1.aws.neon.tech</span>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Provisioning Steps */}
+                    <div className="space-y-2 pt-1">
+                      <h5 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Provisioning Steps</h5>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <ArrowRight className="h-3 w-3 text-primary" />
+                        <span>Create database <span className="font-mono font-semibold">{slugPreview}</span> on Neon</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <ArrowRight className="h-3 w-3 text-primary" />
+                        <span>Run schema migration (prisma db push)</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <ArrowRight className="h-3 w-3 text-primary" />
+                        <span>Mark tenant as dbReady in central DB</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[11px]">
+                        <ArrowRight className="h-3 w-3 text-primary" />
+                        <span>Create admin user in tenant database</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400">Database provisioning may take 30-60 seconds</span>
+                    </div>
+                  </div>
+                )}
+              </FormSection>
+
+            </div>
+
+            {/* Footer */}
+            <div className="sticky bottom-0 bg-background border-t border-border px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-[10px] text-muted-foreground">6 sections</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Package className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] text-muted-foreground">{formData.selectedModules.length} modules</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5 text-emerald-500" />
+                  <span className="text-[10px] font-bold text-foreground">${pricing.total.toFixed(2)}</span>
+                </div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs font-medium text-muted-foreground">Contact Person *</Label>
-                  <Input className="h-10 text-sm mt-1" value={formData.contactPerson} onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })} required placeholder="Full name of contact person" /></div>
-                <div><Label className="text-xs font-medium text-muted-foreground">Email *</Label>
-                  <Input type="email" className="h-10 text-sm mt-1" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required placeholder="contact@company.com" /></div>
-                <div><Label className="text-xs font-medium text-muted-foreground">Phone</Label>
-                  <Input className="h-10 text-sm mt-1" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" /></div>
+              <div className="flex items-center gap-2">
+                <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)} disabled={saving}>Cancel</Button>
+                <Button type="submit" size="sm" disabled={saving} className="min-w-[120px]">
+                  {saving ? (
+                    <><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> Processing...</>
+                  ) : editId ? (
+                    <><Pencil className="h-3.5 w-3.5 mr-1.5" /> Update Client</>
+                  ) : (
+                    <><Plus className="h-3.5 w-3.5 mr-1.5" /> Register Client</>
+                  )}
+                </Button>
               </div>
             </div>
-            {/* Subscription & License */}
-            <div>
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                <CreditCard className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Subscription & License</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><Label className="text-xs font-medium text-muted-foreground">Subscription Plan</Label>
-                  <Select value={formData.subscriptionPlan} onValueChange={(v) => setFormData({ ...formData, subscriptionPlan: v })}>
-                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select plan" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="trial">Trial</SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="annual">Annual</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select></div>
-                <div><Label className="text-xs font-medium text-muted-foreground">License Status</Label>
-                  <Select value={formData.licenseStatus} onValueChange={(v) => setFormData({ ...formData, licenseStatus: v })}>
-                    <SelectTrigger className="h-10 text-sm mt-1"><SelectValue placeholder="Select status" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="expired">Expired</SelectItem>
-                      <SelectItem value="trial">Trial</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
-                    </SelectContent>
-                  </Select></div>
-              </div>
-            </div>
-            {/* Additional Information */}
-            <div>
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-border/50">
-                <Mail className="h-4 w-4 text-primary" />
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-foreground">Additional Information</h3>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="col-span-1 md:col-span-3"><Label className="text-xs font-medium text-muted-foreground">Notes</Label>
-                  <Textarea className="min-h-[80px] text-sm mt-1" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="Additional notes about this client..." /></div>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={saving}>{saving && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}{editId ? 'Update' : 'Create'}</Button>
-            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
